@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <video autoplay controls></video>
+    <canvas id='a'></canvas>
+    <canvas id='b'></canvas>
+    <canvas id='c'></canvas>
+    <canvas id='d'></canvas>
+    <canvas id='e'></canvas>
+    <span class='tag'></span>
+    <span class='info'>Top Graph:<br>
+        Blue line = amount of blue in area<br>
+        Red line = amount of red in area<br>
+        Green line = amount green in area<br>
+        Black line = average of the 3 lines<br>
+        <br>
+        Bottom Graph:<br>
+        Black line = amount of change in current frame compared to previous frame<br>
+        Green line = amount of movement inside image<br>
+        Red line = amount of movement of things coming in/out of frame</span>
+    <script>
+        var a = document.querySelector('#a')
+        var bc = document.querySelector('#b')
+        var c = document.querySelector('#c')
+        var d = document.querySelector('#d')
+        var e = document.querySelector('#e')
+        var markedX,markedY,markedColor;
+        var boxH;
+        var referenceDist = 40
+        var mode = 'difference'
+        var paused = false
+        var cmode = 'depth'
+        var threshold = 30
+        var newData = []
+        var dataToDisplay = []
+        var rarr = []
+        var garr = []
+        var barr = []
+        var avgarr = []
+        var ddarr = []
+        var dtcarr = []
+        var amdtcarr = []
+        var createArr = true
+        var areaW = 200
+        var areaH = 200
+        var doRecord = false
+        var lry = bc.clientHeight
+        var lgy = bc.clientHeight
+        var lby = bc.clientHeight
+        var ldy = bc.clientHeight
+        var lay = bc.clientHeight
+        var ldtc = bc.clientHeight
+        var lamdtc = bc.clientHeight
+        var pdtcl = 0
+        var divConstant = areaH*(areaW/1.5)
+        const constraints = {
+            video: true,
+        };
+        function startRecording(stream, lengthInMS) {
+            let recorder = new MediaRecorder(stream);
+            let data = [];
+            recorder.ondataavailable = event => data.push(event.data);
+            recorder.start();
+            console.log(recorder.state + " for " + (lengthInMS/1000) + " seconds...");
+            let stopped = new Promise((resolve, reject) => {
+                recorder.onstop = resolve;
+                recorder.onerror = event => reject(event.name);
+            });
+
+            let recorded = wait(lengthInMS).then(
+                () => recorder.state == "recording" && recorder.stop()
+            );
+
+            return Promise.all([
+                stopped,
+                recorded
+            ])
+            .then(() => data);
+}
+function wait(delayInMS) {
+  return new Promise(resolve => setTimeout(resolve, delayInMS));
+}
+        const video = document.querySelector("video");
+        const downloadButton = document.body.appendChild(document.createElement('BUTTON'))
+        downloadButton.textContent = 'button'
+        const recordingElem = document.body.appendChild(document.createElement('VIDEO'))
+        recordingElem.controls = 'true'
+        navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+            video.srcObject = stream
+            setTimeout(function(){
+            a.width = video.clientWidth
+            a.height = video.clientHeight
+            bc.width = document.body.clientWidth
+            bc.height = video.clientHeight
+            e.width = document.body.clientWidth
+            e.height = video.clientHeight
+            c.width = video.clientWidth
+            c.height = video.clientHeight
+            d.width = video.clientWidth
+            d.height = video.clientHeight
+            },200)
+            setTimeout(function(){
+                spectroStart()
+            },1500)
+            if(doRecord == true){
+                startRecording(c.captureStream(), 10000).then(recordedChunks => {
+                    console.log(recordedChunks)
+                    let recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+                    var urlObject = URL.createObjectURL(recordedBlob);
+                    console.log(urlObject)
+                    recordingElem.src = urlObject
+                    downloadButton.href = recordingElem.src;
+                    downloadButton.download = "RecordedVideo.webm";
+
+                    console.log("Successfully recorded " + recordedBlob.size + " bytes of " +
+                    recordedBlob.type + " media.");
+                })
+            }
+        });
+        function spectroStart(){
+            var gtx = bc.getContext('2d')
+            var ectx = e.getContext('2d')
+            gtx.fillStyle = '#fff'
+            gtx.fillRect(0,0,bc.clientWidth,bc.clientHeight)
+            ectx.fillStyle = '#fff'
+            ectx.fillRect(0,0,bc.clientWidth,bc.clientHeight)
+            var step = 5
+            var current = 0
+            var lbh = 0;
+            setInterval(function(){
+                if(paused) return;
+                if((step*current)<bc.clientWidth){
+                    var [rd,gd,bd,dd,avgd,dtc,amdtc] = spectro()
+                    current+=1
+                    var dataArray = [rd/divConstant,gd/divConstant,bd/divConstant,dd/4000,avgd/divConstant,dtc/2,amdtc/divConstant]
+                    dataArray.forEach(function(i,v){
+                        var tx = 0
+                        var ty = 0
+                        var tctx = gtx
+                        var lineY = c.clientHeight-i
+                        if(v == 0){
+                            ty = lry
+                            lry = lineY
+                            gtx.strokeStyle = '#ff0000'
+                        } else if(v == 1){
+                            ty = lgy
+                            lgy =  lineY
+                            gtx.strokeStyle = '#00ff00'
+                        } else if(v == 2){
+                            ty = lby
+                            lby = lineY
+                            gtx.strokeStyle = '#0000ff'
+                        } else if(v == 3){
+                            ty = ldy
+                            tctx = ectx
+                            if(i!=0){
+                                ldy = bc.clientHeight-i
+                            } else {
+                                lineY = ldy
+                            }
+                            ectx.strokeStyle = '#000000'
+                            console.log('-')
+                        } else if(v == 4){
+                            ty = lay
+                            lineY = bc.clientHeight-i
+                            lay = lineY
+                            gtx.strokeStyle = '#000000'
+                        } else if(v == 5){
+                            ty = ldtc
+                            lineY = ((bc.clientHeight-Math.abs(((2*(bc.clientHeight-(i))+ldtc)/4)-ldtc)-pdtcl)/2)+(bc.clientHeight/2)
+                            ldtc = lineY
+                            pdtcl = lineY
+                            tctx = ectx
+                            ectx.strokeStyle = '#ff0000'
+                        } else if(v == 6){
+                            ty = lamdtc
+                            lineY = bc.clientHeight - i
+                            lamdtc = lineY
+                            tctx = ectx
+                            ectx.strokeStyle = '#00ff00'
+                        }
+                            tctx.beginPath()
+                            tctx.moveTo(step*(current-1),ty)
+                            tctx.lineTo(step*current,lineY)
+                            tctx.stroke()
+                        
+                    })
+                    
+                } else {
+                    gtx.clearRect(0,0,document.body.clientWidth,document.body.clientHeight)
+                    gtx.fillRect(0,0,document.body.clientWidth,document.body.clientHeight)
+                    ectx.clearRect(0,0,document.body.clientWidth,document.body.clientHeight)
+                    ectx.fillRect(0,0,document.body.clientWidth,document.body.clientHeight)
+                    current = 0
+                }
+            },50)
+        }
+        function spectro(){
+            d.getContext('2d').drawImage(a,0,0)
+            a.getContext("2d").drawImage(video, 0, 0);
+            var areaX = (640/2)-(areaW/2)
+            var areaWidth = areaW
+            var areaY = (480/2)-(areaH/2)
+            var areaHeight = areaH
+            var data = a.getContext('2d').getImageData(areaX,areaY,areaWidth,areaHeight)
+            var ddata = d.getContext('2d').getImageData(areaX,areaY,areaWidth,areaHeight)
+            c.getContext('2d').putImageData(data,c.clientWidth-areaWidth,0)
+            var r = 0
+            var g = 0
+            var b = 0
+            var dd = 0
+            data.data.forEach(function(i,v){
+                if((v+1)%4!=0){
+                    var mode = v%4
+                    if(mode == 0){
+                        r+=i
+                    } else if(mode == 1){
+                        g+=i
+                    } else if(mode == 2){
+                        b+=i
+                    }
+                }
+            })
+            ddata.data.forEach(function(i,v){
+                if((v+1)%4!=0){
+                    dd+=Math.abs(data.data[v]-i)
+                }
+            })
+            var avgd = (r+g+b)/3
+            var rChange = Math.abs(r-lry)
+            var gChange = Math.abs(g-lgy)
+            var bChange = Math.abs(b-lby)
+            var avgc = (rChange+gChange+bChange)/3
+            var dtc = Math.abs(((avgd/divConstant)-lay)-(avgc/divConstant))
+            var amdtc = Math.abs(avgd-(dtc*divConstant))
+            if(createArr == true){
+                rarr.push(r)
+                barr.push(b)
+                garr.push(g)
+                avgarr.push(avgd)
+                ddarr.push(dd)
+                dtcarr.push(dtc)
+                amdtcarr.push(amdtc)
+            }
+            return [r,g,b,dd,avgd,dtc*5,amdtc]
+            
+        }
+        function exportArr(arr){
+            console.log('['+arr.join(',')+']')
+        }
+        function exportData(start,length){
+            var megaarr = []
+            var arrs = [rarr,garr,barr,avgarr,ddarr,dtcarr,amdtcarr]
+            arrs.forEach(function(k){
+                var ck = k
+                ck.splice(start,length).forEach(function(i){
+                    megaarr.push(i)
+                })
+            })
+            console.log('['+megaarr.join(',')+']')
+        }
+    </script>
+    <style>
+        body{
+            background:#000;
+            overflow-x:hidden;
+            position:absolute;
+            width:100%;
+            height:100%;
+        }
+        video{
+            position:absolute;
+            left:0;
+            top:200%;
+        }
+        #c{
+            position:absolute;
+            right:0%;
+            filter:blur(1px)
+        }
+        #a{
+            position:absolute;
+            left:0%;
+            top:50%;
+        }
+        #b{
+            position:absolute;
+            left:0%;
+            top:0%;
+        }
+        .tag{
+            position:absolute;
+            left:100%;
+            top:100%;
+            padding:3px;
+            color:#fff;
+            background:#000;
+        }
+        #d{
+            position:absolute;
+            left:0%;
+            top:100%;
+        }
+        #e{
+            position:absolute;
+            left:0%;
+            top:50%;
+        }
+        .notif, .info{
+            position:absolute;
+            left:1%;
+            top:1%;
+            z-index:999;
+        }
+        
+    </style>
+</body>
+</html>

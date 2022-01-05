@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas class='main'></canvas>
+    <canvas class='fg'></canvas>
+    <span>E key = create<br>Q key = delete<br>Space key = pause<br>T key = create multiple objects<br><input
+            class='createMultInput' placeholder="# of objects..."><br>A key = line<br>Hold left click = gravity<br><br>Lots
+        of lines/objects can lag</span>
+    <span class='objects'></span>
+    <script>
+        var gravitySpeed = 100
+        var fps = 60
+        var accelConst = 100
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        var paused = false
+        var airDrag = 0.99
+        var groundFriction = 0.98;
+        var canvas = document.querySelector('.main')
+        var ctx = canvas.getContext('2d')
+        var canvast = document.querySelector('.fg')
+        var ftx = canvast.getContext('2d')
+        canvas.width = document.body.clientWidth
+        canvas.height = document.documentElement.clientHeight
+        canvast.width = document.body.clientWidth
+        canvast.height = document.documentElement.clientHeight
+        window.onresize = (function () {
+            canvas.width = document.body.clientWidth
+            canvas.height = document.documentElement.clientHeight
+            canvast.width = document.body.clientWidth
+            canvast.height = document.documentElement.clientHeight
+        })
+        function dfc(x, y) {
+            var point = (y * 4 * canvas.width) + x * 4
+            return false//bgdata.data[point] == 0
+        }
+        function drawCircle(circle) {
+            if (circle.render == true) {
+                ctx.beginPath()
+                ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI, false)
+                ctx.fillStyle = circle.color
+                ctx.fill()
+            }
+        }
+        var circles = []
+        setInterval(function () {
+            document.querySelector('.objects').textContent = circles.length + ' objects'
+        }, 100)
+        class Circle {
+
+            constructor(color, radius, x, y, weight, anchored, vx, vy, render) {
+                if (anchored == undefined) anchored = false
+                if (vx == undefined) vx = 0
+                if (vy == undefined) vy = 0
+                if (render == undefined) render = true
+                this.color = color;
+                this.radius = radius
+                this.x = x
+                this.y = y
+                this.vx = vx
+                this.render = render
+                this.fallHeight = this.y
+                this.vy = vy
+                this.elasticity = 0.9
+                this.bonded = [{ bonded: [] }]
+                this.anchored = anchored
+                this.stopCause = undefined;
+                this.canMove = true
+                this.weight = weight
+                this.id = Math.random()
+                this.supported = false
+                this.gravStopped = false
+                circles.push(this)
+            }
+
+            move(x, y) {
+                if (this.anchored != true && !this.bonded.map(i => i = i.canMove).includes(false)) {
+                    this.x += (x / this.bonded.length)*!paused
+                    this.y += (-y / this.bonded.length)*!paused
+                    this.bonded.forEach(function (i) {
+                        i.x += (x / i.bonded.length)*!paused
+                        i.y += (-y / i.bonded.length)*!paused
+                    })
+                }
+            }
+            moveTo(x, y) {
+                if (this.anchored != true && !this.bonded.map(i => i = i.canMove).includes(false)) {
+                    this.x = x
+                    this.y = y
+                    this.bonded.forEach(function (i) {
+                        i.x = (this.x - i.x) + x
+                        i.y = (this.x - i.x) + y
+                    })
+                }
+            }
+            breakBonds() {
+                this.bonded = [{ bonded: [] }]
+            }
+        }
+        function init() {
+            var circleCount = 3
+            while (circleCount > 0) {
+                var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+                var radius = 10
+                var circle = new Circle(rcolor, radius, Math.floor(Math.random() * (w / 2)) + (w / 4), Math.floor(Math.random() * (h / 2)) + (h / 4), 10)
+                circle.bonded = [circle, circle]
+                circles.push(circle)
+                circles.push(circle)
+                circleCount = circleCount - 1
+            }
+            var group1 = []
+            var group2 = []
+            setInterval(function () {
+                frame()
+            }, 1000 / fps)
+        }
+        function frame() {
+            circles.forEach(function (i, v) {
+                var noBlocks = false
+                var spx = i.x + (i.vx / (fps * accelConst))
+                var spy = i.x + (i.vx / (fps * accelConst)) - (gravitySpeed / (fps * accelConst))
+                var tests = [dfc(spx, spy)]
+                var noBlocks = tests.includes(true)
+                var canMove = true
+                var ady = 0
+                var adx = 0
+                var adyc = 0
+                var adxc = 0
+                circles.forEach(function (k, v) {
+                    if (k.id != i.id) {
+                        var dx = (i.x + i.vx / (fps * accelConst * i.bonded.length)) - (k.x + k.vx / (fps * accelConst * k.bonded.length))
+                        var dy = (i.y + i.vy / (fps * accelConst * i.bonded.length)) - (k.y + k.vy / (fps * accelConst * k.bonded.length))
+                        var dist = Math.sqrt((dx ** 2) + (dy ** 2)) - (i.radius + k.radius)
+                        if (dist <= 0) {
+                            canMove = false
+                            adx += -((-dx * 500) - (accelConst * 50))
+                            adxc += 1
+                            ady += -((-dy * 500) - (accelConst * 50))
+                            adyc += 1
+                            k.vx += (i.vx / (adxc * 25)) * i.elasticity * airDrag
+                            k.vy += (i.vy / (adyc * 25)) * i.elasticity * airDrag
+                            i.vx += (k.vx / (adxc * 25)) * i.elasticity * airDrag
+                            i.vy += (k.vy / (adyc * 25)) * i.elasticity * airDrag
+                            /*ctx.beginPath()
+                            ctx.moveTo(i.x, i.y)
+                            ctx.lineTo(k.x, k.y)
+                            ctx.stroke()*/
+                        } else {
+                            i.canMove = true
+                        }
+                    }
+                })
+                if (i.y + i.radius + (i.vy / (fps * accelConst * i.bonded.length)) < canvas.height && 0 < i.x + i.radius + (i.vx / (fps * accelConst * i.bonded.length)) < canvas.width && noBlocks == false && i.y - i.radius + (i.vy / (fps * accelConst * i.bonded.length)) < canvas.height && 0 < i.x - i.radius + (i.vx / (fps * accelConst * i.bonded.length)) < canvas.width) {
+                    if (canMove) {
+                        i.vy = i.vy - gravitySpeed
+                    } else {
+                        i.vx = (adx / adxc) * i.elasticity * airDrag
+                        i.vy = (ady / adyc) * i.elasticity * airDrag
+                    }
+                }
+                var xVar = i.x + i.radius
+                if (xVar > canvas.width) {
+                    if (i.vx > 0) {
+                        i.vx = -i.vx * i.elasticity * airDrag
+                        i.vy = -i.vy * i.elasticity * airDrag
+                    }
+                } else if (xVar < 0) {
+                    if (i.vx < i.radius) {
+                        i.vx = -i.vx * i.elasticity * airDrag
+                        i.vy = -i.vy * i.elasticity * airDrag
+                    }
+                }
+                xVar = i.x - i.radius
+                if (xVar > canvas.width) {
+                    if (i.vx > 0) {
+                        i.vx = -i.vx * i.elasticity * airDrag
+                        i.vy = -i.vy * i.elasticity * airDrag
+                    }
+                } else if (xVar < 0) {
+                    if (i.vx < i.radius) {
+                        i.vx = -i.vx * i.elasticity * airDrag
+                        i.vy = -i.vy * i.elasticity * airDrag
+                    }
+
+                }
+                setTimeout(function () {
+
+                    if (i.vy > 0 && i.y > i.fallHeight) {
+                        i.fallHeight = i.y
+                    }
+                    if (i.y + i.radius + (i.vy / (fps * accelConst * i.bonded.length)) > canvas.height) {
+                        if (i.vy < gravitySpeed) {
+                            i.vy = -(i.vy * i.elasticity);
+                        }
+                    }
+                    i.vy += -gravitySpeed;
+
+                    i.vx *= airDrag;
+                    i.vy *= airDrag;
+                    if (i.y >= (document.body.clientHeight - i.radius)) {
+                        i.vx *= groundFriction;
+                    }
+                    var tvy = (i.vy / (fps * accelConst * i.bonded.length))
+                    i.move(i.vx / (fps * accelConst * i.bonded.length), tvy)
+
+                }, 10)
+            })
+            setTimeout(function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                circles.forEach(function (i) {
+                    drawCircle(i)
+                })
+            }, 15)
+        }
+        function fling(x, y) {
+            circles.forEach(function (i, v) {
+                i.vy += y
+                i.vx += x
+                //console.log(i)
+            })
+            frame()
+        }
+        function gravitate(x, y, time, range) {
+            setInterval(function () {
+                if (time > 0) {
+                    circles.forEach(function (i, v) {
+                        var dx = -((i.x + i.vx / (fps * accelConst)) - x)
+                        var dy = ((i.y + i.vy / (fps * accelConst)) - y)
+                        i.vy += (range * 10) - (dy * 2)
+                        i.vx += (range * 10) - (dx * 2)
+                    })
+                    time = time - 1
+                }
+            }, 1000 / fps)
+            setInterval(function () {
+                drawCircle({
+                    "color": "#ff0000",
+                    "radius": 10,
+                    "x": x,
+                    "y": y
+                })
+            })
+        }
+        var mouseDown = false
+        document.body.onmousedown = function () {
+            mouseDown = true
+        }
+        document.body.onmouseup = function () {
+            mouseDown = false
+        }
+        var boxSize = 30
+        var mx = 0
+        var my = 0
+        var lmx = 0
+        var lmy = 0
+        document.body.onmousemove = function (e) {
+            lmx = mx
+            lmy = my
+            mx = e.clientX
+            my = e.clientY
+        }
+        setInterval(function () {
+            if (mouseDown) {
+                var x = mx
+                var y = my
+                circles.forEach(function (i, v) {
+                    var dx = mx - i.x
+                    var dy = my - i.y
+                    i.vy += (-dy * 2)
+                    i.vx += (dx * 2)
+                })
+            }
+        }, 10)
+        var keysdown = []
+        document.body.onkeydown = function (e) {
+            keysdown.push(e.key)
+            if(e.key == ' '){
+                paused = !paused
+            }
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        setInterval(function () {
+            if (keysdown.includes('q')) {
+                var extraArea = 50
+                circles.forEach(function (i, v) {
+                    if (i.x > mx - i.radius - extraArea && i.x < mx + i.radius + extraArea && i.y > my - i.radius - extraArea && i.y < my + i.radius + extraArea) {
+                        circles = circles.filter(k => k.id != i.id)
+                    }
+                })
+                ftx.beginPath();
+                ftx.arc(mx, my, extraArea, 0, 2 * Math.PI, false);
+                ftx.fillStyle = '#FFF';
+                ftx.save()
+                ftx.clip()
+                ftx.clearRect(mx - extraArea - 1, my - extraArea - 1, extraArea * 2 + 2, extraArea * 2 + 2);
+                ftx.restore()
+            }
+            if (keysdown.includes('a')) {
+                ftx.strokeStyle = '3px #000'
+                ftx.beginPath()
+                ftx.moveTo(lmx, lmy)
+                ftx.lineTo(mx, my)
+                ftx.stroke()
+                var rcolor = `rgb(0,0,0)`
+                var radius = 10
+                var circle = new Circle(rcolor, radius, mx, my, 10, true, 0, 0, false)
+                circle.bonded = [circle, circle]
+                circles.push(circle)
+                circles.push(circle)
+            }
+        }, 0)
+        setInterval(function () {
+            if (keysdown.includes('e')) {
+                var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+                var radius = 10
+                var circle = new Circle(rcolor, radius, mx, my, 10)
+                circle.bonded = [circle, circle]
+                circles.push(circle)
+                circles.push(circle)
+            }
+            if (keysdown.includes('t')) {
+                var circleCount = document.querySelector('.createMultInput').value
+                while (circleCount > 0) {
+                    var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+                    var radius = 10
+                    var circle = new Circle(rcolor, radius, mx+(circleCount*2*(Math.round(Math.random()) ? 1 : -1)),my+(circleCount*2*(Math.round(Math.random()) ? 1 : -1)), 10)
+                    circle.bonded = [circle, circle]
+                    circles.push(circle)
+                    circles.push(circle)
+                    circleCount = circleCount - 1
+                }
+            }
+        }, 100)
+        init()
+        function makeCircle(x, y, vx, vy, anchored) {
+            if (anchored == undefined) anchored = false
+            var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+            var radius = 10
+            var circle = new Circle(rcolor, radius, x, y, 10, anchored, vx, vy)
+            circle.bonded = [circle, circle]
+            circles.push(circle)
+            circles.push(circle)
+        }
+
+
+
+        //this code disbands some of those weird lines of circles
+        //why? i don't know
+        //it works tho so im keeping it
+        setInterval(function () {
+            var circlet = new Circle('#ff00000', 210, canvas.width * 2, canvas.height * 2, 10, true, 0, 0, false)
+            circles.push(circlet)
+            setTimeout(function () {
+                circles = circles.filter(i => i.id != circlet.id)
+            }, 1)
+        }, 2)
+    </script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .objects {
+            position: absolute;
+            top: 1%;
+            right: 1%;
+            z-index: 100;
+        }
+        span {
+            position:fixed;
+            z-index:1000;
+        }
+    </style>
+</body>
+
+</html>

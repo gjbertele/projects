@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface">
+</script>
+  </head>
+  <body>
+    <video class='out'></video>
+    <canvas class='bg'></canvas>
+    <canvas class='fg'></canvas>
+    <canvas class='lbg'></canvas>
+    <div class='bar'></div>
+    <div class='cover'></div>
+    <img class='head' src='head.png'>
+    <script src="id.js"></script>
+    <style>
+        video{
+            position:absolute;
+            left:0%;
+            top:0;
+        }
+        .head{
+          position:absolute;
+          left:50%;
+          width:500px;
+          height:500px;
+          transform:translate(-50%,-50%);
+        }
+        canvas{
+            position:absolute;
+            left:0%;
+            top:0%;
+        }
+        .lbg{
+            position:absolute;
+            top:100%;
+        }
+        body{
+            overflow-x:hidden;
+        }
+        .bar{
+          background:#ff0000;
+          position:absolute;
+          left:10%;
+          bottom:50%;
+          width:100px;
+        }
+        .cover{
+          position:absolute;
+          width:100%;
+          height:100%;
+          top:0;
+          left:0;
+          background:#fff;
+          display:none;
+        }
+    </style>
+  </body>
+</html>
