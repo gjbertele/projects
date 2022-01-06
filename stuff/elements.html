@@ -53,11 +53,6 @@
                     ctx.moveTo(circle.x, circle.y)
                     ctx.lineTo(k.x, k.y)
                     ctx.stroke()
-                    if (k.valence < circle.valence) {
-                        elemName = k.element + circle.element
-                    } else {
-                        elemName += k.element
-                    }
                 })
                 ctx.fillText(elemName, circle.x - circle.radius, circle.y - circle.radius, circle.radius * 1.8)
             }
@@ -101,7 +96,6 @@
                 this.total = this.valence
                 this.vy = vy
                 this.elasticity = 0.9
-                this.bonded = [{ bonded: [] }]
                 this.anchored = anchored
                 this.stopCause = undefined;
                 this.canMove = true
@@ -114,15 +108,18 @@
                 if (!isNaN(this.valence)) {
                     circles.push(this)
                 }
+                this.bonded = [{ bonded: [] }]
             }
 
             move(x, y) {
-                if (this.anchored != true && !this.bonded.map(i => i = i.canMove).includes(false)) {
+                this.bonded = this.bonded.filter(m => m!=undefined)
+                if (this.anchored != true) {
                     this.x += x / this.bonded.length
                     this.y += -y / this.bonded.length
+                    var tthis = this
                     this.bonded.forEach(function (i) {
-                        i.x += x / i.bonded.length
-                        i.y += -y / i.bonded.length
+                        i.x += x / tthis.bonded.length
+                        i.y += -y / tthis.bonded.length
                     })
                 }
             }
@@ -226,9 +223,9 @@
                                 i.touching = [...new Set(i.touching)];
                                 k.touching = [...new Set(k.touching)];
                                 var ttve = i.touching.map(l => l = l.total).reduce((a, b) => a + b)
-                                var elemT = i.touching
+                                var elemT = k.touching
                                 var decidedMax = 8
-                                if(elemT.filter(i => i.functionalType == 'nonmetal').sort((a,b) => a-b).slice(0,1).map(i => i.name == 'H'||i.name == 'He').includes(true)){
+                                if (elemT.filter(i => i.functionalType == 'nonmetal').sort((a, b) => a - b).slice(0, 1).map(i => i.name == 'H' || i.name == 'He').includes(true)) {
                                     decidedMax = 2
                                 }
                                 if (true) {
@@ -250,15 +247,6 @@
                                                         }
                                                         i.total = decidedMax
                                                         l.total = decidedMax
-                                                        if(!i.bonded.includes(l)){
-                                                            i.bonded.push(l)
-                                                            i.bonded.push(l)
-                                                            i.bonded.push(l)
-                                                            l.bonded.push(i)
-                                                            l.bonded.push(i)
-                                                            l.bonded.push(i)
-                                                        }
-                                                        
                                                     }
                                                 } else {
                                                     //covalent
@@ -268,10 +256,6 @@
                                     }
                                 }
                             }
-                            /*ctx.beginPath()
-                            ctx.moveTo(i.x, i.y)
-                            ctx.lineTo(k.x, k.y)
-                            ctx.stroke()*/
                         } else {
                             i.canMove = true
                         }
@@ -411,11 +395,14 @@
             if (mouseDown) {
                 var x = mx
                 var y = my
+                var maxd = 800
+                var g = 10
+                var f = 10000
                 circles.forEach(function (i, v) {
-                    var dx = -((i.x + i.vx / (fps * accelConst)) - x)
-                    var dy = ((i.y + i.vy / (fps * accelConst)) - y)
-                    i.vy += (dy * 2)
-                    i.vx += (dx * 2)
+                    var dx = i.x - x
+                    var dy = i.y - y
+                    i.vy += dy*2
+                    i.vx += -dx*2
                 })
             }
         }, 10)
@@ -465,34 +452,44 @@
                 var formula = document.querySelector('.formulaInput').value
                 var parts = formula.split(/([A-Z][a-z]*)(\d*)/).filter(i => i != '')
                 var partsVe = parts.map(i => i = elems[i]).reduce((a, b) => a + b)
-                var canBond = true
-                var dmaxv = 8
-                parts.forEach(function (i, v) {
-                    var maxv = 8
-                    if (max[i]) maxv = max[i]
-                    if (partsVe != maxv) canBond = false
-                    dmaxv = maxv
-                })
+                var canBond = false
+                if (parts.map(i => gft(i.replaceAll(/[0-9]/g, ''))).includes('nonmetal')) {
+                    canBond = true
+                }
+                if (parts.map(i => max[i.replaceAll(/[0-9]/g, '')] == undefined && elems[i.replaceAll(/[0-9]/g, '')]).includes(true)) {
+                    partsVe = false
+                }
                 if (canBond) {
                     var tx = mx
                     var ty = my
                     var cc = []
                     parts.forEach(function (i, v) {
                         if (elems[i]) {
-                            var radius = 10
-                            var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
-                            var circle = new Circle(rcolor, radius, tx + (radius * (v - 1)), ty + (radius * (v - 1)), 10, false, 0, 0, true, i)
-                            circle.bonded = [circle, circle]
-                            circles.total = dmaxv
-                            circles.push(circle)
-                            circles.push(circle)
-                            cc.push(circle)
+                            var elemToMake = i.replaceAll(/[0-9]/g, '')
+                            var howMany = 1
+                            if (!isNaN(parts[v + 1])) {
+                                howMany = Number(parts[v + 1])
+                            }
+                            console.log(howMany)
+                            while (howMany > 0) {
+                                var radius = 10
+                                var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+                                var circle = new Circle(rcolor, radius, tx + (radius * 2 * (v - 1 + howMany)), ty + (radius * 2 * (v - 1 + howMany)), 10, false, 0, 0, true, elemToMake)
+                                circle.bonded.concat([circle, circle])
+                                circle.total = 8
+                                circles.push(circle)
+                                circles.push(circle)
+                                cc.push(circle)
+                                howMany = howMany - 1
+                            }
                         }
                     })
                     cc.forEach(function (k, v) {
                         var circlest = circles.filter(i => i.id == k.id)
                         circlest.forEach(function (i, tv) {
-                            i.bonded.push(cc.filter(k => k.id != i.id)[0])
+                            i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
+                            i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
+                            i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
                         })
                     })
                 }
@@ -505,6 +502,8 @@
                     circles[v].vy = 0
                     circles[v].y = Math.random() * canvas.height
                     circles[v].bonded = [circles[v]]
+                    circles[v].valence = elems[i.element]
+                    circles[v].total = circles[v].valence
                 })
             }
         }, 100)
@@ -517,6 +516,13 @@
             circle.bonded = [circle, circle]
             circles.push(circle)
             circles.push(circle)
+        }
+        function gft(elem) {
+            var ft = 'metal'
+            if (!metals.includes(elem) && elems[elem]) {
+                ft = 'nonmetal'
+            }
+            return ft
         }
     </script>
     <style>
