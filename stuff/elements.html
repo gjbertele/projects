@@ -238,7 +238,6 @@
                                             if (!elemT.map(i => i = i.functionalType).includes('metal')) {
                                                 bondType = 'c'
                                             }
-                                            if(Date.now()%1000<(1000/fps+10)&&v == 0) console.log([ttve,decidedMax,bondType])
                                             i.touching.forEach(function (l, ttv) {
                                                 if (bondType == 'i') {
                                                     if (ttve == decidedMax) {
@@ -366,7 +365,6 @@
             circles.forEach(function (i, v) {
                 i.vy += y
                 i.vx += x
-                //console.log(i)
             })
             frame()
         }
