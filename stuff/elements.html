@@ -27,6 +27,8 @@
         var gravitySpeed = 0
         var fps = 40
         var accelConst = 100
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
         var airDrag = 0.99
         var groundFriction = 0.98;
         var canvas = document.querySelector('.main')
@@ -38,7 +40,7 @@
             canvas.height = document.documentElement.clientHeight
         })
         function dfc(x, y) {
-            var point = (y * 4 * canvas.width) + x * 4
+            //var point = (y * 4 * canvas.width) + x * 4
             return false//bgdata.data[point] == 0
         }
         function drawCircle(circle) {
@@ -138,8 +140,6 @@
             }
         }
         function init() {
-            var w = document.body.clientWidth
-            var h = document.body.clientHeight
             var circleCount = 3
             while (circleCount > 0) {
                 var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
@@ -330,7 +330,7 @@
 
                     i.vx *= airDrag;
                     i.vy *= airDrag;
-                    if (i.y >= (document.body.clientHeight - i.radius)) {
+                    if (i.y >= (h - i.radius)) {
                         i.vx *= groundFriction;
                     }
                     var tvy = (i.vy / (fps * accelConst * i.bonded.length))
