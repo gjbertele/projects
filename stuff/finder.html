@@ -77,7 +77,7 @@
                     if (word.toLowerCase().indexOf(i.toLowerCase()) != 0 && !word.toLowerCase().endsWith(i.toLowerCase())) {
                         str += word.toLowerCase().split(i.toLowerCase())[0] + '.' + i.toLowerCase() + '/' + word.toLowerCase().split(i.toLowerCase()).splice(1).join(i.toLowerCase()) + newline
                     }
-                    if (word.toLowerCase().endsWith(i.toLowerCase()) && word.toLowerCase().indexOf(i.toLowerCase()) != 0) {
+                    if (word.toLowerCase().endsWith(i.toLowerCase()) && word.length>i.length) {
                         str += word.toLowerCase().substr(0, word.toLowerCase().length - i.toLowerCase().length) + '.' + i.toLowerCase() + '/' + newline
                     }
                 }
