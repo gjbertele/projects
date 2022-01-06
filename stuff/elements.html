@@ -12,7 +12,9 @@
     <canvas class='main'></canvas>
     <span class='a'>E key = create element<br><input class='elemInput' placeholder="Element symbol..."><br>T key =
         create compound<br><input class='formulaInput' placeholder="Chemical formula..."><br>Q key =
-        delete<br>A key = random element<br>W key = scramble atoms<br>Left click = gravity<br><br>Collisions don't work sometimes and can look like bonds (hitting the W key fixes that)<br>When two atoms are bonded, there is a line connecting them<br>Object
+        delete<br>A key = random element<br>W key = scramble atoms<br>Left click = gravity<br><br>Collisions don't work
+        sometimes and can look like bonds (hitting the W key fixes that)<br>When two atoms are bonded, there is a line
+        connecting them<br>Object
         colors are arbitrary</span>
     <span class='objects'></span>
 
@@ -73,9 +75,19 @@
                 if (render == undefined) render = true
                 if (element == undefined) element = 'H'
                 var type = undefined
-                if (metals.includes(element)) type = 'metal'
-                if (nonmetals.includes(element)) type = 'nonmetal'
-                if (metalloids.includes(element)) type = 'metalloids'
+                var functionalType = undefined
+                if (metals.includes(element)) {
+                    type = 'metal'
+                    functionalType = 'metal'
+                }
+                if (nonmetals.includes(element)) {
+                    type = 'nonmetal'
+                    functionalType = 'nonmetal'
+                }
+                if (metalloids.includes(element)) {
+                    type = 'metalloids'
+                    functionalType = 'nonmetal'
+                }
                 this.color = color;
                 this.radius = radius
                 this.element = element
@@ -85,6 +97,7 @@
                 this.vx = vx
                 this.render = render
                 this.fallHeight = this.y
+                this.touching = []
                 this.total = this.valence
                 this.vy = vy
                 this.elasticity = 0.9
@@ -95,6 +108,7 @@
                 this.type = type
                 this.weight = weight
                 this.id = Math.random()
+                this.functionalType = functionalType
                 this.supported = false
                 this.gravStopped = false
                 if (!isNaN(this.valence)) {
@@ -158,6 +172,7 @@
                 var adx = 0
                 var adyc = 0
                 var adxc = 0
+                i.touching = []
                 circles.forEach(function (k, v) {
                     if (k.id != i.id) {
                         var dx = (i.x + i.vx / (fps * accelConst * i.bonded.length)) - (k.x + k.vx / (fps * accelConst * k.bonded.length))
@@ -203,6 +218,56 @@
                                 k.bonded.push(i)
                                 k.bonded.push(i)
                                 k.bonded.push(i)
+                            } else {
+                                k.touching = [...new Set(k.touching.concat(i.touching))]
+                                i.touching = [...new Set(i.touching.concat(k.touching))]
+                                i.touching.push(k)
+                                k.touching.push(i)
+                                i.touching = [...new Set(i.touching)];
+                                k.touching = [...new Set(k.touching)];
+                                var ttve = i.touching.map(l => l = l.total).reduce((a, b) => a + b)
+                                var elemT = i.touching
+                                var decidedMax = 8
+                                if(elemT.filter(i => i.functionalType == 'nonmetal').sort((a,b) => a-b).slice(0,1).map(i => i.name == 'H'||i.name == 'He').includes(true)){
+                                    decidedMax = 2
+                                }
+                                if (true) {
+                                    if (elemT.length > 1) {
+                                        if (elemT.map(i => i = i.functionalType).includes('nonmetal')) {
+                                            bondType = 'i'
+                                            if (!elemT.map(i => i = i.functionalType).includes('metal')) {
+                                                bondType = 'c'
+                                            }
+                                            if(Date.now()%1000<(1000/fps+10)&&v == 0) console.log([ttve,decidedMax,bondType])
+                                            i.touching.forEach(function (l, ttv) {
+                                                if (bondType == 'i') {
+                                                    if (ttve == decidedMax) {
+                                                        if (i.total > l.total) {
+                                                            i.valence += l.total
+                                                            l.valence = 0
+                                                        } else {
+                                                            l.valence += i.total
+                                                            i.valence = 0
+                                                        }
+                                                        i.total = decidedMax
+                                                        l.total = decidedMax
+                                                        if(!i.bonded.includes(l)){
+                                                            i.bonded.push(l)
+                                                            i.bonded.push(l)
+                                                            i.bonded.push(l)
+                                                            l.bonded.push(i)
+                                                            l.bonded.push(i)
+                                                            l.bonded.push(i)
+                                                        }
+                                                        
+                                                    }
+                                                } else {
+                                                    //covalent
+                                                }
+                                            })
+                                        }
+                                    }
+                                }
                             }
                             /*ctx.beginPath()
                             ctx.moveTo(i.x, i.y)
@@ -296,21 +361,6 @@
                     drawCircle(i)
                 })
             }, 15)
-            circles.forEach(function (i, v) {
-                i.bonded.forEach(function (k) {
-                    if (i.id != k.id) {
-                        var ktt = 'metal'
-                        if (k.type == 'nonmetal' || k.type == 'metalloid') ktt = 'nonmetal'
-                        var itt = 'metal'
-                        if (i.type == 'nonmetal' || i.type == 'metalloid') itt = 'nonmetal'
-                        if (ktt == itt || i.bonded.filter(i => i.id != k.id && i.element == k.element).length > 0) {
-                            circles[v].bonded = circles[v].bonded.filter(t => t.id != k.id)
-                            k.vx = -k.vx * k.elasticity * airDrag
-                            k.vy = -k.vy * k.elasticity * airDrag
-                        }
-                    }
-                })
-            })
         }
         function fling(x, y) {
             circles.forEach(function (i, v) {
@@ -433,7 +483,7 @@
                         if (elems[i]) {
                             var radius = 10
                             var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
-                            var circle = new Circle(rcolor, radius, tx+(radius*(v-1)), ty+(radius*(v-1)), 10, false, 0, 0, true, i)
+                            var circle = new Circle(rcolor, radius, tx + (radius * (v - 1)), ty + (radius * (v - 1)), 10, false, 0, 0, true, i)
                             circle.bonded = [circle, circle]
                             circles.total = dmaxv
                             circles.push(circle)
@@ -441,21 +491,21 @@
                             cc.push(circle)
                         }
                     })
-                    cc.forEach(function(k,v){
+                    cc.forEach(function (k, v) {
                         var circlest = circles.filter(i => i.id == k.id)
-                        circlest.forEach(function(i,tv){
-                            i.bonded.push(cc.filter(k => k.id!=i.id)[0])
+                        circlest.forEach(function (i, tv) {
+                            i.bonded.push(cc.filter(k => k.id != i.id)[0])
                         })
                     })
                 }
             }
 
-            if(keysdown.includes('w')){
-                circles.forEach(function(i,v){
+            if (keysdown.includes('w')) {
+                circles.forEach(function (i, v) {
                     circles[v].vx = 0
-                    circles[v].x = Math.random()*canvas.width
+                    circles[v].x = Math.random() * canvas.width
                     circles[v].vy = 0
-                    circles[v].y = Math.random()*canvas.height
+                    circles[v].y = Math.random() * canvas.height
                     circles[v].bonded = [circles[v]]
                 })
             }
