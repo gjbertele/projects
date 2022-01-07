@@ -20,12 +20,18 @@
             margin: 0;
 
         }
-
+        span{
+            position:absolute;
+            left:1%;
+            top:1%;
+        }
         canvas {
             z-index: 1;
+            display:none;
         }
     </style>
     <canvas></canvas>
+    <span>Instructions:<br>1. Leave this site open in a tab<br>2. Go to another tab<br>3. Come back (make sure you aren't epileptic)<br>If it doesn't work, start again</span>
     <script>
         var canvas = document.querySelector('canvas')
         ctx = canvas.getContext('2d', { alpha: false })
@@ -38,8 +44,10 @@
                 if (!drawing) {
                     setInterval(function () {
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
-                        ctx.fillText('Hello World!', 1920 / 2, 1080 / 2 + 30)
+                        ctx.fillText('lol hacked xd cringe', 1920 / 2 - (15*'lol hacked xd cringe'.length), 1080 / 2)
                     }, 1000 / 60)
+                    canvas.style.display = 'inline-block'
+                    document.querySelector('span').style.display = 'none'
                     drawing = true
                 }
             }
