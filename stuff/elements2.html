@@ -16,15 +16,22 @@
         <br>
         <i>inputs aren't checked for validity so unrealistic compounds are possible</i>
         <br>
-        Q = delete
+        Q = Delete
+        <br>
+        R = Reset
         <br>
         A = Create random element
+        <br>
+        D = Break nearby bonds
         <br>
         Air Drag (higher = more drag, default = 5%)
         <br>
         <input class="airdrag" type="range" min="0" max="100" value="5">
         <br>
         Left click = pull atoms closer
+        <br>
+        <br>
+        Atoms can't bond through hitting eachother
     </span>
     <style>
         body,
@@ -143,10 +150,10 @@
                     if (dist < 20 && !oc.includes(k)) {
                         var otbx = tb.vx
                         var otby = tb.vy
-                        tb.vx = (-tb.vx * 0.9) - ob.vx
-                        tb.vy = (-tb.vy * 0.9) - ob.vy
-                        ob.vx - (-ob.vx * 0.9) - tb.otbx
-                        ob.vy - (-ob.vy * 0.9) - tb.otby
+                        tb.vx = (-tb.vx * 0.9) - ob.vx * 0.9
+                        tb.vy = (-tb.vy * 0.9) - ob.vy * 0.9
+                        ob.vx - (-ob.vx * 0.9) - tb.otbx * 0.9
+                        ob.vy - (-ob.vy * 0.9) - tb.otby * 0.9
                     }
 
                 })
@@ -205,22 +212,22 @@
                 c += 1
             })
             ctx.clearRect(0, 0, canvas.width, canvas.height)
-            circles.forEach(function(i,v){
+            circles.forEach(function (i, v) {
                 var circleBond = bonds.filter(k => k.id == i.bond)[0]
                 i.x = circleBond.x + i.dx
                 i.y = circleBond.y + i.dy
             })
-            bonds.forEach(function(i,v){
+            bonds.forEach(function (i, v) {
                 ctx.strokeStyle = '#000'
                 var parts = circles.filter(l => l.bond == i.id)
                 ctx.beginPath()
-                ctx.moveTo(parts[0].x,parts[0].y)
-                parts.forEach(function(i){
-                    ctx.lineTo(i.x,i.y)
+                ctx.moveTo(parts[0].x, parts[0].y)
+                parts.forEach(function (i) {
+                    ctx.lineTo(i.x, i.y)
                 })
-                ctx.lineTo(parts[0].x,parts[0].y)
+                ctx.lineTo(parts[0].x, parts[0].y)
                 ctx.stroke()
-                
+
             })
             circles.forEach(function (i, v) {
                 ctx.beginPath()
@@ -293,9 +300,29 @@
                     }
                 })
             }
+            if (keysdown.includes('d')) {
+                var drange = 50
+                bonds.forEach(function (i) {
+                    var d = Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2)
+                    if (d < drange) {
+                        circles.filter(l => l.bond == i.id).forEach(function (i, v) {
+                            var nb = newBond(i.x, i.y, [i.elem])
+                            console.log(nb)
+                        })
+                        circles = circles.filter(l => l.bond != i.id)
+                        bonds = bonds.filter(l => l.id != i.id)
+                    }
+                })
+            }
             if (keysdown.includes('a')) {
                 var elemToMake = Object.keys(elems)[Math.round(Math.random() * 118)]
                 newBond(mx, my, [elemToMake])
+            }
+            if (keysdown.includes('r')) {
+                bonds.forEach(function (i) {
+                    circles = circles.filter(l => l.bond != i.id)
+                    bonds = bonds.filter(l => l.id != i.id)
+                })
             }
         }, 1000 / 5);
     </script>
