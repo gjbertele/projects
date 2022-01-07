@@ -120,7 +120,7 @@
         }
 
         var canvas = document.querySelector('canvas')
-        var ctx = canvas.getContext('2d')
+        var ctx = canvas.getContext('2d', { alpha: false })
         ctx.textAlign = 'center'
         canvas.width = document.body.clientWidth
         canvas.height = document.body.clientHeight
@@ -128,7 +128,7 @@
             canvas.width = document.body.clientWidth
             canvas.height = document.body.clientHeight
         }
-        var fps = 40
+        var fps = 60
         var airDrag = 1
         var range = 500
         var strength = 100
@@ -205,6 +205,11 @@
                 c += 1
             })
             ctx.clearRect(0, 0, canvas.width, canvas.height)
+            circles.forEach(function(i,v){
+                var circleBond = bonds.filter(k => k.id == i.bond)[0]
+                i.x = circleBond.x + i.dx
+                i.y = circleBond.y + i.dy
+            })
             bonds.forEach(function(i,v){
                 ctx.strokeStyle = '#000'
                 var parts = circles.filter(l => l.bond == i.id)
@@ -218,18 +223,15 @@
                 
             })
             circles.forEach(function (i, v) {
-                var circleBond = bonds.filter(k => k.id == i.bond)[0]
-                i.x = circleBond.x + i.dx
-                i.y = circleBond.y + i.dy
                 ctx.beginPath()
-                ctx.arc(i.x, i.y, 10, 0, 2 * Math.PI, false)
+                ctx.arc(Math.round(i.x), Math.round(i.y), 10, 0, 2 * Math.PI, false)
                 ctx.fillStyle = i.color
                 ctx.fill()
             })
             circles.forEach(function (i, v) {
                 var w = ctx.measureText(i.elem).width;
                 ctx.fillStyle = '#000'
-                ctx.fillText(i.elem, i.x - (w / 2), i.y + (parseInt(ctx.font) / 4), 10)
+                ctx.fillText(i.elem, Math.round(i.x - (w / 2)), Math.round(i.y + (parseInt(ctx.font) / 4)), 10)
             })
         }, (1000 / fps));
         var mousedown = false
