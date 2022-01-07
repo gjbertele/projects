@@ -98,8 +98,8 @@
             var ccircles = []
             var bid = Math.random()
             elems.forEach(function (i, v) {
-                var xo = Math.round(Math.random() * 40) * v
-                var yo = Math.round(Math.random() * 40) * v
+                var xo = 20 * v
+                var yo = 20 * v
                 var ccc = newCircle(x + xo, y + yo, i, xo, yo, bid)
                 if (i != null) ccircles.push(ccc)
             })
