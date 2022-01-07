@@ -20,6 +20,9 @@
             margin: 0;
 
         }
+        canvas{
+            top:3em
+        }
         span{
             position:absolute;
             left:1%;
@@ -43,11 +46,12 @@
             if (document.visibilityState !== 'visible') {
                 if (!drawing) {
                     setInterval(function () {
+                        //must clearrect a canvas with alpha set to false in the getContext at a high rate (this is 60fps)
+                        //the website isn't drawn to the canvas, but the current tab is made transparent so that the previous page is shown.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
-                        ctx.fillText('abcdefg', 1920 / 2 - (15*'abcdefg'.length), 1080 / 2)
                     }, 1000 / 60)
                     canvas.style.display = 'inline-block'
-                    document.querySelector('span').style.display = 'none'
+                    document.querySelector('span').textContent = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons on top of areas where buttons are known to be."
                     drawing = true
                 }
             }
