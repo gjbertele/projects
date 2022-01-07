@@ -4,6 +4,10 @@
       {
         "source":"/stuff/elements",
         "destination":"/stuff/elements2"
+      },
+      {
+        "source":"/browser",
+        "destination":"/stuff/browser"
       }
     ]
 }
