@@ -1,3 +1,9 @@
 {
-    "cleanUrls": true
-  }
+    "cleanUrls": true,
+    "redirects": [
+      {
+        "source":"/stuff/elements",
+        "destination":"/stuff/elements2"
+      }
+    ]
+}
