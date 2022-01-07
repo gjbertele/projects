@@ -18,6 +18,8 @@
         <br>
         Q = delete
         <br>
+        A = Create random element
+        <br>
         Air Drag (higher = more drag, default = 1%)
         <br>
         <input class="airdrag" type="range" min="0" max="100" value="1">
@@ -212,6 +214,18 @@
                 ctx.fillStyle = i.color
                 ctx.fill()
                 ctx.fillStyle = '#000'
+            })
+            bonds.forEach(function(i,v){
+                ctx.strokeStyle = '#000'
+                var parts = circles.filter(l => l.bond == i.id)
+                ctx.beginPath()
+                ctx.moveTo(parts[0].x,parts[0].y)
+                parts.forEach(function(i){
+                    ctx.lineTo(i.x,i.y)
+                })
+                ctx.lineTo(parts[0].x,parts[0].y)
+                ctx.stroke()
+                
             })
             circles.forEach(function (i, v) {
                 var w = ctx.measureText(i.elem).width;
