@@ -95,6 +95,7 @@
                 this.render = render
                 this.fallHeight = this.y
                 this.touching = []
+                this.bonding = false
                 this.total = this.valence
                 this.vy = vy
                 this.elasticity = 0.9
@@ -121,7 +122,7 @@
                     var tthis = this
                     this.bonded.forEach(function (i) {
                         i.x += x / tthis.bonded.length
-                        i.y += -y / tthis.bonded.length
+                        i.y += -y / i.bonded.length
                     })
                 }
             }
@@ -207,6 +208,8 @@
                                     k.valence = 0
                                     i.valence = tm
                                 }
+                                k.bonding = true
+                                i.bonding = true
                                 k.total = tm
                                 i.total = tm
                                 i.bonded.push(k)
@@ -225,10 +228,12 @@
                                 var ttve = i.touching.map(l => l = l.total).reduce((a, b) => a + b)
                                 var elemT = k.touching
                                 var decidedMax = 8
-                                if (elemT.filter(i => i.functionalType == 'nonmetal').sort((a, b) => a - b).slice(0, 1).map(i => i.name == 'H' || i.name == 'He').includes(true)) {
+                                if (!elemT.filter(i => i.functionalType == 'nonmetal').sort((a, b) => a - b).slice(0, 1).map(i => i.name == 'H' || i.name == 'He').includes(false)) {
                                     decidedMax = 2
                                 }
-                                if (true) {
+                                var cb = true
+                                if(elemT.map(i => i.total == gt(i.element)).includes(true)||i.touching.map(i => i.total == gt(i.element)).includes(true)) cb = false
+                                if (cb&&!i.touching.map(i => i = i.bonding).includes(true)&&!k.touching.map(i => i = i.bonding).includes(true)) {
                                     if (elemT.length > 1) {
                                         if (elemT.map(i => i = i.functionalType).includes('nonmetal')) {
                                             bondType = 'i'
@@ -244,9 +249,12 @@
                                                         } else {
                                                             l.valence += i.total
                                                             i.valence = 0
+                                                            console.log('a')
                                                         }
                                                         i.total = decidedMax
                                                         l.total = decidedMax
+                                                        i.bonding = true
+                                                        l.bonding = true
                                                     }
                                                 } else {
                                                     //covalent
@@ -395,9 +403,6 @@
             if (mouseDown) {
                 var x = mx
                 var y = my
-                var maxd = 800
-                var g = 10
-                var f = 10000
                 circles.forEach(function (i, v) {
                     var dx = i.x - x
                     var dy = i.y - y
@@ -475,7 +480,7 @@
                                 var radius = 10
                                 var rcolor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
                                 var circle = new Circle(rcolor, radius, tx + (radius * 2 * (v - 1 + howMany)), ty + (radius * 2 * (v - 1 + howMany)), 10, false, 0, 0, true, elemToMake)
-                                circle.bonded.concat([circle, circle])
+                                circle.bonded = [circle,circle]
                                 circle.total = 8
                                 circles.push(circle)
                                 circles.push(circle)
@@ -490,6 +495,7 @@
                             i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
                             i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
                             i.bonded = i.bonded.concat(cc.filter(k => k.id != i.id))
+                            i.bonded = i.bonded.filter(k => k.x!=NaN)
                         })
                     })
                 }
@@ -504,6 +510,7 @@
                     circles[v].bonded = [circles[v]]
                     circles[v].valence = elems[i.element]
                     circles[v].total = circles[v].valence
+                    circles[v].bonding = false
                 })
             }
         }, 100)
@@ -523,6 +530,13 @@
                 ft = 'nonmetal'
             }
             return ft
+        }
+        function gt(elem){
+            var t = 8
+            if(max[elem]){
+                t = max[elem]
+            }
+            return t
         }
     </script>
     <style>

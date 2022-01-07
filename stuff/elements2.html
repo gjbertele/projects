@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas></canvas>
+    <span>E = Create compound
+        <br>
+        <textarea placeholder="Chemical formula..."></textarea>
+        <br>
+        <i>inputs aren't checked for validity so unrealistic compounds are possible</i>
+        <br>
+        Q = delete
+        <br>
+        Air Drag (higher = more drag)
+        <br>
+        <input class="airdrag" type="range" min="0" max="100" value="0">
+        <br>
+        Left click = pull atoms closer
+    </span>
+    <style>
+        body,
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+
+        }
+
+        span {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            z-index: 2;
+        }
+
+        canvas {
+            z-index: 1;
+        }
+    </style>
+    <script>
+        var elems = { "H": 1, "He": 2, "Li": 1, "Be": 2, "B": 3, "C": 4, "N": 5, "O": 6, "F": 7, "Ne": 8, "Na": 1, "Mg": 2, "Al": 3, "Si": 4, "P": 5, "S": 6, "Cl": 7, "Ar": 8, "K": 1, "Ca": 2, "Sc": 2, "Ti": 2, "V": 2, "Cr": 1, "Mn": 2, "Fe": 2, "Co": 2, "Ni": 2, "Cu": 1, "Zn": 2, "Ga": 3, "Ge": 4, "As": 5, "Se": 6, "Br": 7, "Kr": 8, "Rb": 1, "Sr": 2, "Y": 2, "Zr": 2, "Nb": 1, "Mo": 1, "Tc": 2, "Ru": 1, "Rh": 1, "Pd": 10, "Ag": 1, "Cd": 2, "In": 3, "Sn": 4, "Sb": 5, "Te": 6, "I": 7, "Xe": 8, "Cs": 1, "Ba": 2, "La": 2, "Ce": 2, "Pr": 2, "Nd": 2, "Pm": 2, "Sm": 2, "Eu": 2, "Gd": 2, "Tb": 2, "Dy": 2, "Ho": 2, "Er": 2, "Tm": 2, "Yb": 2, "Lu": 2, "Hf": 2, "Ta": 2, "W": 2, "Re": 2, "Os": 2, "Ir": 2, "Pt": 1, "Au": 1, "Hg": 2, "Tl": 3, "Pb": 4, "Bi": 5, "Po": 6, "At": 7, "Rn": 8, "Fr": 1, "Ra": 2, "Ac": 2, "Th": 2, "Pa": 2, "U": 2, "Np": 2, "Pu": 2, "Am": 2, "Cm": 2, "Bk": 2, "Cf": 2, "Es": 2, "Fm": 2, "Md": 2, "No": 2, "Lr": 3, "Rf": 2, "Db": 2, "Sg": 2, "Bh": 2, "Hs": 2, "Mt": 2, "Ds": 1, "Rg": 1, "Cn": 2, "Nh": 3, "Fl": 4, "Mc": 5, "Lv": 6, "Ts": 7, "Og": 8 }
+        var max = { "H": 2, "He": 2 }
+        var metals = ["Li", "Be", "Na", "Mg", "Al", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv"]
+        var nonmetals = ["H", "He", "C", "N", "O", "F", "Ne", "P", "S", "Cl", "Ar", "Se", "Br", "Kr", "I", "Xe", "At", "Rn", "Ts", "Og"]
+        var metalloids = ["B", "Si", "Ge", "As", "Sb", "Te", "Po", "Ts"]
+        var compounds = []
+        var circles = []
+        var mx, my = 0
+        var bonds = []
+        var c = 0
+        function newCircle(x, y, elem, dx, dy, bond) {
+            if (dx == undefined) dx = 0
+            if (dy == undefined) dy = 0
+            var type = 'metal'
+            var functionalType = 'metal'
+            if (!metals.includes(elem)) {
+                functionalType = 'nonmetal'
+                if (nonmetals.includes(elem)) {
+                    type = 'nonmetal'
+                } else {
+                    type = 'metalloid'
+                }
+            }
+            var valence = elems[elem]
+            var circle = {
+                x: x,
+                y: y,
+                elem: elem,
+                functionalType: functionalType,
+                valence: valence,
+                type: type,
+                dx: dx,
+                dy: dy,
+                color: 'rgb(' + Math.round(Math.random() * 200) + ',' + Math.round(Math.random() * 200) + ',' + Math.round(Math.random() * 200) + ')',
+                bond: bond,
+                id: Math.random()
+            }
+            if (elems[elem]) {
+                circles.push(circle)
+                return circle
+            } else {
+                return null
+            }
+        }
+        function newBond(x, y, elems) {
+            var ccircles = []
+            var bid = Math.random()
+            elems.forEach(function (i, v) {
+                var xo = Math.round(Math.random() * 40) * v
+                var yo = Math.round(Math.random() * 40) * v
+                var ccc = newCircle(x + xo, y + yo, i, xo, yo, bid)
+                if (i != null) ccircles.push(ccc)
+            })
+            var bond = {
+                x: x,
+                y: y,
+                lx: x,
+                ly: y,
+                total: ccircles.map(i => i.valence).reduce((a, b) => a + b),
+                vx: 0,
+                vy: 0,
+                mouseLinked: false,
+                id: bid,
+                elems: ccircles
+            }
+            bonds.push(bond)
+            return bond
+        }
+
+        var canvas = document.querySelector('canvas')
+        var ctx = canvas.getContext('2d')
+        ctx.textAlign = 'center'
+        canvas.width = document.body.clientWidth
+        canvas.height = document.body.clientHeight
+        window.onresize = function () {
+            canvas.width = document.body.clientWidth
+            canvas.height = document.body.clientHeight
+        }
+        var fps = 40
+        var airDrag = 1
+        var range = 500
+        var strength = 100
+        setInterval(() => {
+            airDrag = 1 - (document.querySelector('.airdrag').value / 100)
+            circles.forEach(function (i) {
+                var tb = bonds.filter(l => l.id == i.bond)[0]
+                circles.forEach(function (k) {
+                    var ob = bonds.filter(l => l.id == k.bond)[0]
+                    var oc = circles.filter(l => l.bond == i.bond)
+                    var dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                    if (dist < 20 && !oc.includes(k)) {
+                        var otbx = tb.vx
+                        var otby = tb.vy
+                        tb.vx = (-tb.vx * 0.9) - ob.vx
+                        tb.vy = (-tb.vy * 0.9) - ob.vy
+                        ob.vx - (-ob.vx * 0.9) - tb.otbx
+                        ob.vy - (-ob.vy * 0.9) - tb.otby
+                    }
+
+                })
+            })
+            circles.forEach(function (i) {
+                var tb = bonds.filter(l => l.id == i.bond)[0]
+                var nx = tb.x
+                var ny = tb.y
+                if (nx - 10 < 0 && tb.vx < 0) {
+                    tb.vx = -tb.vx * 0.9
+                    tb.vy = -tb.vy * 0.9
+                }
+                if (nx + 10 > canvas.width && tb.vx > 0) {
+                    tb.vx = -tb.vx * 0.9
+                    tb.vy = -tb.vy * 0.9
+                }
+                if (ny + 10 > canvas.height && tb.vy > 0) {
+                    tb.vx = -tb.vx * 0.9
+                    tb.vy = -tb.vy * 0.9
+                }
+                if (ny - 10 < 0 && tb.vy < 0) {
+                    tb.vx = -tb.vx * 0.9
+                    tb.vy = -tb.vy * 0.9
+                }
+            })
+            bonds.forEach(function (i, v) {
+                if (mousedown) {
+                    var targetted = false
+                    circles.filter(k => k.bond == i.id).forEach(function (i) {
+                        var dist = Math.sqrt((mx - i.x) ** 2 + (my - i.y) ** 2)
+                        if (dist < 10 && false) {
+                            var b = bonds[v]
+                            bonds[v].mouseLinked = true
+                            bonds[v].vx = 0
+                            bonds[v].vy = 0
+                            targetted = true
+                        }
+                    })
+                    if (!targetted) {
+                        bonds.forEach(function (i, v) {
+                            var dx = i.x - mx
+                            var dy = i.y - my
+                            i.vy += -dy * 2
+                            i.vx += -dx * 2
+                        })
+                    }
+                }
+                if (c % 5 == 0) {
+                    i.lx = i.x
+                    i.ly = i.y
+                }
+                i.vx *= airDrag
+                i.vy *= airDrag
+                i.x += (i.vx / (i.elems.length * 10)) / fps
+                i.y += (i.vy / (i.elems.length * 10)) / fps
+                c += 1
+            })
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            circles.forEach(function (i, v) {
+                var circleBond = bonds.filter(k => k.id == i.bond)[0]
+                i.x = circleBond.x + i.dx
+                i.y = circleBond.y + i.dy
+                ctx.beginPath()
+                ctx.arc(i.x, i.y, 10, 0, 2 * Math.PI, false)
+                ctx.fillStyle = i.color
+                ctx.fill()
+                ctx.fillStyle = '#000'
+            })
+            circles.forEach(function (i, v) {
+                var w = ctx.measureText(i.elem).width;
+                ctx.fillText(i.elem, i.x - (w / 2), i.y + (parseInt(ctx.font) / 4), 10)
+            })
+        }, (1000 / fps));
+        var mousedown = false
+        canvas.onmousedown = function () {
+            mousedown = true
+        }
+        canvas.onmouseup = function () {
+            mousedown = false
+            bonds.filter(i => i.mouseLinked == true).forEach(function (i) {
+                i.mouseLinked = false
+                i.vx = (i.x - i.lx) * fps
+                i.vy = (i.y - i.ly) * fps
+            })
+        }
+        canvas.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+            bonds.filter(i => i.mouseLinked == true).forEach(function (i) {
+                i.x = mx
+                i.y = my
+            })
+        }
+        newBond(400, 400, ['H', 'H'])
+        var keysdown = []
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) {
+                keysdown.push(e.key)
+            }
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        setInterval(() => {
+            if (keysdown.includes('e')) {
+                var parts = document.querySelector('textarea').value.split(/([A-Z][a-z]*)(\d*)/).filter(i => i != '')
+                var elemArr = []
+                parts.forEach(function (i, v) {
+                    if (elems[i.replaceAll(/[0-9]/g, '')]) {
+                        var elemToMake = i.replaceAll(/[0-9]/g, '')
+                        var howMany = 1
+                        if (!isNaN(parts[v + 1])) {
+                            howMany = Number(parts[v + 1])
+                        }
+                        while (howMany > 0) {
+                            elemArr.push(elemToMake)
+                            howMany = howMany - 1
+                        }
+                    }
+                })
+                newBond(mx, my, elemArr)
+            }
+            if (keysdown.includes('q')) {
+                var drange = 50
+                bonds.forEach(function (i) {
+                    var d = Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2)
+                    if (d < drange) {
+                        bonds = bonds.filter(l => l.id != i.id)
+                        circles = circles.filter(l => l.bond != i.id)
+                    }
+                })
+            }
+            if (keysdown.includes('a')) {
+                var elemToMake = Object.keys(elems)[Math.round(Math.random() * 118)]
+                newBond(mx, my, [elemToMake])
+            }
+        }, 1000 / 5);
+    </script>
+</body>
+
+</html>
