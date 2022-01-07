@@ -18,17 +18,206 @@
             top: 0%;
             margin: 0;
         }
+        canvas{
+            position:absolute;
+            left:0%;
+            top:0%;
+        }
+        .objects{
+            position:absolute;
+            right:1%;
+            top:1%;
+        }
+        .ctrls{
+            position:absolute;
+            left:1%;
+            top:1%;
+        }
     </style>
-    <canvas></canvas>
+    <canvas class='bg'></canvas>
+    <canvas class='main'></canvas>
+    <span class='objects'></span>
+    <span class='ctrls'>
+        E key = create object<br>
+        Q key = erase objects<br>
+        A key = draw line<br>
+        W key = erase line<br>
+        Left click = Pull objects to mouse
+    </span>
     <script>
-        var canvas = document.querySelector('canvas')
-        var ctx = document.querySelector('canvas')
+        var canvas = document.querySelector('.main')
+        var ctx = canvas.getContext('2d')
+        var bg = document.querySelector('.bg')
+        var ftx = bg.getContext('2d')
         canvas.width = document.body.clientWidth
         canvas.height = document.body.clientHeight
+        bg.width = document.body.clientWidth
+        bg.height = document.body.clientHeight
         window.onresize = function () {
             canvas.width = document.body.clientWidth
             canvas.height = document.body.clientHeight
+            bg.width = document.body.clientWidth
+            bg.height = document.body.clientHeight
+            borderData.forEach(function(i){
+                ftx.beginPath()
+                ftx.moveTo(i[0],i[1])
+                ftx.lineTo(i[2],i[3])
+                ftx.stroke()
+            })
         }
+        var circles = []
+        var fps = 40
+        var grav = 981
+        var airDrag = 0.99
+        var mousedown = false
+        var paused = false
+        var lmx, lmy = 0;
+        var mx, my = 0;
+        document.body.onmousedown = function () { mousedown = true }
+        document.body.onmouseup = function () { mousedown = false }
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        var keysdown = []
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+            if (e.key == ' ') paused = !paused
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        function nextX(a) {
+            return a.x + a.vx / fps
+        }
+        function nextY(a) {
+            return a.y + a.vy / fps
+        }
+        function newCircle(x, y, radius, weight, vx, vy, elasticity) {
+            if (vx == undefined) vx = 0
+            if (vy == undefined) vy = 0
+            if (elasticity == undefined) elasticity = 0.9
+            var color = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`
+            var circle = {
+                type: 'circle',
+                x: x,
+                y: y,
+                radius: radius,
+                weight: weight,
+                id: Math.random(),
+                color: color,
+                vx: vx,
+                elasticity: elasticity,
+                vy: vy
+            }
+            circles.push(circle)
+            return circle
+        }
+        var linepoints = []
+        setInterval(function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            circles.filter(i => i.type == 'circle').forEach(function (i, v) {
+                var tmx = 0
+                var tmy = 0
+                circles.forEach(function (k, t) {
+                    if (Math.sqrt((i.x - k.x) ** 2 + (i.y - k.y) ** 2) < k.radius + i.radius && i.id != k.id) {
+                        i.vx = -i.vx * i.elasticity + (i.x - k.x) * 10
+                        i.vy = -i.vy * i.elasticity + (i.y - k.y) * 10
+                    }
+                })
+                linepoints.forEach(function (kl, vl) {
+                    var dist = (i.x - kl[0]) ** 2 + (i.y - kl[1]) ** 2
+                    if (dist <= i.radius ** 2+4) {
+                        i.vx = -i.vx * i.elasticity
+                        i.vy = -i.vy * i.elasticity
+                        if(i.y<kl[1]){
+                            i.y = kl[1]-i.radius
+                        } else {
+                            i.y = kl[1]+i.radius
+                        }
+                    }
+                })
+                if (i.y + i.radius > canvas.height && i.vy > 0) {
+                    i.vy *= -1
+                    i.y = canvas.height - i.radius
+                }
+                if (i.x + i.radius > canvas.width && i.vx > 0) {
+                    i.vx *= -1
+                    i.x = canvas.width - i.radius
+                }
+                if (i.x - i.radius < 0 && i.vx < 0) {
+                    i.vx *= -1
+                    i.x = i.radius
+                }
+                i.vx += tmx * i.elasticity
+                i.vy += tmy * i.elasticity
+                i.vy += grav / fps
+                i.vx *= airDrag * !paused
+                i.vy *= airDrag * !paused
+                i.x += i.vx / fps
+                i.y += i.vy / fps
+                ctx.beginPath()
+                ctx.arc(i.x, i.y, i.radius, 0, 2 * Math.PI, false)
+                ctx.fillStyle = i.color
+                ctx.fill()
+
+            })
+        }, 1000 / fps)
+        setInterval(function () {
+            if (keysdown.includes('e')) {
+                newCircle(mx, my, 10, 10, 0, 0, 0.9)
+            }
+            if (keysdown.includes('q')) {
+                circles.forEach(function (i, v) {
+                    if ((i.x - mx) ** 2 + (i.y - my) ** 2 < 75 ** 2) {
+                        circles = circles.filter(l => l != i)
+                    }
+                })
+            }
+            if(keysdown.includes('w')){
+                linepoints.forEach(function(i,v){
+                    if ((i[0] - mx) ** 2 + (i[1] - my) ** 2 < 75 ** 2) {
+                        linepoints = linepoints.filter(l => l != i)
+                    }
+                })
+                ftx.beginPath()
+                ftx.arc(mx, my, 75, 0, 2 * Math.PI, false)
+                ftx.fillStyle = '#fff'
+                ftx.fill()
+            }
+        }, 100)
+        var max = 1000
+        setInterval(function () {
+            if (!paused && mousedown) {
+                circles.forEach(function (i, v) {
+                    var dx = (i.x - mx)
+                    var dy = (i.y - my)
+                    var dist = Math.sqrt(dx ** 2 + dy ** 2)
+                    if (dist < max) {
+                        var strength = -((max - dist) ** 1.1) / 10
+                        i.vx += strength * Math.abs(dx) / dx
+                        i.vy += strength * Math.abs(dy) / dy
+                    }
+                })
+            }
+        }, 1000 / fps)
+        var borderData = []
+        setInterval(function(){
+            if (keysdown.includes('a')) {
+                ftx.beginPath()
+                borderData.push([lmx,lmy,mx,my])
+                ftx.moveTo(lmx, lmy)
+                lmx = mx
+                lmy = my
+                ftx.lineTo(mx, my)
+                ftx.stroke()
+                linepoints.push([mx, my])
+            } else {
+                lmx = mx
+                lmy = my
+            }
+            document.querySelector('.objects').textContent = linepoints.length+circles.length+' objects in scene'
+        })
     </script>
 </body>
 
