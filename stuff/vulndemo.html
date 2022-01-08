@@ -96,11 +96,12 @@
                     drawing = true
                 }
             }
-
-            if (window.location.href.indexOf('#') != -1) {
-                document.body.textContent = 'stolen search query: ' + window.location.href.split('#').slice(1).join('#')
-            }
         })
+        setInterval(function(){
+            if (window.location.href.indexOf('#') != -1) {
+                document.body.textContent = 'stolen search query: ' + decodeURIComponent(window.location.href.split('#').slice(1).join('#'))
+            }
+        },10)
         document.querySelector('a').onclick = function (e) {
             e.preventDefault()
             grab('https://google.com')
