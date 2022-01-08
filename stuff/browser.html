@@ -57,13 +57,13 @@
                         //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
-                        ctx.fillRect(0, 0, ctx.measureText(str).width + 6, 21)
+                        ctx.fillRect(0, 0, ctx.measureText(str).width + 9, 24)
                         ctx.fillStyle = '#000'
                         ctx.fillText(str, 3, 18)
                         ctx.fillStyle = '#fff'
                     }, 1000 / 60)
                     canvas.style.display = 'inline-block'
-
+                    
                     drawing = true
                 }
             }
