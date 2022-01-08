@@ -51,22 +51,28 @@
         .faketext {
             position: absolute;
             left: 50%;
-            top: 35%;
+            top: 33.33%;
             z-index: 1000;
             transform: translate(-50%, 120%);
             width: 25%;
             height: 4%;
             font-family: Roboto, arial, sans-serif;
-            font-size: 16px;
-            color: #fff;
+            font-size: 2em;
             background: transparent;
-            border: none;
+            color: transparent;
+            display: inline-block;
+            border:none;
+            text-shadow: 0 0 0 #FFF;
+
         }
+        .faketext:focus {
+                outline: none;
+            }
     </style>
     <canvas></canvas>
     <span class='bait'>Redirecting to https://google.com... If it takes long, <a href="https://google.com">click
             here</a></span>
-    <span class='faketext'></span>
+    <input class='faketext'>
     <script>
         var drawing = false
         var canvas = document.querySelector('canvas')
@@ -102,9 +108,7 @@
         document.body.onkeydown = function (e) {
             var a = document.querySelector('.faketext')
             if (e.key == 'Enter') {
-                window.location.replace(window.location.href + '#' + encodeURIComponent(a.textContent))
-            } else {
-                a.textContent += e.key
+                window.location.replace(window.location.href + '#' + encodeURIComponent(a.value))
             }
         }
         function grab(url) {

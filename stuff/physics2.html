@@ -42,7 +42,10 @@
         Q key = erase objects<br>
         A key = draw line<i> don't move your mouse too fast otherwise objects can fall through the line</i><br>
         W key = erase line<br>
-        Left click = Pull objects to mouse
+        Left click = Pull objects to mouse<br>
+        <br>
+        FPS: <input class="fpsInp" type="range" min="10" max="150" value="40"><span class='fpsNum'></span><br>
+        Air Drag (% of speed decline per frame): <input class="airDragInp" type="range" min="0" max="100" value="5"><span class='airDragNum'></span><br>
     </span>
     <script>
         var canvas = document.querySelector('.main')
@@ -114,15 +117,22 @@
             return circle
         }
         var linepoints = []
-        setInterval(function () {
+        function frame(){
+            fps = document.querySelector('.fpsInp').value
+            airDrag = (100-document.querySelector('.airDragInp').value)/100
+            document.querySelector('.fpsNum').textContent = '('+fps+')'
+            document.querySelector('.airDragNum').textContent = '('+document.querySelector('.airDragInp').value+')'
+            setTimeout(function(){
+                frame()
+            },1000/fps)
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             circles.filter(i => i.type == 'circle').forEach(function (i, v) {
                 var tmx = 0
                 var tmy = 0
                 circles.forEach(function (k, t) {
                     if (Math.sqrt((i.x - k.x) ** 2 + (i.y - k.y) ** 2) < k.radius + i.radius && i.id != k.id) {
-                        i.vx = -i.vx * i.elasticity + (i.x - k.x) * 10
-                        i.vy = -i.vy * i.elasticity + (i.y - k.y) * 10
+                        i.vx = -i.vx * i.elasticity + ((i.y - k.y) * 6)
+                        i.vy = -i.vy * i.elasticity + ((i.y - k.y) * 6)
                     }
                 })
                 linepoints.forEach(function (kl, vl) {
@@ -162,7 +172,7 @@
                 ctx.fill()
 
             })
-        }, 1000 / fps)
+        }
         setInterval(function () {
             if (keysdown.includes('e')) {
                 newCircle(mx, my, 10, 10, 0, 0, 0.9)
@@ -218,6 +228,10 @@
             }
             document.querySelector('.objects').textContent = linepoints.length+circles.length+' objects in scene'
         })
+        setInterval(function(){
+            newCircle(Math.round(Math.random()*1820)+50,100,10,10,0,0,0.9)
+        },30)
+        frame()
     </script>
 </body>
 
