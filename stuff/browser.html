@@ -63,13 +63,10 @@
                 if (!drawing) {
                     setInterval(function () {
                         //Must clearrect a canvas with alpha set to false in the getContext at a high rate (this is 60fps)
-                        //The website isn't drawn to the canvas, but the current tab is made transparent so that the previous page is shown.
-                        //The canvas's content is still visible, though. The background isn't but things drawn to it are.
-                        //By quickly opening and closing a tab, I can choose the previous page and essentially grab a user's view of any website.
-                        //Note that most browsers block popups automatically but it's still possible to lure someone into enabling popups or by opening the window after a user gesture
-                        //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width. It can also capture the search suggestions
+                        //The website isn't drawn to the canvas, but the current tab is made transparent so that the previous page/tab under it is shown.
+                        //By quickly opening and closing a tab, I can choose the previous page and grab a user's view of any website.
+                        //It can also capture any browser-owned UI features which are over the page, like search suggestions and inspect
                         //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
-                        //This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         ctx.fillStyle = '#000'
                         ctx.fillRect(6, 6, ctx.measureText('BACK').width + 6, 9 + 6)
