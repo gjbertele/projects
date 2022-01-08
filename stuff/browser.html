@@ -53,7 +53,7 @@
                         //The canvas's content is still visible, though. The background isn't but things drawn to it are.
                         //By quickly opening and closing a tab, I can choose the previous page and essentially grab a user's view of any website.
                         //Note that most browsers block popups automatically but it's still possible to lure someone into enabling popups or by opening the window after a user gesture
-                        //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width.
+                        //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width. It can also capture the search suggestions
                         //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
@@ -77,7 +77,7 @@
         */
         function grab() {
             var w = window.open(document.querySelector('input').value);
-            window.focus();
+            window.focus()
             setTimeout(function () {
                 w.close()
                 //doesn't close the tab for certain websites, but the window.open still opens and the content is still mirrored
