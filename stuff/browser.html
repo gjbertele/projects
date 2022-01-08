@@ -34,8 +34,10 @@
     </style>
     <canvas></canvas>
     <span>This doesn't work on Safari or
-        Firefox<br>Annotations are in the code<br>This lets me copy your exact view of a URL onto this page. <br>Instead of entering a url, you can also switch tabs and then come back to grab that tab.<br><input type="text" placeholder='URL...'><button
-            onclick="grab()">Grab</button></span><br>
+        Firefox<br>Annotations are in the code<br>This lets me copy your exact view of a URL onto this page. <br>Instead
+        of entering a url, you can also switch tabs and then come back to grab that tab.If the content on this website
+        looks unloaded, increase the delay.<br><input class='url' type="text" placeholder='URL...'><br><input
+            type="text" class='delay' placeholder='Delay... (ms)'><br><button onclick="grab()">Grab</button></span><br>
     <script>
         var canvas = document.querySelector('canvas')
         //MUST have alpha set to false for whatever reason
@@ -44,6 +46,17 @@
         canvas.height = document.body.clientHeight
         var drawing = false
         ctx.font = '15px Arial'
+        var my, mx = 0;
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+            console.log(1)
+        }
+        document.body.onclick = function () {
+            if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 30 < my && my < 45) {
+                window.location.href = window.location.href
+            }
+        }
         document.addEventListener('visibilitychange', e => {
             if (document.visibilityState !== 'visible') {
                 if (!drawing) {
@@ -60,10 +73,17 @@
                         ctx.fillRect(0, 0, ctx.measureText(str).width + 9, 24)
                         ctx.fillStyle = '#000'
                         ctx.fillText(str, 3, 18)
+                        ctx.fillRect(6, 30, ctx.measureText('BACK').width + 6, 9 + 6)
                         ctx.fillStyle = '#fff'
+                        ctx.fillText('BACK', 9, 33 + 9)
+                        if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 30 < my && my < 45) {
+                            document.body.style.cursor = 'pointer'
+                        } else {
+                            document.body.style.cursor = 'default'
+                        }
                     }, 1000 / 60)
                     canvas.style.display = 'inline-block'
-                    
+
                     drawing = true
                 }
             }
@@ -76,12 +96,10 @@
             web dashboards
         */
         function grab() {
-            var w = window.open(document.querySelector('input').value);
-            window.focus()
+            var w = window.open(document.querySelector('.url').value);
             setTimeout(function () {
                 w.close()
-                //doesn't close the tab for certain websites, but the window.open still opens and the content is still mirrored
-            }, 100)
+            }, document.querySelector('.delay').value)
         }
             //the lower the time the better because the user has less time to see it. some websites take longer though, since you have to wait for content to load
 
