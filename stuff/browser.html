@@ -9,6 +9,7 @@
 </head>
 
 <body>
+
     <style>
         body,
         canvas {
@@ -36,8 +37,8 @@
     <span>This doesn't work on Safari or
         Firefox<br>Annotations are in the code<br>This lets me copy your exact view of a URL onto this page. <br>Instead
         of entering a url, you can also switch tabs and then come back to grab that tab.If the content on this website
-        looks unloaded, increase the delay.<br><input class='url' type="text" placeholder='URL...'><br><input
-            type="text" class='delay' placeholder='Delay... (ms)'><br><button onclick="grab()">Grab</button></span><br>
+        looks unloaded, increase the delay.<br>URL: <input class='url' type="text" value='https://google.com'><br>Delay
+        (ms): <input type="text" class='delay' value='500'><br><button onclick="grab()">Grab</button></span><br>
     <script>
         var canvas = document.querySelector('canvas')
         //MUST have alpha set to false for whatever reason
@@ -53,7 +54,7 @@
             console.log(1)
         }
         document.body.onclick = function () {
-            if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 30 < my && my < 45) {
+            if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 6 < my && my < 24) {
                 window.location.href = window.location.href
             }
         }
@@ -68,15 +69,13 @@
                         //Note that most browsers block popups automatically but it's still possible to lure someone into enabling popups or by opening the window after a user gesture
                         //It also is able to view inspect element if it was opened on the previous or current page. Try opening inspect element and fiddling with the width. It can also capture the search suggestions
                         //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
+                        //This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
-                        var str = "This isn't able to read the webpage but can be used for phishing attacks by placing buttons and text inputs on top of areas where buttons are known to be. IFrames can do something similar, but this bypasses the X-Frames-Options header."
-                        ctx.fillRect(0, 0, ctx.measureText(str).width + 9, 24)
                         ctx.fillStyle = '#000'
-                        ctx.fillText(str, 3, 18)
-                        ctx.fillRect(6, 30, ctx.measureText('BACK').width + 6, 9 + 6)
+                        ctx.fillRect(6, 6, ctx.measureText('BACK').width + 6, 9 + 6)
                         ctx.fillStyle = '#fff'
-                        ctx.fillText('BACK', 9, 33 + 9)
-                        if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 30 < my && my < 45) {
+                        ctx.fillText('BACK', 9, 9 + 9)
+                        if (6 < mx && mx < ctx.measureText('BACK').width + 6 && 6 < my && my < 24) {
                             document.body.style.cursor = 'pointer'
                         } else {
                             document.body.style.cursor = 'default'
