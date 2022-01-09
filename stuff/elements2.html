@@ -196,8 +196,8 @@
                         bonds.forEach(function (i, v) {
                             var dx = i.x - mx
                             var dy = i.y - my
-                            i.vy += -dy * 2
-                            i.vx += -dx * 2
+                            i.vy += -(1920*(Math.abs(dy)/dy))-(dy * 2)
+                            i.vx += -(1920*(Math.abs(dx)/dx))-(dx * 2)
                         })
                     }
                 }
