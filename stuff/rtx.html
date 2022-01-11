@@ -46,7 +46,9 @@
         RPM: <input class="rpm" type="range" min="0" max="60" step="0.5" value="10"><span class='rp'></span><br>
         <br>
         Click and drag = draw box<br>
-        A key = delete box
+        A key = delete box<br>
+        R key = rotate<br>
+        Q key = move center
     </span>
     <script>
         var canvas = document.querySelector('canvas')
@@ -69,6 +71,8 @@
         var spin = false
         var rpm = 10
         var spinValue = 0
+        var tx = w * (2 / 3)
+        var ty = h/2
         function resetValues() {
             var fov = Number(document.querySelector('.fov').value)
             var rot = Number(document.querySelector('.rot').value) / 2
@@ -87,8 +91,8 @@
                 var vx = Math.cos(ttca * (Math.PI / 180)) * 2
                 var vy = Math.sin(ttca * (Math.PI / 180)) * 2
                 rays.push({
-                    x: w * (2 / 3),
-                    y: h / 2,
+                    x: tx,
+                    y: ty,
                     lx: w * (2 / 3),
                     ly: h / 2,
                     vx: vx,
@@ -244,6 +248,13 @@
                         walls = walls.filter(l => l != i)
                     }
                 })
+            }
+            if(keysdown.includes('q')){
+                tx = mx
+                ty = my
+            }
+            if(keysdown.includes('r')){
+                spinValue+=0.1
             }
         }, 10)
 
