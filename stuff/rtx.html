@@ -100,6 +100,15 @@
         var asx = 0
         var asy = 0
         var object = objectTemp
+        
+        var keysdown = []
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+            if (e.key == ' ') paused = !paused
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
         canvas.onmousedown = function (e) {
             if (e.which == 1) {
                 mousedown = true
@@ -219,8 +228,15 @@
                     height: dsh
                 }
             }
-
+            if(keysdown.includes('a')){
+                walls.forEach(function(i,v){
+                    if(i.x<mx&&i.x+i.width>mx&&i.y<my&&i.y+i.height>my){
+                        walls = walls.filter(l => l!=i)
+                    }
+                })
+            }
         }, 10)
+    
     </script>
 </body>
 
