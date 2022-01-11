@@ -42,6 +42,8 @@
             class='sv'></span><br>
         Rotation: <input type="range" min="0" max="360" step="1" class="rot" value="0"><span class='rv'></span><br>
         Refract: <input class="refract" type="checkbox" checked><br>
+        Spin: <input class="spin" type="checkbox"><br>
+        RPM: <input class="rpm" type="range" min="0" max="60" step="0.5" value="10"><span class='rp'></span><br>
         <br>
         Click and drag = draw box<br>
         A key = delete box
@@ -64,19 +66,24 @@
         }
         var rays = []
         var refract = true
+        var spin = false
+        var rpm = 10
+        var spinValue = 0
         function resetValues() {
             var fov = Number(document.querySelector('.fov').value)
             var rot = Number(document.querySelector('.rot').value) / 2
             var step = 1 / Number(document.querySelector('.steps').value)
+            rpm = document.querySelector('.rpm').value
             document.querySelector('.fv').textContent = ' (' + fov + ')'
             document.querySelector('.rv').textContent = ' (' + rot * 2 + ')'
             document.querySelector('.sv').textContent = ' (' + 1 / step + ')'
+            document.querySelector('.rp').textContent = ' (' + rpm + ')'
             var sca = rot + 90 - fov
             var ca = sca
             rays = []
             while (ca < sca + fov) {
                 ca = ca + step
-                var ttca = ca + rot + 90 + (fov / 2)
+                var ttca = ca + rot + 90 + (fov / 2) + spinValue
                 var vx = Math.cos(ttca * (Math.PI / 180)) * 2
                 var vy = Math.sin(ttca * (Math.PI / 180)) * 2
                 rays.push({
@@ -92,16 +99,22 @@
         resetValues()
         setInterval(function () {
             resetValues()
+            if (spin) {
+                spinValue += (rpm/6000)*360
+            }
         }, 10)
         document.querySelector('.refract').onchange = function () {
             refract = !refract
+        }
+        document.querySelector('.spin').onchange = function () {
+            spin = !spin
         }
         var sx = 0
         var sy = 0
         var asx = 0
         var asy = 0
         var object = objectTemp
-        
+
         var keysdown = []
         document.body.onkeydown = function (e) {
             if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
@@ -115,7 +128,7 @@
                 mousedown = true
                 sx = e.clientX
                 sy = e.clientY
-            } 
+            }
         }
         canvas.onmouseup = function (e) {
             if (e.which == 1) {
@@ -229,15 +242,15 @@
                     height: dsh
                 }
             }
-            if(keysdown.includes('a')){
-                walls.forEach(function(i,v){
-                    if(i.x<mx&&i.x+i.width>mx&&i.y<my&&i.y+i.height>my){
-                        walls = walls.filter(l => l!=i)
+            if (keysdown.includes('a')) {
+                walls.forEach(function (i, v) {
+                    if (i.x < mx && i.x + i.width > mx && i.y < my && i.y + i.height > my) {
+                        walls = walls.filter(l => l != i)
                     }
                 })
             }
         }, 10)
-    
+
     </script>
 </body>
 
