@@ -127,14 +127,14 @@
         document.body.onkeyup = function (e) {
             keysdown = keysdown.filter(i => i != e.key)
         }
-        canvas.onmousedown = function (e) {
+        document.body.onmousedown = function (e) {
             if (e.which == 1) {
                 mousedown = true
                 sx = e.clientX
                 sy = e.clientY
             }
         }
-        canvas.onmouseup = function (e) {
+        document.body.onmouseup = function (e) {
             if (e.which == 1) {
                 mousedown = false
                 var dsx = sx
