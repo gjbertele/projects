@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .main {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            z-index: 10000;
+            background: #fff;
+            border: 30px solid #fff;
+        }
+    </style>
+    <canvas></canvas>
+    <span class='main'>
+        FOV: <input type="range" min="0" max="360" class="fov" value="45"><span class='fv'></span><br>
+        Steps per degree: <input type="range" min="0" max="10" step="0.01" class="steps" value="4"><span
+            class='sv'></span><br>
+        Rotation: <input type="range" min="0" max="360" step="1" class="rot" value="0"><span class='rv'></span><br>
+        Refract: <input class="refract" type="checkbox" checked><br>
+        <br>
+        Click and drag = draw box
+    </span>
+    <script>
+        var canvas = document.querySelector('canvas')
+        var ctx = canvas.getContext('2d')
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        var mousedown = false
+        canvas.width = w
+        canvas.height = h
+        var objectTemp = {
+            x: w * (2 / 3),
+            y: h / 2,
+            lx: w * (2 / 3),
+            ly: h / 2,
+            vx: -1,
+            vy: 0.3
+        }
+        var rays = []
+        var refract = true
+        function resetValues() {
+            var fov = Number(document.querySelector('.fov').value)
+            var rot = Number(document.querySelector('.rot').value) / 2
+            var step = 1 / Number(document.querySelector('.steps').value)
+            document.querySelector('.fv').textContent = ' (' + fov + ')'
+            document.querySelector('.rv').textContent = ' (' + rot * 2 + ')'
+            document.querySelector('.sv').textContent = ' (' + 1 / step + ')'
+            var sca = rot + 90 - fov
+            var ca = sca
+            rays = []
+            while (ca < sca + fov) {
+                ca = ca + step
+                var ttca = ca + rot + 90 + (fov / 2)
+                var vx = Math.cos(ttca * (Math.PI / 180)) * 2
+                var vy = Math.sin(ttca * (Math.PI / 180)) * 2
+                rays.push({
+                    x: w * (2 / 3),
+                    y: h / 2,
+                    lx: w * (2 / 3),
+                    ly: h / 2,
+                    vx: vx,
+                    vy: vy
+                })
+            }
+        }
+        resetValues()
+        setInterval(function () {
+            resetValues()
+        }, 10)
+        document.querySelector('.refract').onchange = function () {
+            refract = !refract
+        }
+        var sx = 0
+        var sy = 0
+        var asx = 0
+        var asy = 0
+        var object = objectTemp
+        canvas.onmousedown = function (e) {
+            if (e.which == 1) {
+                mousedown = true
+                sx = e.clientX
+                sy = e.clientY
+            } 
+        }
+        canvas.onmouseup = function (e) {
+            if (e.which == 1) {
+                mousedown = false
+                var dsx = sx
+                var dsy = sy
+                var dsw = mx - sx
+                var dsh = my - sy
+                if (mx < sx) {
+                    dsx = mx
+                    dsw = sx - mx
+                }
+                if (my < sy) {
+                    dsy = my
+                    dsh = sy - my
+                }
+                walls.push({
+                    x: dsx,
+                    y: dsy,
+                    width: dsw,
+                    height: dsh
+                })
+                walls[0] = {
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
+                }
+            }
+
+        }
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        var walls = [{
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        }]
+        ctx.strokeStyle = '#FF0000'
+        setInterval(function () {
+            ctx.clearRect(0, 0, w, h)
+            walls.forEach(function (i, v) {
+                ctx.fillRect(i.x, i.y, i.width, i.height)
+            })
+            ctx.moveTo(object.x, object.y)
+            rays.forEach(function (i, tv) {
+                var frames = 1000
+                var object = {
+                    x: i.x,
+                    y: i.y,
+                    lx: i.lx,
+                    ly: i.ly,
+                    vx: i.vx,
+                    vy: i.vy
+                }
+                ctx.beginPath()
+                while (frames > 0) {
+                    frames = frames - 1
+                    if (object.x > canvas.width || object.x < 0 || object.y < 0 || object.y > canvas.height) {
+                        frames = 0
+                    }
+                    object.lx = object.x
+                    object.ly = object.y
+                    walls.forEach(function (i, v) {
+                        if (object.x + object.vx < i.x + i.width && object.x + object.vx > i.x && object.y + object.vy > i.y && object.y + object.vy < i.y + i.height) {
+                            var dx = i.x - object.x
+                            var dy = i.y - object.y
+                            var wallAngle = 0
+                            if (object.x - 1 < i.x || object.x + 1 > i.x + i.width) {
+                                if (refract == true) {
+                                    object.vx *= -1
+                                } else {
+                                    frames = 0
+                                }
+                            } else {
+                                if (refract == true) {
+                                    object.vy *= -1
+                                } else {
+                                    frames = 0
+                                }
+                            }
+
+                        }
+                    })
+                    object.x += object.vx
+                    object.y += object.vy
+                    ctx.lineTo(object.x, object.y)
+                }
+                ctx.stroke()
+            })
+            if (mousedown) {
+                var dsx = sx
+                var dsy = sy
+                var dsw = mx - sx
+                var dsh = my - sy
+                if (mx < sx) {
+                    dsx = mx
+                    dsw = sx - mx
+                }
+                if (my < sy) {
+                    dsy = my
+                    dsh = sy - my
+                }
+                walls[0] = {
+                    x: dsx,
+                    y: dsy,
+                    width: dsw,
+                    height: dsh
+                }
+            }
+
+        }, 10)
+    </script>
+</body>
+
+</html>
