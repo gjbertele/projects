@@ -100,7 +100,7 @@
         setInterval(function () {
             resetValues()
             if (spin) {
-                spinValue += (rpm/6000)*360
+                spinValue += (rpm / 6000) * 360
             }
         }, 10)
         document.querySelector('.refract').onchange = function () {
@@ -197,21 +197,17 @@
                     object.ly = object.y
                     walls.forEach(function (i, v) {
                         if (object.x + object.vx < i.x + i.width && object.x + object.vx > i.x && object.y + object.vy > i.y && object.y + object.vy < i.y + i.height) {
-                            var dx = i.x - object.x
-                            var dy = i.y - object.y
-                            var wallAngle = 0
-                            if (object.x - 1 < i.x || object.x + 1 > i.x + i.width) {
-                                if (refract == true) {
+                            if (refract == true) {
+                                var dx = i.x - object.x
+                                var dy = i.y - object.y
+                                var wallAngle = 0
+                                if (object.x - 1 < i.x || object.x + 1 > i.x + i.width) {
                                     object.vx *= -1
                                 } else {
-                                    frames = 0
+                                    object.vy *= -1
                                 }
                             } else {
-                                if (refract == true) {
-                                    object.vy *= -1
-                                } else {
-                                    frames = 0
-                                }
+                                frames = 0
                             }
 
                         }
