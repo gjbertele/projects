@@ -84,8 +84,8 @@
             while (ca < sca + fov) {
                 ca = ca + step
                 var ttca = ca + rot + 90 + (fov / 2) + spinValue
-                var vx = Math.round(Math.cos(ttca * (Math.PI / 180)) * 2000)/1000
-                var vy = Math.round(Math.sin(ttca * (Math.PI / 180)) * 2000)/1000
+                var vx = Math.cos(ttca * (Math.PI / 180)) * 2
+                var vy = Math.sin(ttca * (Math.PI / 180)) * 2
                 rays.push({
                     x: w * (2 / 3),
                     y: h / 2,
@@ -100,7 +100,7 @@
         setInterval(function () {
             resetValues()
             if (spin) {
-                spinValue += (rpm / 6000) * 360
+                spinValue += (rpm/6000)*360
             }
         }, 10)
         document.querySelector('.refract').onchange = function () {
@@ -177,7 +177,7 @@
                 ctx.fillRect(i.x, i.y, i.width, i.height)
             })
             ctx.moveTo(object.x, object.y)
-            rays.filter(i => i.vx!=0||i.vy!=0).forEach(function (i, tv) {
+            rays.forEach(function (i, tv) {
                 var frames = 1000
                 var object = {
                     x: i.x,
@@ -188,19 +188,15 @@
                     vy: i.vy
                 }
                 ctx.beginPath()
-                ctx.moveTo(i.x,i.y)
                 while (frames > 0) {
                     frames = frames - 1
-                    if (object.x > w || object.x < 0 || object.y < 0 || object.y > h) {
+                    if (object.x > canvas.width || object.x < 0 || object.y < 0 || object.y > canvas.height) {
                         frames = 0
-                        ctx.lineTo(object.x, object.y)
                     }
                     object.lx = object.x
                     object.ly = object.y
                     walls.forEach(function (i, v) {
-                        var objx = object.x + object.vx
-                        var objy = object.y + object.vy
-                        if (objx < i.x + i.width && objx > i.x && objy > i.y && objy < i.y + i.height) {
+                        if (object.x + object.vx < i.x + i.width && object.x + object.vx > i.x && object.y + object.vy > i.y && object.y + object.vy < i.y + i.height) {
                             var dx = i.x - object.x
                             var dy = i.y - object.y
                             var wallAngle = 0
@@ -217,11 +213,12 @@
                                     frames = 0
                                 }
                             }
-                            ctx.lineTo(object.x, object.y)
+
                         }
                     })
                     object.x += object.vx
                     object.y += object.vy
+                    ctx.lineTo(object.x, object.y)
                 }
                 ctx.stroke()
             })
