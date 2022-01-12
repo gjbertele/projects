@@ -8,6 +8,10 @@
       {
         "source":"/rtx",
         "destination":"/stuff/rtx"
+      },
+      {
+        "source":"/physics",
+        "destination":"/stuff/physics3"
       }
     ]
 }

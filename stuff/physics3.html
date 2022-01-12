@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .ctrls {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+        }
+    </style>
+    <canvas></canvas>
+    <span class='ctrls'>
+        E key = make circle<br>
+        Radius: <input type='range' class='radius' min="2" max="1000" value="50"><span class='rv'></span><br>
+        Weight: <input type='range' class='weight' min="0" max="1000" value="100"><span class='wv'></span><br>
+        Elasticity: <input type='range' class='elasticity' step="0.01" min="0" max="1" value="0.9"><span
+            class='ev'></span><br>
+        <br>
+        G key = make gravity point<br>
+        Weight: <input type='range' class='gweight' min="2" max="1000" value="50"><span class='gv'></span><br><br>
+        R key = delete circle<br>
+        Air Drag: <input type='range' class='airDrag' step="0.01" min="0" max="1" value="0.01"><span
+            class='av'></span><br>
+        Gravity: <input type='checkbox' class='gravity' checked><br>
+    </span>
+    <script>
+        var canvas = document.querySelector('canvas')
+        var gravityPoints = []
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        var airDrag = 0.99
+        canvas.width = w
+        canvas.height = h
+        var ctx = canvas.getContext('2d')
+        var fps = 60
+        var gravitySpeed = 49
+        var circles = []
+        var keysdown = []
+        var paused = false
+        var gravityEnabled = true
+        var mx = 0
+        var my = 0
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+            if (e.key == ' ') paused = !paused
+            if (e.key == 'q') {
+                gravityPoints.push({
+                    x: mx,
+                    y: my,
+                    weight: Number(document.querySelector('.gweight').value) * 1000000000
+                })
+            }
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        document.body.onmousedown = function (e) {
+            mousedown = true
+        }
+        document.body.onmouseup = function (e) {
+            mousedown = false
+
+        }
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        function newCircle(x, y, weight, radius, vx, vy, elasticity) {
+            var circle = {
+                x: x,
+                vx: vx,
+                y: y,
+                vy: vy,
+                weight: weight + Math.random(),
+                radius: radius,
+                elasticity: elasticity,
+                id: Math.random()
+            }
+            circles.push(circle)
+            return circle
+        }
+        document.querySelector('.gravity').onchange = function () {
+            gravityEnabled = !gravityEnabled
+        }
+        setInterval(function () {
+            airDrag = 1 - Number(document.querySelector('.airDrag').value)
+            document.querySelector('.rv').textContent = document.querySelector('.radius').value
+            document.querySelector('.ev').textContent = document.querySelector('.elasticity').value
+            document.querySelector('.wv').textContent = document.querySelector('.weight').value
+            document.querySelector('.av').textContent = document.querySelector('.airDrag').value
+            document.querySelector('.gv').textContent = document.querySelector('.gweight').value
+            ctx.clearRect(0, 0, w, h)
+            gravityPoints.forEach(function (i, v) {
+                ctx.beginPath()
+                ctx.arc(i.x, i.y, 30, 0, 2 * Math.PI, false)
+                ctx.fillStyle = '#000'
+                ctx.fill()
+            })
+            circles.forEach(function (i, v) {
+                circles.forEach(function (k, t) {
+                    if (k.id != i.id) {
+                        var dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                        if (dist < i.radius + k.radius && i.weight > k.weight) {
+                            k.vx = (2 * i.weight * i.vx) / (i.weight + k.weight)
+                            i.vx = ((i.weight - k.weight) * i.vx) / (i.weight + k.weight)
+                            k.vy = (2 * i.weight * i.vy) / (i.weight + k.weight)
+                            i.vy = ((i.weight - k.weight) * i.vy) / (i.weight + k.weight)
+                        }
+                    }
+                })
+                if (i.y + i.radius > h) {
+                    i.vy = -i.vy * i.elasticity
+                    i.y = h - i.radius
+                }
+                if (i.y - i.radius < 0) {
+                    i.vy = -i.vy * i.elasticity
+                    i.y = i.radius
+                }
+                if (i.x - i.radius < 0) {
+                    i.vx = -i.vx * i.elasticity
+                    i.x = i.radius
+                }
+                if (i.x + i.radius > w) {
+                    i.vx = -i.vx * i.elasticity
+                    i.x = w - i.radius
+                }
+                i.vy += gravitySpeed * gravityEnabled
+                i.x += (i.vx / fps) * !paused
+                i.y += (i.vy / fps) * !paused
+                circles.forEach(function (k, t) {
+                    if (k.id != i.id) {
+                        var dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                        if (i.weight > k.weight) {
+                            while (dist < i.radius + k.radius) {
+                                var dx = i.x - k.x
+                                var mxint = (Math.abs(dx) / dx)
+                                isNaN(dx) ? mxint = 0 : null
+                                i.x += 1 * mxint
+                                dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                                var dy = Math.abs(i.y - k.y)
+                                if (dist < i.radius + k.radius && dy < i.radius + k.radius && i.y < k.y) {
+                                    var myint = (Math.abs(dy) / dy)
+                                    isNaN(dy) ? myint = 0 : null
+                                    i.y += -1 * myint
+                                }
+                            }
+                        }
+                    }
+                })
+                gravityPoints.forEach(function (k, t) {
+                    var dx = i.x - k.x
+                    var fx = (0.0000000000667 * k.weight * i.weight) / (dx ^ 2)
+                    var dy = k.y - i.y
+                    var fy = (0.0000000000667 * k.weight * i.weight) / (dy ^ 2)
+                    isNaN(fy) || fy == Infinity ? fy = 0 : null
+                    isNaN(fx) || fx == Infinity ? fx = 0 : null
+                    i.vy += fy / i.weight
+                    i.vx += -fx / i.weight
+
+                })
+                i.vx *= airDrag
+                i.vy *= airDrag
+                ctx.beginPath()
+                ctx.arc(i.x, i.y, i.radius, 0, 2 * Math.PI, false)
+                ctx.fillStyle = '#ff0000'
+                ctx.fill()
+            })
+        }, 1000 / fps)
+        setInterval(function () {
+            if (keysdown.includes('e')) {
+                newCircle(mx, my, Number(document.querySelector('.weight').value), Number(document.querySelector('.radius').value), 0, 0, Number(document.querySelector('.elasticity').value))
+            }
+            if (keysdown.includes('r')) {
+                circles.forEach(function(i,v){
+                    var d = Math.sqrt((i.x-mx)**2+(i.y-my)**2)
+                    if(d<i.radius){
+                        circles = circles.filter(l => l!=i)
+                    }
+                })
+            }
+        }, 100)
+        newCircle(200, 200, 100, 50, 300, 0, 0.9)
+        newCircle(600, 600, 80, 40, 0, 0, 0.9)
+    </script>
+</body>
+
+</html>
