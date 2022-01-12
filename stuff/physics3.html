@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title> 0-0.xyz/physics </title>
 </head>
 
 <body>
@@ -195,10 +195,10 @@
                 newCircle(mx, my, Number(document.querySelector('.weight').value), Number(document.querySelector('.radius').value), 0, 0, Number(document.querySelector('.elasticity').value))
             }
             if (keysdown.includes('r')) {
-                circles.forEach(function(i,v){
-                    var d = Math.sqrt((i.x-mx)**2+(i.y-my)**2)
-                    if(d<i.radius){
-                        circles = circles.filter(l => l!=i)
+                circles.forEach(function (i, v) {
+                    var d = Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2)
+                    if (d < i.radius) {
+                        circles = circles.filter(l => l != i)
                     }
                 })
             }
