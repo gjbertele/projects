@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            margin: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .sliders{
+            position:absolute;
+            left:1%;
+            top:1%;
+        }
+    </style>
+    <canvas></canvas>
+    <span class='sliders'>
+    # of points: <input type='range' class='ptsNum' min="0" max="200" value="50"><span class='pv'></span><br>
+    point weight:<input type='range' class='weight' min="0" max="300" value="200"><span class='wv'></span><br>
+    frames to simulate: <input type='range' class='frames' min="0" max="100000" value="50000"><span class='fv'></span><br><br>
+    G key = new gravity point<br>
+    New gravity point weight: <input type='range' class='gweight' min="0" max="100000000" value="1000000"><span class='gv'></span><br><br>
+    R key = delete point<br>
+    Black circle = gravity center<br>
+    </span>
+    <script>
+        var gravpoints = []
+        var canvas = document.querySelector('canvas')
+        var ctx = canvas.getContext('2d')
+        var fps = 60
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        canvas.width = document.body.clientWidth
+        canvas.height = document.documentElement.clientHeight
+        window.onresize = (function () {
+            canvas.width = document.body.clientWidth
+            canvas.height = document.documentElement.clientHeight
+        })
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        function newGravPoint(x, y, weight) {
+            gravpoints.push({
+                x: x,
+                y: y,
+                weight: weight
+            })
+        }
+        var keysdown = []
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+            if (e.key == ' ') paused = !paused
+            if (e.key == 'g') {
+                gravpoints.push({
+                    x: mx,
+                    y: my,
+                    weight: Number(document.querySelector('.gweight').value)
+                })
+            }
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        document.body.onmousedown = function (e) {
+            mousedown = true
+        }
+        document.body.onmouseup = function (e) {
+            mousedown = false
+
+        }
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        setInterval(function () {
+            var w = document.body.clientWidth
+            var h = document.body.clientHeight
+            ctx.clearRect(0, 0, w, h)
+            ctx.strokeWidth = '10px'
+            var points = []
+            var theight = document.body.clientHeight
+            document.querySelector('.fv').textContent = Number(document.querySelector('.frames').value).toLocaleString()
+            document.querySelector('.wv').textContent = Number(document.querySelector('.weight').value).toLocaleString()+'kg'
+            document.querySelector('.pv').textContent = Number(document.querySelector('.ptsNum').value).toLocaleString()
+            document.querySelector('.gv').textContent = Number(document.querySelector('.gweight').value).toLocaleString()+'kg'
+            while (theight > 0) {
+                theight = theight - (h / document.querySelector('.ptsNum').value)
+                points.push({
+                    x: 10,
+                    y: theight,
+                    vx: 0,
+                    vy: 0,
+                    weight: document.querySelector('.weight').value
+                })
+            }
+            points.forEach(function (i, v) {
+                ctx.beginPath()
+                ctx.moveTo(i.x, i.y)
+                var frames = document.querySelector('.frames').value
+                var c = 0
+                while (frames > 0) {
+                    frames = frames - 1
+                    c += 1
+                    gravpoints.forEach(function (k, y) {
+                        var dx = i.x - k.x
+                        var fx = (0.0000000000667 * k.weight * i.weight) / (dx ^ 2)
+                        var dy = k.y - i.y
+                        var fy = (0.0000000000667 * k.weight * i.weight) / (dy ^ 2)
+                        isNaN(fy) || fy == Infinity ? fy = 0 : null
+                        isNaN(fx) || fx == Infinity ? fx = 0 : null
+                        i.vy += fy
+                        i.vx += -fx
+                    })
+                    i.x += i.vx
+                    i.y += i.vy
+                    if (i.x > w || i.x < 0 || i.y > h || i.y < 0) {
+                        frames = 0
+                    }
+                    if (c % 10 == 0) {
+                        ctx.lineTo(i.x, i.y)
+                    }
+                }
+                ctx.stroke()
+            })
+            gravpoints.forEach(function (i, v) {
+                if(keysdown.includes('q')){
+                    i.x = mx
+                    i.y = my
+                }
+                if(keysdown.includes('r')){
+                    if(Math.sqrt((i.x-mx)**2+(i.y-my)**2)<75){
+                        gravpoints = gravpoints.filter(l => l!=i)
+                    }
+                }
+                ctx.beginPath()
+                ctx.arc(i.x, i.y, 30, 0, 2 * Math.PI, false)
+                ctx.fillStyle = '#000'
+                ctx.fill()
+            })
+        }, 1000 / fps)
+        newGravPoint(w / 2, h / 2, 1000000)
+    </script>
+</body>
+
+</html>

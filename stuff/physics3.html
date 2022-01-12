@@ -192,8 +192,9 @@
                     i.vx += -fx / i.weight
 
                 })
-                i.vx *= airDrag
-                i.vy *= airDrag
+                
+                i.vx *=airDrag
+                i.vy *=airDrag
                 ctx.beginPath()
                 ctx.arc(i.x, i.y, i.radius, 0, 2 * Math.PI, false)
                 ctx.fillStyle = '#ff0000'
@@ -219,8 +220,8 @@
                 })
             }
         }, 100)
-        newCircle(200, 200, 100, 50, 300, 0, 0.9)
-        newCircle(600, 600, 80, 40, 0, 0, 0.9)
+        newCircle(w*0.2, h*0.2, 100, 50, 300, 0, 0.9)
+        newCircle(w*0.3, h*0.6, 80, 40, 0, 0, 0.9)
     </script>
 </body>
 
