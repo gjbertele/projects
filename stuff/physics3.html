@@ -43,6 +43,7 @@
         G key = make gravity point<br>
         Weight: <input type='range' class='gweight' min="2" max="1000" value="50"><span class='gv'></span><br><br>
         R key = delete circle<br>
+        Space key = pause<br>
         Air Drag: <input type='range' class='airDrag' step="0.01" min="0" max="1" value="0.01"><span
             class='av'></span><br>
         Gravity: <input type='checkbox' class='gravity' checked><br>
@@ -67,7 +68,7 @@
         document.body.onkeydown = function (e) {
             if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
             if (e.key == ' ') paused = !paused
-            if (e.key == 'q') {
+            if (e.key == 'g') {
                 gravityPoints.push({
                     x: mx,
                     y: my,
@@ -159,13 +160,22 @@
                                 var dx = i.x - k.x
                                 var mxint = (Math.abs(dx) / dx)
                                 isNaN(dx) ? mxint = 0 : null
-                                i.x += 1 * mxint
-                                dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                                if (!isNaN(1 * mxint)) {
+                                    i.x += 1 * mxint
+                                    dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                                } else {
+                                    dist = 1000000
+                                }
                                 var dy = Math.abs(i.y - k.y)
-                                if (dist < i.radius + k.radius && dy < i.radius + k.radius && i.y < k.y) {
+                                if (dist < i.radius + k.radius && dy < i.radius + k.radius && i.y+i.radius < k.y+k.radius) {
                                     var myint = (Math.abs(dy) / dy)
                                     isNaN(dy) ? myint = 0 : null
-                                    i.y += -1 * myint
+                                    if (!isNaN(-1 * myint)) {
+                                        i.y += -1 * myint
+                                        dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                                    } else {
+                                        dist = 1000000
+                                    }
                                 }
                             }
                         }
@@ -199,6 +209,12 @@
                     var d = Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2)
                     if (d < i.radius) {
                         circles = circles.filter(l => l != i)
+                    }
+                })
+                gravityPoints.forEach(function (i, v) {
+                    var d = Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2)
+                    if (d < 30) {
+                        gravityPoints = gravityPoints.filter(l => l != i)
                     }
                 })
             }
