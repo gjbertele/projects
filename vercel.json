@@ -12,6 +12,10 @@
       {
         "source":"/physics",
         "destination":"/stuff/physics3"
+      },
+      {
+        "source":"/gravity",
+        "destination":"/stuff/gravity"
       }
     ]
 }
