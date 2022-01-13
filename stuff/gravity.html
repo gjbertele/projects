@@ -19,24 +19,31 @@
             height: 100%;
             overflow: hidden;
         }
-        .sliders{
-            position:absolute;
-            left:1%;
-            top:1%;
+
+        .sliders {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            background: #fff;
+            border: 10px solid #fff;
         }
     </style>
     <canvas></canvas>
     <span class='sliders'>
-    # of points: <input type='range' class='ptsNum' min="0" max="200" value="50"><span class='pv'></span><br>
-    point weight:<input type='range' class='weight' min="0" max="300" value="200"><span class='wv'></span><br>
-    frames to simulate: <input type='range' class='frames' min="0" max="100000" value="50000"><span class='fv'></span><br><br>
-    G key = new gravity point<br>
-    New gravity point weight: <input type='range' class='gweight' min="0" max="100000000" value="1000000"><span class='gv'></span><br><br>
-    R key = delete point<br>
-    Black circle = gravity center<br>
+        # of points: <input type='range' class='ptsNum' min="0" max="200" value="50"><span class='pv'></span><br>
+        point weight:<input type='range' class='weight' min="0" max="300" value="200"><span class='wv'></span><br>
+        frames to simulate: <input type='range' class='frames' min="0" max="100000" value="50000"><span
+            class='fv'></span><br><br>
+        G key = new gravity point<br>
+        New gravity point weight: <input type='range' class='gweight' min="0" max="100000000" value="1000000"><span
+            class='gv'></span><br><br>
+        Show gravity map: <input type='checkbox' class='gmap'><br>
+        R key = delete point<br>
+        Black circle = gravity center<br>
     </span>
     <script>
         var gravpoints = []
+        var gmap = false
         var canvas = document.querySelector('canvas')
         var ctx = canvas.getContext('2d')
         var fps = 60
@@ -83,17 +90,28 @@
             mx = e.clientX
             my = e.clientY
         }
+        var ofps = 0
+        var spdInt = 8
+        document.querySelector('.gmap').onchange = function () {
+            gmap = !gmap
+            if(gmap == true){
+                ofps = fps
+                fps = fps/spdInt
+            } else {
+                if(fps*spdInt == ofps) fps = fps*spdInt
+            }
+        }
+        ctx.strokeWidth = '10px'
         setInterval(function () {
             var w = document.body.clientWidth
             var h = document.body.clientHeight
             ctx.clearRect(0, 0, w, h)
-            ctx.strokeWidth = '10px'
             var points = []
             var theight = document.body.clientHeight
             document.querySelector('.fv').textContent = Number(document.querySelector('.frames').value).toLocaleString()
-            document.querySelector('.wv').textContent = Number(document.querySelector('.weight').value).toLocaleString()+'kg'
+            document.querySelector('.wv').textContent = Number(document.querySelector('.weight').value).toLocaleString() + 'kg'
             document.querySelector('.pv').textContent = Number(document.querySelector('.ptsNum').value).toLocaleString()
-            document.querySelector('.gv').textContent = Number(document.querySelector('.gweight').value).toLocaleString()+'kg'
+            document.querySelector('.gv').textContent = Number(document.querySelector('.gweight').value).toLocaleString() + 'kg'
             while (theight > 0) {
                 theight = theight - (h / document.querySelector('.ptsNum').value)
                 points.push({
@@ -104,50 +122,83 @@
                     weight: document.querySelector('.weight').value
                 })
             }
-            points.forEach(function (i, v) {
-                ctx.beginPath()
-                ctx.moveTo(i.x, i.y)
-                var frames = document.querySelector('.frames').value
-                var c = 0
-                while (frames > 0) {
-                    frames = frames - 1
-                    c += 1
-                    gravpoints.forEach(function (k, y) {
-                        var dx = i.x - k.x
-                        var fx = (0.0000000000667 * k.weight * i.weight) / (dx ^ 2)
-                        var dy = k.y - i.y
-                        var fy = (0.0000000000667 * k.weight * i.weight) / (dy ^ 2)
-                        isNaN(fy) || fy == Infinity ? fy = 0 : null
-                        isNaN(fx) || fx == Infinity ? fx = 0 : null
-                        i.vy += fy
-                        i.vx += -fx
+            if (gmap == false) {
+                points.forEach(function (i, v) {
+                    ctx.beginPath()
+                    ctx.moveTo(i.x, i.y)
+                    var frames = document.querySelector('.frames').value
+                    var c = 0
+                    while (frames > 0) {
+                        frames = frames - 1
+                        c += 1
+                        gravpoints.forEach(function (k, y) {
+                            var dx = i.x - k.x
+                            var fx = (0.0000000000667 * k.weight * i.weight) / (dx ^ 2)
+                            var dy = k.y - i.y
+                            var fy = (0.0000000000667 * k.weight * i.weight) / (dy ^ 2)
+                            isNaN(fy) || fy == Infinity ? fy = 0 : null
+                            isNaN(fx) || fx == Infinity ? fx = 0 : null
+                            i.vy += fy
+                            i.vx += -fx
+                        })
+                        i.x += i.vx
+                        i.y += i.vy
+                        if (i.x > w || i.x < 0 || i.y > h || i.y < 0) {
+                            frames = 0
+                        }
+                        if (c % 10 == 0) {
+                            ctx.lineTo(i.x, i.y)
+                        }
+                    }
+                    ctx.stroke()
+                })
+                gravpoints.forEach(function (i, v) {
+                    if (keysdown.includes('q')) {
+                        i.x = mx
+                        i.y = my
+                    }
+                    if (keysdown.includes('r')) {
+                        if (Math.sqrt((i.x - mx) ** 2 + (i.y - my) ** 2) < 75) {
+                            gravpoints = gravpoints.filter(l => l != i)
+                        }
+                    }
+                    ctx.beginPath()
+                    ctx.arc(i.x, i.y, 30, 0, 2 * Math.PI, false)
+                    ctx.fill()
+                })
+            } else {
+                    var pweight = Number(document.querySelector('.weight').value)
+                    var x = 0
+                    var data = new Uint8ClampedArray(w * h * 4)
+                    while (x < w) {
+                        var tx = x
+                        var y = 0
+                        while (y < h) {
+                            var pint = (tx + (y * w)) * 4
+                            gravpoints.forEach(function (i, v) {
+                                var d = Math.sqrt((tx - i.x) ** 2 + (y - i.y) ** 2) || 1
+                                var fx = (((0.000667 * i.weight * pweight) / (d ** 2))) / (Math.abs(d) / d)
+                                data[pint] += fx
+                                data[pint + 1] += fx
+                                data[pint + 2] += fx
+                                data[pint + 3] = 255
+                            })
+                            y++
+                        }
+                        x++
+                    }
+                    gravpoints.forEach(function (i, v) {
+                        var gpint = (i.x + (i.y * w)) * 4
+                        data[gpint] = 0
+                        data[gpint + 1] = 0
+                        data[gpint + 2] = 0
+                        data[gpint + 3] = 255
                     })
-                    i.x += i.vx
-                    i.y += i.vy
-                    if (i.x > w || i.x < 0 || i.y > h || i.y < 0) {
-                        frames = 0
-                    }
-                    if (c % 10 == 0) {
-                        ctx.lineTo(i.x, i.y)
-                    }
-                }
-                ctx.stroke()
-            })
-            gravpoints.forEach(function (i, v) {
-                if(keysdown.includes('q')){
-                    i.x = mx
-                    i.y = my
-                }
-                if(keysdown.includes('r')){
-                    if(Math.sqrt((i.x-mx)**2+(i.y-my)**2)<75){
-                        gravpoints = gravpoints.filter(l => l!=i)
-                    }
-                }
-                ctx.beginPath()
-                ctx.arc(i.x, i.y, 30, 0, 2 * Math.PI, false)
-                ctx.fillStyle = '#000'
-                ctx.fill()
-            })
+                    var idata = ctx.createImageData(w, h);
+                    idata.data.set(data)
+                    ctx.putImageData(idata, 0, 0)
+
+            }
         }, 1000 / fps)
         newGravPoint(w / 2, h / 2, 1000000)
     </script>

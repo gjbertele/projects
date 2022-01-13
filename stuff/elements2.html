@@ -146,14 +146,24 @@
                 circles.forEach(function (k) {
                     var ob = bonds.filter(l => l.id == k.bond)[0]
                     var oc = circles.filter(l => l.bond == i.bond)
-                    var dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
-                    if (dist < 20 && !oc.includes(k)) {
-                        var otbx = tb.vx
-                        var otby = tb.vy
-                        tb.vx = (-tb.vx * 0.9) - ob.vx * 0.9
-                        tb.vy = (-tb.vy * 0.9) - ob.vy * 0.9
-                        ob.vx - (-ob.vx * 0.9) - tb.otbx * 0.9
-                        ob.vy - (-ob.vy * 0.9) - tb.otby * 0.9
+                    if (tb.id > ob.id) {
+                        var dist = Math.sqrt((k.x - i.x) ** 2 + (k.y - i.y) ** 2)
+                        if (dist < 20 && !oc.includes(k)) {
+                            var otbx = tb.vx
+                            var otby = tb.vy
+                            var tweight = tb.elems.length * 10
+                            var oweight = ob.elems.length * 10
+                            var vyint = Math.abs(tb.vy)/tb.vy
+                            var vxint = Math.abs(tb.vx)/tb.vx
+                            var obvx = (2 * tweight * tb.vx) / (tweight + oweight) * vxint
+                            var tbvx = ((tweight - oweight) * tb.vx) / (tweight + oweight) * vxint
+                            var obvy = -(2 * tweight * tb.vy) / (tweight + oweight) * vyint
+                            var tbvy = ((tweight - oweight) * tb.vy) / (tweight + oweight) * vyint
+                            isNaN(obvx) ? null : ob.vx = obvx
+                            isNaN(tbvx) ? null : tb.vx = tbvx
+                            isNaN(obvy) ? null : ob.vy = obvy
+                            isNaN(tbvy) ? null : tb.vy = tbvy
+                        }
                     }
 
                 })
@@ -196,8 +206,8 @@
                         bonds.forEach(function (i, v) {
                             var dx = i.x - mx
                             var dy = i.y - my
-                            i.vy += -(1920*(Math.abs(dy)/dy))-(dy * 2)
-                            i.vx += -(1920*(Math.abs(dx)/dx))-(dx * 2)
+                            i.vy += -(1920 * (Math.abs(dy) / dy)) - (dy * 2)
+                            i.vx += -(1920 * (Math.abs(dx) / dx)) - (dx * 2)
                         })
                     }
                 }
