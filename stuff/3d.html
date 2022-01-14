@@ -33,6 +33,7 @@
         }
     </style>
     <canvas></canvas>
+    <span class='ctrls'>E key = create cube</span>
     <script>
         var canvas = document.querySelector('canvas')
         var gravityPoints = []
@@ -52,9 +53,42 @@
         var mx = 0
         var my = 0
         var fov = w * 0.9
+        var coffsetx = w/2
+        var coffsety = h/2
         var shapes = []
+        function isPointInPolygon(latitude, longitude, polygon) {
+            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+                throw new TypeError('Invalid latitude or longitude. Numbers are expected')
+            } else if (!polygon || !Array.isArray(polygon)) {
+                throw new TypeError('Invalid polygon. Array with locations expected')
+            } else if (polygon.length === 0) {
+                throw new TypeError('Invalid polygon. Non-empty Array expected')
+            }
+
+            const x = latitude; const y = longitude
+
+            let inside = false
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i][0]; const yi = polygon[i][1]
+                const xj = polygon[j][0]; const yj = polygon[j][1]
+
+                const intersect = ((yi > y) !== (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+                if (intersect) inside = !inside
+            }
+
+            return inside
+        };
+
         document.body.onkeydown = function (e) {
             if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+            if (e.key == 'r') {
+                try {
+                    var coords = shapeFromPoint(mx, my)
+                    shapes = shapes.filter(l => l != coords)
+                    //newShape(coords.x, coords.y, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
+                } catch { }
+            }
         }
         document.body.onkeyup = function (e) {
             keysdown = keysdown.filter(i => i != e.key)
@@ -70,7 +104,7 @@
             mx = e.clientX
             my = e.clientY
         }
-        function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false) {
+        function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false, render = true) {
             var shape = {
                 x: x,
                 y: y,
@@ -80,9 +114,11 @@
                 d: d,
                 vx: vx,
                 anchored: anchored,
+                screenBBoxes: [],
                 vy: vy,
                 vz: vz,
                 r: 5,
+                render: render,
                 weight: weight + Math.random(),
                 elasticity: elasticity,
                 color: `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`,
@@ -109,13 +145,27 @@
         }
         function projectTo3D(x, y, z) {
             var size = fov / (fov + z);
-            var xp = (x * size) + w / 2;
-            var yp = (y * size) + h / 2;
+            var xp = (x * size) + coffsetx;
+            var yp = (y * size) + coffsety;
             return {
                 size: size,
                 x: xp,
                 y: yp
             }
+        }
+        function shapeFromPoint(x, y) {
+            var answer = {
+                z: Infinity
+            }
+            shapes.forEach(function (i, v) {
+                i.screenBBoxes.forEach(function (k, t) {
+                    if (isPointInPolygon(x, y, k.map(i => i = [i.x, i.y])) == true && i.z < answer.z) {
+                        console.log(i)
+                        answer = i
+                    }
+                })
+            })
+            return answer
         }
         var faceColors = ['#FF0000', '#00FF00']
         ctx.strokeStyle = '#000000'
@@ -127,13 +177,13 @@
                         var colliding = (Math.abs(k.x - i.x) < (k.w + i.w) / 2 && Math.abs(k.y - i.y) < (k.h + i.h) / 2 && Math.abs(k.z - i.z) < (k.d + i.d) / 2) ?? true
                         if (colliding) {
                             i.vx = -i.vx * i.elasticity
-                            i.vy = -i.vy * i.elasticity - gravitySpeed
+                            i.vy = -i.vy * i.elasticity
                             i.vz = -i.vz * i.elasticity
                             if (i.anchored == false) {
                                 if (i.y < k.y) {
-                                    i.y = k.y - (k.h + i.h) / 2 + 1
+                                    i.y = k.y - (k.h + i.h) / 2
                                 } else {
-                                    i.y = k.y + (k.h + i.h) / 2 + 1
+                                    i.y = k.y + (k.h + i.h) / 2
                                 }
                             }
                         }
@@ -153,22 +203,43 @@
                     i.vz = 0
                 }
                 var pts = i.draw()
-                pts.forEach(function (kt, tv) {
-                    ctx.beginPath()
-                    kt.forEach(function (k, t) {
-                        if (t == 0) {
-                            ctx.moveTo(k.x, k.y)
-                        }
-                        ctx.lineTo(k.x, k.y)
+                if (i.render == true) {
+                    pts.forEach(function (kt, tv) {
+                        ctx.beginPath()
+                        kt.forEach(function (k, t) {
+                            if (t == 0) {
+                                ctx.moveTo(k.x, k.y)
+                            }
+                            ctx.lineTo(k.x, k.y)
+                        })
+                        ctx.lineTo(kt[0].x, kt[0].y)
+                        ctx.stroke()
                     })
-                    ctx.lineTo(kt[0].x, kt[0].y)
-                    ctx.stroke()
-                })
+                }
+                i.screenBBoxes = pts
             })
-
         }, 1000 / fps)
+        setInterval(function () {
+            if (keysdown.includes('e')) {
+                try {
+                    var coords = shapeFromPoint(mx, my)
+                    newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
+                } catch { }
+            }
+        }, 100)
         newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
-        var plane = newShape(0, 300, 0, 0, 0, 0, 1000, 0.9, w / 2, 30, w / 2, true)
+        var psx = 100
+        var psy = 100
+        var tsx = w / 2
+        while (tsx > 0) {
+            var tsy = w / 2
+            while (tsy > 0) {
+                newShape(tsx - (w / 4), 300, tsy - (w / 4), 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
+                tsy += -psy
+            }
+            tsx += -psx
+        }
+        var plane = newShape(0, 300, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
         newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
         newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
     </script>
