@@ -232,7 +232,6 @@
                         })
                         ctx.lineTo(kt[0].x, kt[0].y)
                         ctx.fillStyle = i.color
-                        ctx.stroke()
                         ctx.fill()
                     })
                 }
@@ -251,13 +250,13 @@
                 try {
                     var coords = shapeFromPoint(mx, my)
                     var s = newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
-                    s.color = '#01FF70'
+                    
                 } catch { }
             }
         }, 100)
-        newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
-        var psx = 100
-        var psy = 100
+        newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        var psx = 25
+        var psy = 25
         var tsx = w / 2
         while (tsx > 0) {
             var tsy = w / 2
@@ -269,8 +268,8 @@
         }
         var plane = newShape(0, 301, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
         plane.color = 'gray'
-        newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
-        newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
+        newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
     </script>
 </body>
 
