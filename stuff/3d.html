@@ -33,7 +33,15 @@
         }
     </style>
     <canvas></canvas>
-    <span class='ctrls'>E key = create cube</span>
+    <span class='ctrls'>
+        C key = create cube<br><br>
+        W = Forwards<br>
+        S = Backwards<br>
+        A = Move left<br>
+        D = Move right<br>
+        Q = Turn up<br>
+        E = Turn down<br>
+    </span>
     <script>
         var canvas = document.querySelector('canvas')
         var gravityPoints = []
@@ -104,6 +112,7 @@
             mx = e.clientX
             my = e.clientY
         }
+        var coffsetx2 = coffsety2 = coffsetz2 = 0
         function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false, render = true) {
             var shape = {
                 x: x,
@@ -129,9 +138,9 @@
                     faces.reverse().forEach(function (kt, tv) {
                         var pts = []
                         kt.forEach(function (k, t) {
-                            var p1x = i.x + (i.w * 0.5 * k[0])
-                            var p1y = i.y + (i.h * 0.5 * k[1])
-                            var p1z = i.z + (i.d * 0.5 * k[2])
+                            var p1x = i.x + (i.w * 0.5 * k[0]) - coffsetx2
+                            var p1y = i.y + (i.h * 0.5 * k[1]) - coffsety2
+                            var p1z = i.z + (i.d * 0.5 * k[2]) - coffsetz2
                             var p1 = projectTo3D(p1x, p1y, p1z)
                             pts.push(p1)
                         })
@@ -160,7 +169,6 @@
             shapes.forEach(function (i, v) {
                 i.screenBBoxes.forEach(function (k, t) {
                     if (isPointInPolygon(x, y, k.map(i => i = [i.x, i.y])) == true && i.z < answer.z) {
-                        console.log(i)
                         answer = i
                     }
                 })
@@ -218,9 +226,27 @@
                 }
                 i.screenBBoxes = pts
             })
+            if(keysdown.includes('d')){
+                coffsetx2+=10
+            }
+            if(keysdown.includes('a')){
+                coffsetx2-=10
+            }
+            if(keysdown.includes('s')){
+                coffsetz2-=10
+            }
+            if(keysdown.includes('w')){
+                coffsetz2+=10
+            }
+            if(keysdown.includes('e')){
+                coffsety-=10
+            }
+            if(keysdown.includes('q')){
+                coffsety+=10
+            }
         }, 1000 / fps)
         setInterval(function () {
-            if (keysdown.includes('e')) {
+            if (keysdown.includes('c')) {
                 try {
                     var coords = shapeFromPoint(mx, my)
                     newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
@@ -239,7 +265,7 @@
             }
             tsx += -psx
         }
-        var plane = newShape(0, 300, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
+        var plane = newShape(0, 301, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
         newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
         newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
     </script>
