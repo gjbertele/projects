@@ -32,7 +32,7 @@
             top: 1%;
         }
     </style>
-    <canvas></canvas>
+    <canvas oncontextmenu="return false;"></canvas>
     <span class='ctrls'>
         C key = create cube<br><br>
         W = Forwards<br>
@@ -64,6 +64,8 @@
         var coffsetx = w / 2
         var coffsety = h / 2
         var shapes = []
+        var lmousedown = false
+        var rmousedown = false
         function isPointInPolygon(latitude, longitude, polygon) {
             if (typeof latitude !== 'number' || typeof longitude !== 'number') {
                 throw new TypeError('Invalid latitude or longitude. Numbers are expected')
@@ -102,13 +104,25 @@
             keysdown = keysdown.filter(i => i != e.key)
         }
         document.body.onmousedown = function (e) {
-            mousedown = true
+            if (e.which == 1) {
+                lmousedown = true
+            } else if(e.which == 3){
+                rmousedown = true
+            }
         }
         document.body.onmouseup = function (e) {
-            mousedown = false
+            if (e.which == 1) {
+                lmousedown = false
+            } else if(e.which == 3){
+                rmousedown = false
+            }
 
         }
+        var lmx = 0
+        var lmy = 0
         document.body.onmousemove = function (e) {
+            lmx = mx
+            lmy = my
             mx = e.clientX
             my = e.clientY
         }
@@ -194,7 +208,7 @@
                                     if (k.anchored == true) {
                                         i.y = k.y + (k.h + i.h) / 2
                                     } else {
-                                        k.y = i.y - (k.h+i.h)/2+1
+                                        k.y = i.y - (k.h + i.h) / 2 + 1
                                     }
                                 }
                             }
@@ -234,23 +248,13 @@
                     })
                 }
             })
-            if (keysdown.includes('d')) {
-                coffsetx2 += 10
+            if(lmousedown == true){
+                coffsetx2+=-(mx-lmx)
+                coffsetz2+=(my-lmy)*2
             }
-            if (keysdown.includes('a')) {
-                coffsetx2 -= 10
-            }
-            if (keysdown.includes('s')) {
-                coffsetz2 -= 10
-            }
-            if (keysdown.includes('w')) {
-                coffsetz2 += 10
-            }
-            if (keysdown.includes('e')) {
-                coffsety -= 10
-            }
-            if (keysdown.includes('q')) {
-                coffsety += 10
+            if(rmousedown == true){
+                coffsetx+=(mx-lmx)
+                coffsety+=(my-lmy)
             }
         }, 1000 / fps)
         setInterval(function () {
