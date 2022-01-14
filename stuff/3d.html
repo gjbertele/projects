@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .ctrls {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+        }
+    </style>
+    <canvas></canvas>
+    <script>
+        var canvas = document.querySelector('canvas')
+        var gravityPoints = []
+        var w = document.body.clientWidth
+        var airDrag = 0.99
+        var h = document.body.clientHeight
+        var faces = [[[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]], [[-1, -1, 1], [-1, -1, -1], [-1, 1, -1], [-1, 1, 1]], [[1, -1, 1], [1, -1, -1], [1, 1, -1], [1, 1, 1]]]
+        var airDrag = 0.99
+        canvas.width = w
+        canvas.height = h
+        var ctx = canvas.getContext('2d')
+        var fps = 60
+        var gravitySpeed = 49
+        var keysdown = []
+        var paused = false
+        var gravityEnabled = true
+        var mx = 0
+        var my = 0
+        var fov = w * 0.9
+        var shapes = []
+        document.body.onkeydown = function (e) {
+            if (!keysdown.includes(e.key)) { keysdown.push(e.key) }
+        }
+        document.body.onkeyup = function (e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        document.body.onmousedown = function (e) {
+            mousedown = true
+        }
+        document.body.onmouseup = function (e) {
+            mousedown = false
+
+        }
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+        function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false) {
+            var shape = {
+                x: x,
+                y: y,
+                z: z,
+                w: w,
+                h: h,
+                d: d,
+                vx: vx,
+                anchored: anchored,
+                vy: vy,
+                vz: vz,
+                r: 5,
+                weight: weight + Math.random(),
+                elasticity: elasticity,
+                color: `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`,
+                id: Math.random(),
+                draw: function () {
+                    var i = this
+                    var epts = []
+                    faces.reverse().forEach(function (kt, tv) {
+                        var pts = []
+                        kt.forEach(function (k, t) {
+                            var p1x = i.x + (i.w * 0.5 * k[0])
+                            var p1y = i.y + (i.h * 0.5 * k[1])
+                            var p1z = i.z + (i.d * 0.5 * k[2])
+                            var p1 = projectTo3D(p1x, p1y, p1z)
+                            pts.push(p1)
+                        })
+                        epts.push(pts)
+                    })
+                    return epts
+                }
+            }
+            shapes.push(shape)
+            return shape
+        }
+        function projectTo3D(x, y, z) {
+            var size = fov / (fov + z);
+            var xp = (x * size) + w / 2;
+            var yp = (y * size) + h / 2;
+            return {
+                size: size,
+                x: xp,
+                y: yp
+            }
+        }
+        var faceColors = ['#FF0000', '#00FF00']
+        ctx.strokeStyle = '#000000'
+        setInterval(function () {
+            ctx.clearRect(0, 0, w, h)
+            shapes.forEach(function (i, v) {
+                shapes.forEach(function (k, t) {
+                    if (i.id != k.id) {
+                        var colliding = (Math.abs(k.x - i.x) < (k.w + i.w) / 2 && Math.abs(k.y - i.y) < (k.h + i.h) / 2 && Math.abs(k.z - i.z) < (k.d + i.d) / 2) ?? true
+                        if (colliding) {
+                            i.vx = -i.vx * i.elasticity
+                            i.vy = -i.vy * i.elasticity - gravitySpeed
+                            i.vz = -i.vz * i.elasticity
+                            if (i.anchored == false) {
+                                if (i.y < k.y) {
+                                    i.y = k.y - (k.h + i.h) / 2 + 1
+                                } else {
+                                    i.y = k.y + (k.h + i.h) / 2 + 1
+                                }
+                            }
+                        }
+                    }
+                })
+                i.vy += gravitySpeed
+                i.vx *= airDrag
+                i.vy *= airDrag
+                i.vz *= airDrag
+                if (i.anchored == false) {
+                    i.y += i.vy / fps
+                    i.x += i.vx / fps
+                    i.z += i.vz / fps
+                } else {
+                    i.vx = 0
+                    i.vy = 0
+                    i.vz = 0
+                }
+                var pts = i.draw()
+                pts.forEach(function (kt, tv) {
+                    ctx.beginPath()
+                    kt.forEach(function (k, t) {
+                        if (t == 0) {
+                            ctx.moveTo(k.x, k.y)
+                        }
+                        ctx.lineTo(k.x, k.y)
+                    })
+                    ctx.lineTo(kt[0].x, kt[0].y)
+                    ctx.stroke()
+                })
+            })
+
+        }, 1000 / fps)
+        newShape(0, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        var plane = newShape(0, 300, 0, 0, 0, 0, 1000, 0.9, w / 2, 30, w / 2, true)
+        newShape(0, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+    </script>
+</body>
+
+</html>
