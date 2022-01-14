@@ -16,6 +16,10 @@
       {
         "source":"/gravity",
         "destination":"/stuff/gravity"
+      },
+      {
+        "source":"/3d",
+        "destination":"/stuff/3d"
       }
     ]
 }
