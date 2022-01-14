@@ -63,13 +63,6 @@
         var lmousedown = false
         var rmousedown = false
         function isPointInPolygon(latitude, longitude, polygon) {
-            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-                throw new TypeError('Invalid latitude or longitude. Numbers are expected')
-            } else if (!polygon || !Array.isArray(polygon)) {
-                throw new TypeError('Invalid polygon. Array with locations expected')
-            } else if (polygon.length === 0) {
-                throw new TypeError('Invalid polygon. Non-empty Array expected')
-            }
 
             const x = latitude; const y = longitude
 
@@ -257,11 +250,12 @@
             if (keysdown.includes('c')) {
                 try {
                     var coords = shapeFromPoint(mx, my)
-                    newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
+                    var s = newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
+                    s.color = '#01FF70'
                 } catch { }
             }
         }, 100)
-        newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
         var psx = 100
         var psy = 100
         var tsx = w / 2
@@ -269,14 +263,14 @@
             var tsy = w / 2
             while (tsy > 0) {
                 var s = newShape(tsx - (w / 4), 300, tsy - (w / 4), 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
-                shapes.filter(i => i.id == s.id)[0].color = '#101010'
                 tsy += -psy
             }
             tsx += -psx
         }
         var plane = newShape(0, 301, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
-        newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
-        newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
+        plane.color = 'gray'
+        newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
+        newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50).color = '#01FF70'
     </script>
 </body>
 
