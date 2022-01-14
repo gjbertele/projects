@@ -48,7 +48,7 @@
         var w = document.body.clientWidth
         var airDrag = 0.99
         var h = document.body.clientHeight
-        var faces = [[[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]], [[-1, -1, 1], [-1, -1, -1], [-1, 1, -1], [-1, 1, 1]], [[1, -1, 1], [1, -1, -1], [1, 1, -1], [1, 1, 1]]]
+        var faces = [[[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]], [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]], [[-1, -1, 1], [-1, -1, -1], [-1, 1, -1], [-1, 1, 1]], [[1, -1, 1], [1, -1, -1], [1, 1, -1], [1, 1, 1]], [[-1, 1, 1], [1, 1, 1], [1, 1, -1], [-1, 1, -1]]]
         var airDrag = 0.99
         canvas.width = w
         canvas.height = h
@@ -61,8 +61,8 @@
         var mx = 0
         var my = 0
         var fov = w * 0.9
-        var coffsetx = w/2
-        var coffsety = h/2
+        var coffsetx = w / 2
+        var coffsety = h / 2
         var shapes = []
         function isPointInPolygon(latitude, longitude, polygon) {
             if (typeof latitude !== 'number' || typeof longitude !== 'number') {
@@ -191,7 +191,11 @@
                                 if (i.y < k.y) {
                                     i.y = k.y - (k.h + i.h) / 2
                                 } else {
-                                    i.y = k.y + (k.h + i.h) / 2
+                                    if (k.anchored == true) {
+                                        i.y = k.y + (k.h + i.h) / 2
+                                    } else {
+                                        k.y = i.y - (k.h+i.h)/2+1
+                                    }
                                 }
                             }
                         }
@@ -211,8 +215,11 @@
                     i.vz = 0
                 }
                 var pts = i.draw()
+                i.screenBBoxes = pts
+            })
+            var ordered = shapes.sort((a, b) => (a.z + a.d / 2) - (b.z + b.d / 2)).reverse().forEach(function (i, v) {
                 if (i.render == true) {
-                    pts.forEach(function (kt, tv) {
+                    i.screenBBoxes.forEach(function (kt, tv) {
                         ctx.beginPath()
                         kt.forEach(function (k, t) {
                             if (t == 0) {
@@ -221,28 +228,29 @@
                             ctx.lineTo(k.x, k.y)
                         })
                         ctx.lineTo(kt[0].x, kt[0].y)
+                        ctx.fillStyle = i.color
                         ctx.stroke()
+                        ctx.fill()
                     })
                 }
-                i.screenBBoxes = pts
             })
-            if(keysdown.includes('d')){
-                coffsetx2+=10
+            if (keysdown.includes('d')) {
+                coffsetx2 += 10
             }
-            if(keysdown.includes('a')){
-                coffsetx2-=10
+            if (keysdown.includes('a')) {
+                coffsetx2 -= 10
             }
-            if(keysdown.includes('s')){
-                coffsetz2-=10
+            if (keysdown.includes('s')) {
+                coffsetz2 -= 10
             }
-            if(keysdown.includes('w')){
-                coffsetz2+=10
+            if (keysdown.includes('w')) {
+                coffsetz2 += 10
             }
-            if(keysdown.includes('e')){
-                coffsety-=10
+            if (keysdown.includes('e')) {
+                coffsety -= 10
             }
-            if(keysdown.includes('q')){
-                coffsety+=10
+            if (keysdown.includes('q')) {
+                coffsety += 10
             }
         }, 1000 / fps)
         setInterval(function () {
@@ -260,7 +268,8 @@
         while (tsx > 0) {
             var tsy = w / 2
             while (tsy > 0) {
-                newShape(tsx - (w / 4), 300, tsy - (w / 4), 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
+                var s = newShape(tsx - (w / 4), 300, tsy - (w / 4), 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
+                shapes.filter(i => i.id == s.id)[0].color = '#101010'
                 tsy += -psy
             }
             tsx += -psx
