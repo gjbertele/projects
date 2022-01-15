@@ -34,9 +34,11 @@
     </style>
     <canvas oncontextmenu="return false;"></canvas>
     <span class='ctrls'>
+        T key = Gravitate<br>
         C key = create cube<br><br>
         Left click & drag = move<br>
-        Right click & drag = look around
+        Right click & drag = look around<br>
+        <br>
     </span>
     <script>
         var canvas = document.querySelector('canvas')
@@ -95,14 +97,14 @@
         document.body.onmousedown = function (e) {
             if (e.which == 1) {
                 lmousedown = true
-            } else if(e.which == 3){
+            } else if (e.which == 3) {
                 rmousedown = true
             }
         }
         document.body.onmouseup = function (e) {
             if (e.which == 1) {
                 lmousedown = false
-            } else if(e.which == 3){
+            } else if (e.which == 3) {
                 rmousedown = false
             }
 
@@ -236,13 +238,24 @@
                     })
                 }
             })
-            if(lmousedown == true){
-                coffsetx2+=-(mx-lmx)
-                coffsetz2+=(my-lmy)*2
+            if (lmousedown == true) {
+                coffsetx2 += -(mx - lmx)
+                coffsetz2 += (my - lmy) * 2
             }
-            if(rmousedown == true){
-                coffsetx+=(mx-lmx)
-                coffsety+=(my-lmy)
+            if (rmousedown == true) {
+                coffsetx += (mx - lmx)
+                coffsety += (my - lmy)
+            }
+            if (keysdown.includes('t')) {
+                var coords = shapeFromPoint(mx, my)
+                shapes.forEach(function (i, v) {
+                    var dx = i.x-coords.x
+                    var dy = i.y-coords.y
+                    var dz = i.z-coords.z
+                    i.vx+=-dx
+                    i.vy+=-dy
+                    i.vz+=-dz
+                })
             }
         }, 1000 / fps)
         setInterval(function () {
@@ -250,7 +263,7 @@
                 try {
                     var coords = shapeFromPoint(mx, my)
                     var s = newShape(coords.x, coords.y - coords.h / 2, coords.z, 0, 0, 0, 1, 0.9, 50, 50, 50)
-                    
+
                 } catch { }
             }
         }, 100)
