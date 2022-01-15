@@ -248,14 +248,17 @@
             }
             if (keysdown.includes('t')) {
                 var coords = shapeFromPoint(mx, my)
-                shapes.forEach(function (i, v) {
-                    var dx = i.x-coords.x
-                    var dy = i.y-coords.y
-                    var dz = i.z-coords.z
-                    i.vx+=-dx
-                    i.vy+=-dy
-                    i.vz+=-dz
-                })
+                console.log(coords)
+                if (coords.z != Infinity) {
+                    shapes.forEach(function (i, v) {
+                        var dx = i.x - coords.x
+                        var dy = i.y - coords.y
+                        var dz = i.z - coords.z
+                        i.vx += -dx
+                        i.vy += -dy
+                        i.vz += -dz
+                    })
+                }
             }
         }, 1000 / fps)
         setInterval(function () {
