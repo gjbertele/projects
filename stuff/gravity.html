@@ -32,6 +32,8 @@
     <span class='sliders'>
         # of points: <input type='range' class='ptsNum' min="0" max="200" value="50"><span class='pv'></span><br>
         point weight:<input type='range' class='weight' min="0" max="300" value="200"><span class='wv'></span><br>
+        initial point x velocity:<input type='range' class='svx' min="0" max="10"  step="0.1" value="0.1"><span class='svxv'></span><br>
+        initial point y velocity:<input type='range' class='svy' min="0" step = '0.1' max="10" value="0.1"><span class='svyv'></span><br>
         frames to simulate: <input type='range' class='frames' min="0" max="100000" value="50000"><span
             class='fv'></span><br><br>
         G key = new gravity point<br>
@@ -42,6 +44,8 @@
         Black circle = gravity center<br>
     </span>
     <script>
+        var svx = 0
+        var svy = 0
         var gravpoints = []
         var gmap = false
         var canvas = document.querySelector('canvas')
@@ -112,13 +116,17 @@
             document.querySelector('.wv').textContent = Number(document.querySelector('.weight').value).toLocaleString() + 'kg'
             document.querySelector('.pv').textContent = Number(document.querySelector('.ptsNum').value).toLocaleString()
             document.querySelector('.gv').textContent = Number(document.querySelector('.gweight').value).toLocaleString() + 'kg'
+            document.querySelector('.svxv').textContent = Number(document.querySelector('.svx').value).toLocaleString()
+            document.querySelector('.svyv').textContent = Number(document.querySelector('.svy').value).toLocaleString()
+            svx = Number(document.querySelector('.svx').value)
+            svy = Number(document.querySelector('.svy').value)
             while (theight > 0) {
                 theight = theight - (h / document.querySelector('.ptsNum').value)
                 points.push({
                     x: 10,
                     y: theight,
-                    vx: 0,
-                    vy: 0,
+                    vx: svx,
+                    vy: svy,
                     weight: document.querySelector('.weight').value
                 })
             }
