@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        .speedRef {
+            position: fixed;
+            top: 100%;
+            left: 100%;
+            width: 1in;
+            height: 1in;
+        }
+
+        .speedBox {
+            position: absolute;
+            left: 0%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1in;
+            height: 1in;
+            background: #fff;
+        }
+
+        body {
+            position: absolute;
+            left: 0%;
+            top: 0%;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .text {
+            position: absolute;
+            color: #fff;
+            left: 50%;
+            top: 30%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+            font-family: monospace;
+        }
+
+        input {
+            color: #fff;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #fff;
+            width: 30%;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+    <div class='speedRef'></div>
+    <div class='text'>
+        <pre class='dist'></pre><input type="number" value="1"><span class='mph'>mph</span>
+    </div>
+    <div class='speedBox'></div>
+    <script>
+        var pxPerIn = document.querySelector('.speedRef').clientWidth
+        var elem = document.querySelector('.speedBox')
+        var lm = 0
+        var total = 0
+        setInterval(function () {
+            lm += document.querySelector('input').value * 17.6 * pxPerIn / 100
+            total += document.querySelector('input').value * 17.6 * pxPerIn / 100
+            document.querySelector('.dist').textContent = Math.round(total).toLocaleString() + 'px traveled \n' + Math.round(total / pxPerIn).toLocaleString() + 'in traveled\n' + Math.round(total / pxPerIn / 63360).toLocaleString() + 'mi traveled'
+            if (lm - (pxPerIn / 2) > document.body.clientWidth) lm = -(pxPerIn / 2)
+            elem.style.left = lm + 'px'
+        }, 10)
+    </script>
+</body>
+
+</html>

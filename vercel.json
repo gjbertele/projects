@@ -20,6 +20,10 @@
       {
         "source":"/3d",
         "destination":"/stuff/3d"
+      },
+      {
+        "source":"/speed",
+        "destination":"/stuff/speed"
       }
     ]
 }
