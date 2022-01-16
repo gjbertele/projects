@@ -83,12 +83,12 @@
         var lm = 0
         var total = 0
         setInterval(function () {
-            lm += document.querySelector('input').value * 17.6 * pxPerIn / 100
-            total += document.querySelector('input').value * 17.6 * pxPerIn / 100
+            lm += document.querySelector('input').value * 17.6 * pxPerIn / 1000
+            total += document.querySelector('input').value * 17.6 * pxPerIn / 1000
             document.querySelector('.dist').textContent = Math.round(total).toLocaleString() + 'px traveled \n' + Math.round(total / pxPerIn).toLocaleString() + 'in traveled\n' + Math.round(total / pxPerIn / 63360).toLocaleString() + 'mi traveled'
             if (lm - (pxPerIn / 2) > document.body.clientWidth) lm = -(pxPerIn / 2)
             elem.style.left = lm + 'px'
-        }, 10)
+        }, 1)
     </script>
 </body>
 
