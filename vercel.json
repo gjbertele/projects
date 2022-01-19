@@ -24,6 +24,10 @@
       {
         "source":"/speed",
         "destination":"/stuff/speed"
+      },
+      {
+        "source":"/wave",
+        "destination":"/stuff/wave"
       }
     ]
 }
