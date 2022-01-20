@@ -24,7 +24,7 @@
         }
 
         ::-webkit-scrollbar {
-            display:none;
+            display: none;
         }
 
         .time {
@@ -76,26 +76,26 @@
         var cem = 5
         var start = performance.now()
         var paused = false
-        document.body.onclick = function () {
-            paused = !paused
-        }
         var stp = 0
         var tp = 0
-        document.body.onkeydown = function (e) {
-            if (e.key == ' ') {
-                paused = !paused
-                if (paused == false) {
-                    tp += performance.now() - stp
-                } else {
-                    stp = performance.now()
-                }
-            }
-        }
         document.body.onload = function () {
             if (window.mobileCheck() == true) {
                 document.querySelector('.subtitle').innerHTML = 'Tap to pause/unpause<br>Swipe to change precision'
+                document.body.onclick = function () {
+                    paused = !paused
+                }
             } else {
                 document.querySelector('.subtitle').innerHTML = 'Space key to pause/unpause<br>Scroll to change precision'
+                document.body.onkeydown = function (e) {
+                    if (e.key == ' ') {
+                        paused = !paused
+                        if (paused == false) {
+                            tp += performance.now() - stp
+                        } else {
+                            stp = performance.now()
+                        }
+                    }
+                }
             }
             document.documentElement.scroll(0, document.body.clientHeight / 2 - screen.availHeight / 2)
             document.body.onscroll = function (e) {
