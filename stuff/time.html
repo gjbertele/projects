@@ -88,7 +88,7 @@
         var paused = false
         var stp = 0
         var tp = 0
-        var s = performance.now().toString().split('.')[1].length
+        var s = performance.now().toString().split('.')[1].length || 16
         document.body.onload = function () {
             if (window.mobileCheck() == true) {
                 document.querySelector('.subtitle').innerHTML = 'Tap to pause/unpause<br>Swipe to change precision'
@@ -109,7 +109,7 @@
                 precision = ((s+3) - ((s / document.body.clientHeight) * (document.documentElement.scrollTop - (document.body.clientHeight / 2))) * 2)
             }
         }
-        var precision = performance.now().toString().split('.')[1].length
+        var precision = s
         var lastFrame = Date.now()
         function randomStr() {
             return Math.random().toString().split('.')[1]
