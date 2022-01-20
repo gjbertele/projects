@@ -89,6 +89,7 @@
                 document.body.onkeydown = function (e) {
                     if (e.key == ' ') {
                         paused = !paused
+                        e.preventDefault()
                     }
                 }
             }
@@ -105,10 +106,10 @@
                 tp += (Date.now() - lastFrame)
             }
             lastFrame = Date.now()
-            var t = (performance.now() - start) / 1000 - (tp/1000)
+            var t = (performance.now() - start) / 1000
             if (!isNaN(t) && paused == false) {
                 try {
-                    var str = new Date(t * 1000).toISOString().substr(11, 8)
+                    var str = new Date(t * 1000 - (tp/1000)).toISOString().substr(11, 8)
                     var decimals = t.toString().split('.')[1]
                     while (decimals.length < Math.floor(precision)) {
                         decimals += '0'
