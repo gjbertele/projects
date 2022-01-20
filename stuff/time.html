@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            overflow:hidden;
+        }
+
+        .time {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: monospace;
+            font-size: 5em
+        }
+        .subtitle{
+            position:absolute;
+            left:50%;
+            top:55%;
+            font-size:1em;
+            font-family:monospace;
+            color:#fff6f6;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+    <span class='time'></span>
+    <span class='subtitle'>Space key or tap to pause/unpause</span>
+    <script>
+        var start = performance.now()
+        var paused = false
+        document.body.onclick = function(){
+            paused = !paused
+        }
+        document.body.onkeydown = function(e){
+            if(e.key == ' '){
+                paused = !paused
+            }
+        }
+        function upd() {
+            var t = (performance.now() - start) / 1000
+            if (!isNaN(t)&&paused == false) {
+                try {
+                    var str = new Date(t * 1000).toISOString().substr(11,8)
+                    var decimals = t.toString().split('.')[1]
+                    while (decimals.length < 16) {
+                        decimals += '0'
+                    }
+                    while(decimals.length>16){
+                        decimals = decimals.substr(0,decimals.length-1)
+                    }
+                    document.querySelector('.time').textContent = str + '.' + decimals
+                } catch { }
+            }
+            requestAnimationFrame(upd)
+        }
+        upd()
+    </script>
+</body>
+
+</html>
