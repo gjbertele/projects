@@ -73,6 +73,7 @@
                 paused = !paused
             }
         }
+        var precision = 17
         function upd() {
             document.querySelector('.time').fontSize = cem + 'em'
             var t = (performance.now() - start) / 1000
@@ -80,10 +81,10 @@
                 try {
                     var str = new Date(t * 1000).toISOString().substr(11, 8)
                     var decimals = t.toString().split('.')[1]
-                    while (decimals.length < 16) {
+                    while (decimals.length < precision) {
                         decimals += '0'
                     }
-                    while (decimals.length > 16) {
+                    while (decimals.length > precision) {
                         decimals = decimals.substr(0, decimals.length - 1)
                     }
                     document.querySelector('.time').textContent = str + '.' + decimals
