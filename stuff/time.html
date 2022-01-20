@@ -49,6 +49,15 @@
             text-align: center;
         }
 
+        .alert {
+            position: fixed;
+            left: 1%;
+            bottom: 1%;
+            font-size: 1em;
+            font-family: monospace;
+            color: #fff6f6;
+        }
+
         .emPlaceholder {
             position: fixed;
             top: 100%;
@@ -59,6 +68,7 @@
     </style>
     <span class='time'></span>
     <span class='subtitle'>Space key or tap to pause/unpause<br>Scroll/swipe to change precision</span>
+    <span class="alert">Some devices limit the amount of precision available</span>
     <div class="emPlaceholder"></div>
     <script>
         window.mobileCheck = function () {
@@ -78,6 +88,7 @@
         var paused = false
         var stp = 0
         var tp = 0
+        var s = performance.now().toString().split('.')[1].length
         document.body.onload = function () {
             if (window.mobileCheck() == true) {
                 document.querySelector('.subtitle').innerHTML = 'Tap to pause/unpause<br>Swipe to change precision'
@@ -95,11 +106,14 @@
             }
             document.documentElement.scroll(0, document.body.clientHeight / 2 - screen.availHeight / 2)
             document.body.onscroll = function (e) {
-                precision = (20 - ((17 / document.body.clientHeight) * (document.documentElement.scrollTop - (document.body.clientHeight / 2))) * 2)
+                precision = ((s+3) - ((s / document.body.clientHeight) * (document.documentElement.scrollTop - (document.body.clientHeight / 2))) * 2)
             }
         }
-        var precision = 17
+        var precision = performance.now().toString().split('.')[1].length
         var lastFrame = Date.now()
+        function randomStr() {
+            return Math.random().toString().split('.')[1]
+        }
         function upd() {
             document.querySelector('.time').fontSize = cem + 'em'
             if (paused == true) {
@@ -109,7 +123,7 @@
             var t = (performance.now() - start) / 1000
             if (!isNaN(t) && paused == false) {
                 try {
-                    var str = new Date(t * 1000 - (tp/1000)).toISOString().substr(11, 8)
+                    var str = new Date(t * 1000 - (tp / 1000)).toISOString().substr(11, 8)
                     var decimals = t.toString().split('.')[1]
                     while (decimals.length < Math.floor(precision)) {
                         decimals += '0'
@@ -117,6 +131,8 @@
                     while (decimals.length > Math.floor(precision)) {
                         decimals = decimals.substr(0, decimals.length - 1)
                     }
+                    var rs1 = randomStr()
+                    var rs2 = randomStr()
                     document.querySelector('.time').textContent = str + '.' + decimals
                     var iterations = 10
                     while (iterations > 0) {
