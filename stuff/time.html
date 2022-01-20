@@ -88,9 +88,20 @@
         var paused = false
         var stp = 0
         var tp = 0
-        var s = performance.now().toString().split('.')[1].length || 16
+        var e =  performance.now().toString().split('.')[1]
+        var s;
+        if(e == undefined){
+            e = performance.now().toString().split('.')[1]
+            if(e == undefined){
+                s = 16
+            } else {
+                s = e.length
+            }
+        } else {
+            s = e.length
+        }
         document.body.onload = function () {
-            if (window.mobileCheck() == true) {
+            if (window.mobileCheck() == false) {
                 document.querySelector('.subtitle').innerHTML = 'Tap to pause/unpause<br>Swipe to change precision'
                 document.body.onclick = function () {
                     paused = !paused
