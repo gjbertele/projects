@@ -68,15 +68,22 @@
         document.body.onclick = function () {
             paused = !paused
         }
+        var stp = 0
+        var tp = 0
         document.body.onkeydown = function (e) {
             if (e.key == ' ') {
                 paused = !paused
+                if(paused == false){
+                    tp+=performance.now()-stp
+                } else {
+                    stp = performance.now()
+                }
             }
         }
         var precision = 17
         function upd() {
             document.querySelector('.time').fontSize = cem + 'em'
-            var t = (performance.now() - start) / 1000
+            var t = (performance.now() - start) / 1000 - (tp/1000)
             if (!isNaN(t) && paused == false) {
                 try {
                     var str = new Date(t * 1000).toISOString().substr(11, 8)
