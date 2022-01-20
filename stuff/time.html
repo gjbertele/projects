@@ -18,7 +18,7 @@
             width: 100%;
             height: 100%;
             background: #121212;
-            overflow:hidden;
+            overflow: hidden;
         }
 
         .time {
@@ -28,44 +28,77 @@
             transform: translate(-50%, -50%);
             color: #fff;
             font-family: monospace;
-            font-size: 5em
+            font-size: 5em;
+            text-align: center;
         }
-        .subtitle{
-            position:absolute;
-            left:50%;
-            top:55%;
-            font-size:1em;
-            font-family:monospace;
-            color:#fff6f6;
+
+        .subtitle {
+            position: absolute;
+            left: 50%;
+            top: 55%;
+            font-size: 1em;
+            font-family: monospace;
+            color: #fff6f6;
             transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .emPlaceholder {
+            position: absolute;
+            top: 100%;
+            left: 100%;
+            width: 1em;
+            height: 1em;
         }
     </style>
     <span class='time'></span>
     <span class='subtitle'>Space key or tap to pause/unpause</span>
+    <div class="emPlaceholder"></div>
     <script>
+        function getTextWidth(text, font) {
+            const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+            const context = canvas.getContext("2d");
+            context.font = font;
+            const metrics = context.measureText(text);
+            return metrics.width;
+        }
+        var cem = 5
         var start = performance.now()
         var paused = false
-        document.body.onclick = function(){
+        document.body.onclick = function () {
             paused = !paused
         }
-        document.body.onkeydown = function(e){
-            if(e.key == ' '){
+        document.body.onkeydown = function (e) {
+            if (e.key == ' ') {
                 paused = !paused
             }
         }
         function upd() {
+            document.querySelector('.time').fontSize = cem + 'em'
             var t = (performance.now() - start) / 1000
-            if (!isNaN(t)&&paused == false) {
+            if (!isNaN(t) && paused == false) {
                 try {
-                    var str = new Date(t * 1000).toISOString().substr(11,8)
+                    var str = new Date(t * 1000).toISOString().substr(11, 8)
                     var decimals = t.toString().split('.')[1]
                     while (decimals.length < 16) {
                         decimals += '0'
                     }
-                    while(decimals.length>16){
-                        decimals = decimals.substr(0,decimals.length-1)
+                    while (decimals.length > 16) {
+                        decimals = decimals.substr(0, decimals.length - 1)
                     }
                     document.querySelector('.time').textContent = str + '.' + decimals
+                    var iterations = 10
+                    while (iterations > 0) {
+                        iterations--
+                        if (getTextWidth(str + '.' + decimals, cem + 'em monospace') > document.body.clientWidth * (1 / 3)) {
+                            cem -= 0.1
+                        } else {
+                            if (cem < 5 && getTextWidth(str + '.' + decimals, (cem + 0.1) + 'em monospace') < document.body.clientWidth * (1 / 3)) {
+                                cem += 0.1
+                            }
+                        }
+                    }
+                    document.querySelector('.time').style.fontSize = cem + 'em'
                 } catch { }
             }
             requestAnimationFrame(upd)
