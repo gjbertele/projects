@@ -28,6 +28,10 @@
       {
         "source":"/wave",
         "destination":"/stuff/wave"
+      },
+      {
+        "source":"/time",
+        "destination":"/stuff/time"
       }
     ]
 }
