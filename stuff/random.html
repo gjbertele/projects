@@ -33,35 +33,40 @@
         var b = document.querySelector('.body')
         var w = document.body.clientWidth
         var h = document.body.clientHeight
+        function generate() {
+            var fontSize = (Math.random() * 70) + 30
+            t.style.fontSize = fontSize + 'px'
+            b.style.fontSize = fontSize * 0.6 + 'px'
 
-        var fontSize = (Math.random() * 70) + 30
-        t.style.fontSize = fontSize + 'px'
-        b.style.fontSize = fontSize * 0.6 + 'px'
+            var tx = Math.random() * (w - t.clientWidth)
+            var ty = Math.random() * (h - t.clientHeight)
+            t.style.left = tx + 'px'
+            t.style.top = ty + 'px'
 
-        var tx = Math.random() * (w - t.clientWidth)
-        var ty = Math.random() * (h - t.clientHeight)
-        t.style.left = tx + 'px'
-        t.style.top = ty + 'px'
-
-        var bx = Math.random() * (w - b.clientWidth)
-        var by = Math.random() * (h - b.clientHeight)
-        b.style.left = bx + 'px'
-        b.style.top = by + 'px'
-
-        while (Math.abs(bx - tx) < (b.clientWidth + t.clientWidth) / 2 && Math.abs(ty - by) < (t.clientHeight + b.clientHeight) / 2) {
             var bx = Math.random() * (w - b.clientWidth)
             var by = Math.random() * (h - b.clientHeight)
             b.style.left = bx + 'px'
             b.style.top = by + 'px'
+
+            while (Math.abs(bx - tx) < (b.clientWidth + t.clientWidth) / 2 && Math.abs(ty - by) < (t.clientHeight + b.clientHeight) / 2) {
+                var bx = Math.random() * (w - b.clientWidth)
+                var by = Math.random() * (h - b.clientHeight)
+                b.style.left = bx + 'px'
+                b.style.top = by + 'px'
+            }
+
+            var fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS', 'Times New Roman', 'Georgia', 'Garamond', 'Courier New', 'Brush Script MT']
+
+            t.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
+            b.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
+
+            document.body.style.background = 'rgb(' + Math.random() * 255 + ',' + Math.random() * 255 + ',' + Math.random() * 255 + ')'
         }
+        generate()
 
-        var fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS', 'Times New Roman', 'Georgia', 'Garamond', 'Courier New', 'Brush Script MT']
-
-        t.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
-        b.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
-
-        document.body.style.background = 'rgb(' + Math.random() * 255 + ',' + Math.random() * 255 + ',' + Math.random() * 255 + ')'
-
+        document.addEventListener('visibilitychange', e => {
+            generate()
+        })
         var title = 'Randomized Website'.split('')
         for (var i = title.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
