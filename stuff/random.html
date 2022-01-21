@@ -23,7 +23,7 @@
         .body {
             position: absolute;
             mix-blend-mode: difference;
-            color:#fff;
+            color: #fff;
         }
     </style>
     <span class='title'>Asphy</span>
@@ -57,11 +57,19 @@
 
         var fonts = ['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS', 'Times New Roman', 'Georgia', 'Garamond', 'Courier New', 'Brush Script MT']
 
-        t.style.fontFamily = fonts[Math.floor(Math.random()*(fonts.length-1))]
-        b.style.fontFamily = fonts[Math.floor(Math.random()*(fonts.length-1))]
+        t.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
+        b.style.fontFamily = fonts[Math.floor(Math.random() * (fonts.length - 1))]
 
-        document.body.style.background = 'rgb('+Math.random()*255+','+Math.random()*255+','+Math.random()*255+')'
+        document.body.style.background = 'rgb(' + Math.random() * 255 + ',' + Math.random() * 255 + ',' + Math.random() * 255 + ')'
 
+        var title = 'Randomized Website'.split('')
+        for (var i = title.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = title[i];
+            title[i] = title[j];
+            title[j] = temp;
+        }
+        document.title = title.join('')
 
     </script>
 </body>
