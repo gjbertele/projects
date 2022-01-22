@@ -32,6 +32,10 @@
       {
         "source":"/time",
         "destination":"/stuff/time"
+      },
+      {
+        "source":"/ruler",
+        "destination":"/stuff/ruler"
       }
     ]
 }
