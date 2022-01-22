@@ -101,7 +101,7 @@
             s = e.length
         }
         document.body.onload = function () {
-            if (window.mobileCheck() == false) {
+            if (window.mobileCheck() == true) {
                 document.querySelector('.subtitle').innerHTML = 'Tap to pause/unpause<br>Swipe to change precision'
                 document.body.onclick = function () {
                     paused = !paused
