@@ -64,17 +64,19 @@
         }
         generate()
 
-        document.addEventListener('visibilitychange', e => {
+        setInterval(function () {
             generate()
-        })
+        }, 5000)
         var title = 'Randomized Website'.split('')
-        for (var i = title.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var temp = title[i];
-            title[i] = title[j];
-            title[j] = temp;
-        }
-        document.title = title.join('')
+        setInterval(function () {
+            for (var i = title.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = title[i];
+                title[i] = title[j];
+                title[j] = temp;
+            }
+            document.title = title.join('')
+        },100)
 
     </script>
 </body>
