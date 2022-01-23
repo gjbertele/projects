@@ -66,12 +66,12 @@
         document.body.onkeyup = function (e) {
             keysdown = keysdown.filter(i => i != e.key)
         }
-        document.body.onmousedown = function (e) {
+        document.body.onpointerdown = function (e) {
             mousedown = true
             sx = e.clientX
             sy = e.clientY
         }
-        document.body.onmouseup = function (e) {
+        document.body.onpointerup = function (e) {
             var mx = e.clientX
             var my = e.clientY
             mousedown = false
