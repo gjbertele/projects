@@ -73,14 +73,16 @@
         }
         document.body.onmouseup = function (e) {
             mousedown = false
-            ctx.beginPath()
-            ctx.moveTo(sx, sy)
-            ctx.lineTo(mx, my)
-            ctx.stroke()
             var len = Math.sqrt((sx - mx) ** 2 + (sy - my) ** 2)
-            var midX = (mx + sx) / 2
-            var midY = (my + sy) / 2
-            ctx.fillText(Math.round((len / pxPerIn) * 10) / 10 + 'in', midX, midY - 10)
+            if (len > 0) {
+                ctx.beginPath()
+                ctx.moveTo(sx, sy)
+                ctx.lineTo(mx, my)
+                ctx.stroke()
+                var midX = (mx + sx) / 2
+                var midY = (my + sy) / 2
+                ctx.fillText(Math.round((len / pxPerIn) * 10) / 10 + 'in', midX, midY - 10)
+            }
 
         }
         document.body.onmousemove = function (e) {
