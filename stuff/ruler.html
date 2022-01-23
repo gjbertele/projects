@@ -68,10 +68,12 @@
         }
         document.body.onmousedown = function (e) {
             mousedown = true
-            sx = mx
-            sy = my
+            sx = e.clientX
+            sy = e.clientY
         }
         document.body.onmouseup = function (e) {
+            var mx = e.clientX
+            var my = e.clientY
             mousedown = false
             var len = Math.sqrt((sx - mx) ** 2 + (sy - my) ** 2)
             if (len > 0) {
@@ -84,10 +86,6 @@
                 ctx.fillText(Math.round((len / pxPerIn) * 10) / 10 + 'in', midX, midY - 10)
             }
 
-        }
-        document.body.onmousemove = function (e) {
-            mx = e.clientX
-            my = e.clientY
         }
     </script>
 </body>
