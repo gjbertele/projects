@@ -110,14 +110,16 @@
         document.body.onkeyup = function (e) {
             keysdown = keysdown.filter(i => i != e.key)
         }
-        document.body.onmousedown = function (e) {
+        document.body.onpointerdown = function (e) {
             if (e.which == 1) {
                 mousedown = true
                 sx = e.clientX
                 sy = e.clientY
             }
         }
-        document.body.onmouseup = function (e) {
+        document.body.onpointerup = function (e) {
+            mx = e.clientX
+            my = e.clientY
             if (e.which == 1) {
                 mousedown = false
                 var dsx = sx
@@ -146,10 +148,6 @@
                 }
             }
 
-        }
-        document.body.onmousemove = function (e) {
-            mx = e.clientX
-            my = e.clientY
         }
         var walls = [{
             x: 0,
@@ -189,26 +187,6 @@
                     ctx.fillRect(i.x - 3, i.y - 3, 6, 6)
                 }
             })
-            if (mousedown) {
-                var dsx = sx
-                var dsy = sy
-                var dsw = mx - sx
-                var dsh = my - sy
-                if (mx < sx) {
-                    dsx = mx
-                    dsw = sx - mx
-                }
-                if (my < sy) {
-                    dsy = my
-                    dsh = sy - my
-                }
-                walls[0] = {
-                    x: dsx,
-                    y: dsy,
-                    width: dsw,
-                    height: dsh
-                }
-            }
             if (keysdown.includes('a')) {
                 walls.forEach(function (i, v) {
                     if (i.x < mx && i.x + i.width > mx && i.y < my && i.y + i.height > my) {
