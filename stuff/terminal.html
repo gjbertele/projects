@@ -116,18 +116,29 @@ Full stack JS dev\n`.split(`
         }
         function command(){
             var cmdt = document.querySelector('.inpValue').textContent
-            document.querySelector('.cmd').textContent+='C:\\Users\\Asphy> '+cmdt+'\n'
+            document.querySelector('.cmd').innerHTML+='C:\\Users\\Asphy> '+cmdt.replace(/</g, '&lt;')+'\n'
             totalstr = ''
             document.querySelector('.inpValue').textContent = ''
-            var cmd = cmdt.split(' ')[0]
+            var cmd = cmdt.split(' ')[0].toLowerCase()
             var args = cmdt.split(' ').splice(1)
             if(cmd == 'dir'){
-                document.querySelector('.cmd').textContent+=`<DIR>      math\n<DIR>      head\n`
+                document.querySelector('.cmd').innerHTML+=`<DIR>      math\n<DIR>      head\n`.replace(/</g, '&lt;');
                 document.querySelector('.cmd').innerHTML+=`           <a href="./physics3.html" style="color:#fff">physics3.html</a>\n           <a href="./finder.html" style="color:#fff">finder.html</a>\n`
             } else if(cmd == 'echo'){
-                document.querySelector('.cmd').textContent+=args.join(' ')+`\n`
+                document.querySelector('.cmd').innerHTML+=args.join(' ').replace(/</g, '&lt;')+`\n`
             } else if(cmd == 'help'){
-                document.querySelector('.cmd').textContent+=`HELP     Displays list of commands\nDIR      Lists files in directory\nECHO     Prints text to the console\n`
+                document.querySelector('.cmd').innerHTML+=`HELP     Displays list of commands\nDIR      Lists files in directory\nECHO     Prints text to the console\nCLEAR    Clears the console`
+            } else if(cmd == 'clear'){
+                document.querySelector('.cmd').innerHTML = `   _____                 .__           
+  /  _  \\   ____________ |  |__ ___.__. 
+ /  /_\\  \\ /  ___/\\____ \\|  |  <   |  | 
+/    |    \\\\___ \\ |  |_> >   Y  \\___  | 
+\\____|__  /____  >|   __/|___|  / ____| 
+        \\/     \\/ |__|        \\/\\/      
+        \n 
+Full stack JS dev\n`
+            } else {
+                document.querySelector('.cmd').innerHTML+=`'${cmdt.split(' ')[0]}' is not recognized as an internal or external command,\noperable program or batch file.\n`
             }
 
             document.querySelector('.bar').style.top = (document.querySelector('.cmd').clientHeight + h * 0.01)+em + 'px'
