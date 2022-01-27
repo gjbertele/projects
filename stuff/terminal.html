@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: #0d0d0c
+        }
+
+        .cmd {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            color: #fff;
+            font-family: Consolas;
+            font-size: 1em;
+        }
+
+        .bar {
+            position: absolute;
+            color: #fff;
+            font-family: Consolas;
+            font-size: 1em;
+            left: 1%;
+            display: none;
+        }
+
+        .inp {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: Consolas;
+            font-size: 1em;
+            caret-color: #fff;
+            height: 1em;
+            position: absolute;
+        }
+
+        .inp:focus {
+            outline: none;
+        }
+
+        ::selection {
+            background: #fff;
+            color: #0d0d0c;
+        }
+
+        ::-moz-selection {
+            background: #fff;
+            color: #0d0d0c;
+        }
+
+        @keyframes blink {
+
+            from,
+            to {
+                background-color: hsla(1, 1%, 100%, 1);
+            }
+
+            50% {
+                background-color: hsla(60, 4%, 5%, 1);
+            }
+        }
+
+        .caret {
+            background-color: hsla(1, 1%, 100%, 1);
+            color: #000;
+            animation: blink 1s step-end infinite;
+        }
+    </style>
+    <pre class='cmd'></pre>
+    <div class='bar'><span class='dir'>C:\Users\Asphy></span>
+        <div class='inp'><span class='inpValue'></span><span class='caret'> </div></span>
+    </div>
+    <script>
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        var timestep = 20
+        var strings = `   _____                 .__           
+  /  _  \\   ____________ |  |__ ___.__. 
+ /  /_\\  \\ /  ___/\\____ \\|  |  <   |  | 
+/    |    \\\\___ \\ |  |_> >   Y  \\___  | 
+\\____|__  /____  >|   __/|___|  / ____| 
+        \\/     \\/ |__|        \\/\\/      
+        \n 
+Full stack JS dev\n 
+`.split(`
+`)
+        function bar() {
+            document.querySelector('.bar').style.display = 'inline-block'
+            document.querySelector('.inp').style.left = document.querySelector('.dir').offsetWidth + 5 + 'px'
+            document.querySelector('.inp').style.top = '0px'
+        }
+        document.querySelector('.inp').style.width = w * 0.5 + 'px'
+        function f(c) {
+            document.querySelector('.cmd').textContent += strings[c] + '\n'
+            document.querySelector('.bar').style.top = (document.querySelector('.cmd').clientHeight + h * 0.01) + 'px'
+            setTimeout(function () {
+                strings[c + 1] ? f(c + 1) : bar()
+            }, timestep)
+        }
+        var totalstr = ''
+        document.body.onkeydown = function (e) {
+            if (e.key == 'Backspace') {
+                totalstr = totalstr.substr(0, totalstr.length - 1)
+            } else {
+                if (e.key.length == 1) {
+                    totalstr += e.key
+                }
+            }
+            document.querySelector('.inpValue').textContent = totalstr
+        }
+        f(0)
+    </script>
+</body>
+
+</html>
