@@ -44,7 +44,7 @@
             border: none;
             color: #fff;
             font-family: Consolas;
-            font-size: 0.9em;
+            font-size: 1em;
             caret-color: #fff;
             height: 1em;
             position: absolute;
@@ -107,7 +107,9 @@
         \\/     \\/ |__|        \\/\\/      
         \n 
 Full stack JS dev\n`.split(`
-`)
+`)  
+        var lastCmds = []
+        var currentCmd = -1
         document.querySelector('.inp').style.width = w * 0.5 + 'px'
         function bar() {
             document.querySelector('.bar').style.display = 'inline-block'
@@ -115,7 +117,9 @@ Full stack JS dev\n`.split(`
             document.querySelector('.inp').style.top = '0px'
         }
         function command(){
+            currentCmd = -1
             var cmdt = document.querySelector('.inpValue').textContent
+            lastCmds.push(cmdt)
             document.querySelector('.cmd').innerHTML+='C:\\Users\\Asphy> '+cmdt.replace(/</g, '&lt;')+'\n'
             totalstr = ''
             document.querySelector('.inpValue').textContent = ''
@@ -127,7 +131,7 @@ Full stack JS dev\n`.split(`
             } else if(cmd == 'echo'){
                 document.querySelector('.cmd').innerHTML+=args.join(' ').replace(/</g, '&lt;')+`\n`
             } else if(cmd == 'help'){
-                document.querySelector('.cmd').innerHTML+=`HELP     Displays list of commands\nDIR      Lists files in directory\nECHO     Prints text to the console\nCLEAR    Clears the console`
+                document.querySelector('.cmd').innerHTML+=`HELP     Displays list of commands\nDIR      Lists files in directory\nECHO     Prints text to the console\nCLEAR    Clears the console\n`
             } else if(cmd == 'clear'){
                 document.querySelector('.cmd').innerHTML = `   _____                 .__           
   /  _  \\   ____________ |  |__ ___.__. 
@@ -138,7 +142,7 @@ Full stack JS dev\n`.split(`
         \n 
 Full stack JS dev\n`
             } else {
-                document.querySelector('.cmd').innerHTML+=`'${cmdt.split(' ')[0]}' is not recognized as an internal or external command,\noperable program or batch file.\n`
+                if(cmd!='') document.querySelector('.cmd').innerHTML+=`'${cmdt.split(' ')[0]}' is not recognized as an internal or external command,\noperable program or batch file.\n`
             }
 
             document.querySelector('.bar').style.top = (document.querySelector('.cmd').clientHeight + h * 0.01)+em + 'px'
@@ -156,6 +160,11 @@ Full stack JS dev\n`
             } else {
                 if (e.key.length == 1) totalstr += e.key
                 if(e.key == 'Enter') command()
+                if(e.key == 'ArrowUp'){
+                    currentCmd+=1
+                    totalstr = lastCmds.reverse()[currentCmd]
+                    if(totalstr == undefined) totalstr = ''
+                }
             }
             document.querySelector('.inpValue').textContent = totalstr
         }
