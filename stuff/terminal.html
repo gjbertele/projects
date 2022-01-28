@@ -99,14 +99,15 @@
         var em = document.querySelector('.emPlaceholder').offsetWidth
         var timestep = 20
         var totalstr = ''
-        var strings = `   _____                 .__           
+        var string = `   _____                 .__           
   /  _  \\   ____________ |  |__ ___.__. 
  /  /_\\  \\ /  ___/\\____ \\|  |  <   |  | 
 /    |    \\\\___ \\ |  |_> >   Y  \\___  | 
 \\____|__  /____  >|   __/|___|  / ____| 
         \\/     \\/ |__|        \\/\\/      
         \n 
-Full stack JS dev\nType 'help' for a list of commands\n`.split(`
+Full stack JS dev\nType 'help' for a list of commands\n`
+        var strings = string.split(`
 `)  
         var lastCmds = []
         var currentCmd = -1
@@ -133,14 +134,7 @@ Full stack JS dev\nType 'help' for a list of commands\n`.split(`
             } else if(cmd == 'help'){
                 document.querySelector('.cmd').innerHTML+=`HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\n`
             } else if(cmd == 'clear'){
-                document.querySelector('.cmd').innerHTML = `   _____                 .__           
-  /  _  \\   ____________ |  |__ ___.__. 
- /  /_\\  \\ /  ___/\\____ \\|  |  <   |  | 
-/    |    \\\\___ \\ |  |_> >   Y  \\___  | 
-\\____|__  /____  >|   __/|___|  / ____| 
-        \\/     \\/ |__|        \\/\\/      
-        \n 
-Full stack JS dev\n`
+                document.querySelector('.cmd').innerHTML = string
             } else if(cmd == 'projects'){
                 document.querySelector('.cmd').innerHTML+='<a href="https://0-o.xyz" style="color:#fff">https://0-o.xyz</a>\n'
             } else {
