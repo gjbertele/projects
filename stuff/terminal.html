@@ -115,6 +115,9 @@
             height: 0;
             opacity: 0;
         }
+        .link{
+            color:#fff;text-decoration:underline;cursor:pointer;
+        }
     </style>
     <pre class='cmd'></pre>
     <pre class='cursor'>()</pre>
@@ -141,6 +144,7 @@ Type 'help' for a list of commands
         var strings = string.split('\n')
         var asciiCursor = false
         var lastCmds = []
+        var currentDir = 'main'
         var currentCmd = -1
         document.querySelector('.inp').style.width = w * 0.5 + 'px'
         function bar() {
@@ -159,8 +163,7 @@ Type 'help' for a list of commands
             var cmd = cmdt.split(' ')[0].toLowerCase()
             var args = cmdt.split(' ').splice(1)
             if (cmd == 'dir') {
-                document.querySelector('.cmd').innerHTML += `<DIR>      math\n<DIR>      head\n`.replace(/</g, '&lt;');
-                document.querySelector('.cmd').innerHTML += `           <a href="https://0-o.xyz/stuff/physics3.html" style="color:#fff">physics3.html</a>\n           <a href="https://0-o.xyz/stuff/finder.html" style="color:#fff">finder.html</a>\n`
+                document.querySelector('.cmd').innerHTML += `&lt;DIR>      <span onclick="window.open('https://0-o.xyz/stuff/math/formulas')" class="link">math</span>\n&lt;DIR>      <span onclick="window.open('https://0-o.xyz/stuff/head/id')" class="link">head</span>\n           <span onclick="window.open('https://0-o.xyz/stuff/physics3.html')" class="link">physics3.html</span>\n           <span onclick="window.open('https://0-o.xyz/stuff/finder.html')" class="link">finder.html</span>\n`
             } else if (cmd == 'echo') {
                 document.querySelector('.cmd').innerHTML += args.join(' ').replace(/</g, '&lt;') + `\n`
             } else if (cmd == 'help') {
