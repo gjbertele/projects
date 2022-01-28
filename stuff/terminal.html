@@ -26,6 +26,7 @@
             margin: 0;
             background: #0d0d0c;
             overflow: hidden;
+            cursor: none;
         }
 
         .cmd {
@@ -56,6 +57,15 @@
             caret-color: #fff;
             height: 1em;
             position: absolute;
+        }
+
+        .cursor {
+            position: absolute;
+            font-family: ConsolasUniversal;
+            font-size: 1em;
+            height: 1em;
+            color: #fff;
+            display: none;
         }
 
         .inp:focus {
@@ -107,6 +117,7 @@
         }
     </style>
     <pre class='cmd'></pre>
+    <pre class='cursor'>()</pre>
     <div class='bar'><span class='dir'>C:\Users\Asphy></span>
         <div class='inp'><span class='inpValue'></span><span class='caret'> </div></span>
     </div>
@@ -128,6 +139,7 @@
 Full stack JS dev\nType 'help' for a list of commands\n`
         var strings = string.split(`
 `)
+        var asciiCursor = false
         var lastCmds = []
         var currentCmd = -1
         document.querySelector('.inp').style.width = w * 0.5 + 'px'
@@ -152,13 +164,15 @@ Full stack JS dev\nType 'help' for a list of commands\n`
             } else if (cmd == 'echo') {
                 document.querySelector('.cmd').innerHTML += args.join(' ').replace(/</g, '&lt;') + `\n`
             } else if (cmd == 'help') {
-                document.querySelector('.cmd').innerHTML += `HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\n`
+                document.querySelector('.cmd').innerHTML += `HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\nCURSOR    Toggles the ASCII cursor\n`
             } else if (cmd == 'clear') {
                 document.querySelector('.cmd').innerHTML = string
                 document.querySelector('.cmd').style.top = '1%'
                 document.querySelector('.bar').style.top = document.querySelector('.cmd').getBoundingClientRect().bottom + 'px'
             } else if (cmd == 'projects') {
                 document.querySelector('.cmd').innerHTML += '<a href="https://0-o.xyz" style="color:#fff">https://0-o.xyz</a>\n'
+            } else if(cmd == 'cursor'){
+                asciiCursor = !asciiCursor
             } else {
                 if (cmd != '') document.querySelector('.cmd').innerHTML += `'${cmdt.split(' ')[0]}' is not recognized as an internal or external command,\noperable program or batch file.\n`
             }
@@ -188,10 +202,24 @@ Full stack JS dev\nType 'help' for a list of commands\n`
                 }
             }
             document.querySelector('.inpValue').textContent = totalstr
+            //document.querySelector('.caret').style.left = document.querySelector('.inpValue').getBoundingClientRect().right-document.querySelector('.dir').offsetWidth-9+'px'
         }
         f(0)
         document.body.onclick = function () {
             document.querySelector('textarea').focus()
+        }
+        document.body.onmousemove = function (e) {
+            if (asciiCursor == true) {
+                document.body.style.cursor = 'none'
+                document.querySelector('.cursor').style.display = 'inline-block'
+                var y = e.clientY - (e.clientY % document.querySelector('.dir').offsetHeight)
+                var x = e.clientX - (e.clientX % em)
+                document.querySelector('.cursor').style.left = x + 'px'
+                document.querySelector('.cursor').style.top = y + 'px'
+            } else {
+                document.querySelector('.cursor').style.display = 'none'
+                document.body.style.cursor = 'auto'
+            }
         }
     </script>
 </body>
