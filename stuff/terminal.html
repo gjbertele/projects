@@ -18,7 +18,8 @@
             width: 100%;
             height: 100%;
             margin: 0;
-            background: #0d0d0c
+            background: #0d0d0c;
+            overflow:hidden;
         }
 
         .cmd {
@@ -88,12 +89,21 @@
         .emPlaceholder{
             width:0.9em;
         }
+        textarea{
+            position:absolute;
+            left:50%;
+            top:50%;
+            width:0;
+            height:0;
+            opacity:0;
+        }
     </style>
     <pre class='cmd'></pre>
     <div class='bar'><span class='dir'>C:\Users\Asphy></span>
         <div class='inp'><span class='inpValue'></span><span class='caret'> </div></span>
     </div>
     <div class='emPlaceholder'></div>
+    <textarea></textarea>
     <script>
         var w = document.body.clientWidth
         var h = document.body.clientHeight
@@ -166,6 +176,9 @@ Full stack JS dev\nType 'help' for a list of commands\n`
             document.querySelector('.inpValue').textContent = totalstr
         }
         f(0)
+        document.body.onclick = function(){
+            document.querySelector('textarea').focus()
+        }
     </script>
 </body>
 
