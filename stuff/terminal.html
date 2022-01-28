@@ -129,16 +129,16 @@
         var em = document.querySelector('.emPlaceholder').offsetWidth
         var timestep = 20
         var totalstr = ''
-        var string = `   _____                 .__           
-  /  _  \\   ____________ |  |__ ___.__. 
- /  /_\\  \\ /  ___/\\____ \\|  |  <   |  | 
-/    |    \\\\___ \\ |  |_> >   Y  \\___  | 
-\\____|__  /____  >|   __/|___|  / ____| 
-        \\/     \\/ |__|        \\/\\/      
-        \n 
-Full stack JS dev\nType 'help' for a list of commands\n`
-        var strings = string.split(`
-`)
+        var string = `   _____                 
+  /  _  \\   ____________  
+ /  /_\\  \\ /  ___/\\____ \\ 
+/    |    \\\\___ \\ |  |_> >
+\\____|__  /____  >|   __/ 
+        \\/     \\/ |__|    
+Full stack JS dev
+Type 'help' for a list of commands
+`
+        var strings = string.split('\n')
         var asciiCursor = false
         var lastCmds = []
         var currentCmd = -1
@@ -160,7 +160,7 @@ Full stack JS dev\nType 'help' for a list of commands\n`
             var args = cmdt.split(' ').splice(1)
             if (cmd == 'dir') {
                 document.querySelector('.cmd').innerHTML += `<DIR>      math\n<DIR>      head\n`.replace(/</g, '&lt;');
-                document.querySelector('.cmd').innerHTML += `           <a href="./physics3.html" style="color:#fff">physics3.html</a>\n           <a href="./finder.html" style="color:#fff">finder.html</a>\n`
+                document.querySelector('.cmd').innerHTML += `           <a href="https://0-o.xyz/stuff/physics3.html" style="color:#fff">physics3.html</a>\n           <a href="https://0-o.xyz/stuff/finder.html" style="color:#fff">finder.html</a>\n`
             } else if (cmd == 'echo') {
                 document.querySelector('.cmd').innerHTML += args.join(' ').replace(/</g, '&lt;') + `\n`
             } else if (cmd == 'help') {
