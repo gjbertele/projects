@@ -16,6 +16,7 @@
             font-family: ConsolasUniversal;
             src: url(fonts/CONSOLA.TTF);
         }
+
         body {
             position: absolute;
             left: 0;
@@ -132,7 +133,7 @@ Full stack JS dev\nType 'help' for a list of commands\n`
         document.querySelector('.inp').style.width = w * 0.5 + 'px'
         function bar() {
             document.querySelector('.bar').style.display = 'inline-block'
-            document.querySelector('.inp').style.left = document.querySelector('.dir').offsetWidth + 5 + 'px'
+            document.querySelector('.inp').style.left = document.querySelector('.dir').offsetWidth + (w * 0.0005) + 'px'
             document.querySelector('.inp').style.top = '0px'
         }
         function command() {
@@ -142,6 +143,7 @@ Full stack JS dev\nType 'help' for a list of commands\n`
             document.querySelector('.cmd').innerHTML += 'C:\\Users\\Asphy> ' + cmdt.replace(/</g, '&lt;') + '\n'
             totalstr = ''
             document.querySelector('.inpValue').textContent = ''
+            document.querySelector('.inp').style.left = document.querySelector('.dir').offsetWidth + 5 + 'px'
             var cmd = cmdt.split(' ')[0].toLowerCase()
             var args = cmdt.split(' ').splice(1)
             if (cmd == 'dir') {
@@ -153,17 +155,22 @@ Full stack JS dev\nType 'help' for a list of commands\n`
                 document.querySelector('.cmd').innerHTML += `HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\n`
             } else if (cmd == 'clear') {
                 document.querySelector('.cmd').innerHTML = string
+                document.querySelector('.cmd').style.top = '1%'
+                document.querySelector('.bar').style.top = document.querySelector('.cmd').getBoundingClientRect().bottom + 'px'
             } else if (cmd == 'projects') {
                 document.querySelector('.cmd').innerHTML += '<a href="https://0-o.xyz" style="color:#fff">https://0-o.xyz</a>\n'
             } else {
                 if (cmd != '') document.querySelector('.cmd').innerHTML += `'${cmdt.split(' ')[0]}' is not recognized as an internal or external command,\noperable program or batch file.\n`
             }
 
-            document.querySelector('.bar').style.top = (document.querySelector('.cmd').clientHeight + h * 0.01) + em + 'px'
+            if (document.querySelector('.cmd').getBoundingClientRect().bottom > h - 50) {
+                document.querySelector('.cmd').style.top = h - (document.querySelector('.cmd').clientHeight + h * 0.01) - 50 + 'px'
+            }
+            document.querySelector('.bar').style.top = document.querySelector('.cmd').getBoundingClientRect().bottom + 'px'
         }
         function f(c) {
             document.querySelector('.cmd').textContent += strings[c] + '\n'
-            document.querySelector('.bar').style.top = (document.querySelector('.cmd').clientHeight + h * 0.01) + em + 'px'
+            document.querySelector('.bar').style.top = document.querySelector('.cmd').getBoundingClientRect().bottom + 'px'
             setTimeout(function () {
                 strings[c + 1] ? f(c + 1) : bar()
             }, timestep)
