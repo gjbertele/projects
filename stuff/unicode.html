@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: #0d0d0c;
+        }
+
+        .stuff {
+            position: absolute;
+            top: 3em;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 10%;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+        }
+    </style>
+    <span class='stuff'></span>
+    <script>
+        var c = 0
+        function add() {
+            var str = ''
+            for (let i = c; i < c + 1000; i++) {
+                str += String.fromCharCode(i) + ' '
+            }
+            c += 1000
+            document.querySelector('.stuff').textContent += str
+        }
+        add()
+        setInterval(function () {
+            if (window.scrollY + window.innerHeight > document.querySelector('.stuff').offsetHeight - 1000 && c < 170000) {
+                add()
+            }
+        }, 10)
+    </script>
+</body>
+
+</html>

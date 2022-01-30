@@ -22,10 +22,6 @@
         "destination":"/stuff/3d"
       },
       {
-        "source":"/speed",
-        "destination":"/stuff/speed"
-      },
-      {
         "source":"/wave",
         "destination":"/stuff/wave"
       },
@@ -34,8 +30,8 @@
         "destination":"/stuff/time"
       },
       {
-        "source":"/ruler",
-        "destination":"/stuff/ruler"
+        "source":"/unicode",
+        "destination":"/stuff/unicode"
       }
     ]
 }
