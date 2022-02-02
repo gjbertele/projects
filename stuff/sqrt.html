@@ -25,8 +25,8 @@
 let x = x;
 let iterations = 5;                                            //higher numbers need more iterations
 let nps = nearestPerfectSquare(x).squareRoot;                  //probably by looking through a pre-made table of integers squared<br>
-let a = (x - nps*nps)/nps                                      //initial guess of a<br>
-for (i = 1; i < iterations; i++){<br>
+let a = (x - nps*nps)/nps                                      //initial guess of <i>a</i>- could definitely be improved.<br>
+for (i = 1; i < iterations; i++){                              <br>
     a = ((2*x / ((a / 2) + (x*(x - Math.floor(x))) / a))+a)/2   //averages 2*(guess of square root of x with new guess of a) and the last value of a<br>
 }<br>
 let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)          //final iteration
