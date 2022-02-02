@@ -18,7 +18,8 @@
     <code>x / ((a / 2) + (x*(x - Math.floor(x))) / a)</code><br>
     Returns no correct values until <code>x = (a/2)²</code><br>
     <input class='x' placeholder='Number (x)'><br>
-    <button onclick='solve()'>solve (5 iterations)</button><br>
+    <input class='iterations' placeholder='# of iterations'><br>
+    <button onclick='solve()'>solve</button><br>
     <p class='actual'></p><br>
     <p class='guessed'></p><br>
     <br>
@@ -44,7 +45,7 @@ let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)          //final iteratio
         }
         function solve() {
             var x = document.querySelector('.x').value
-            let iterations = 5;
+            let iterations = document.querySelector('.iterations').value;
             let nps = nearestPerfectSquare(x).squareRoot;
             let a = (x - nps * nps) / nps
             for (i = 1; i < iterations; i++) {
