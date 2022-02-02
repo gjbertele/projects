@@ -14,11 +14,12 @@
     </style>
     <span>Code:</span><br>
     <code>x / ((a / 2) + (x(x - Math.floor(x))) / a)</code><br>
+    Returns no correct values until <code>x = (a/2)²</code><br>
     <input class='x' placeholder='Number (x)'><br>
     <input class='a' placeholder='Number (a)'><br>
     <button onclick='solve()'>solve</button><br>
-    <p class='actual'></p>
-    <p class='guessed'></p>
+    <p class='actual'></p><br>
+    <p class='guessed'></p><br>
     <script>
         function solve(){
             var x = document.querySelector('.x').value
