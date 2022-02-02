@@ -16,11 +16,11 @@
         .additions{
             position:absolute;
             width:50%;
-            font-size:0.9em;
         }
     </style>
     <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
+    <input class='decimals' placeholder='# of decimals in x to account for'><br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
     <br>
@@ -28,11 +28,11 @@
     <pre><code>
 let x = x*10;                                                  //multiply by 10 to handle decimals.*
 let iterations = 5;                                            //higher numbers need more iterations, although 20 should be more than enough for any number
-let nps = nearestPerfectSquare(x).squareRoot;                  //probably by looking through a pre-made table of integers squared
+let nps = nearestPerfectSquare(x).squareRoot;                  //this would probably be done by looking through a pre-made table of whole numbers squared
 let a = (x - nps*nps)/nps;                                     //initial guess of <i>a</i> - could definitely be improved.
-let xp1 = x % 1;                                               //save a bit of time by pre-calculating
+let xp1 = x % 1;                                               //save a bit of time by pre-calculating variables which don't change
 let x2 = x * 2
-let sqrtTen = 3.162277660168379331998893...                    //saved as a constant to avoid having to find the square root of it every time you run it.
+let sqrtTen = 3.162277660168379331998893...
 for (i = 1; i < iterations; i++){                              
     a = ((x2 / ((a / 2) + (xp1 / a)))+a)/2                     //averages 2*(guess of square root of <i>x</i> with new guess of <i>a</i>) and the last value of <i>a</i>
 }
@@ -47,12 +47,13 @@ let sqrt = -((a / 2) + (xp1 / a))/sqrtTen                      //final iteration
  in mind the denominator can be a pre-calculated constant.<br>
 <br>
 **Addition 2:<br>
- It's slightly innacurate for whole numbers of an even length, so you could change the decimal correction factor
- you multiply by to an even or odd number to make it an odd length. It's also a bit (around 1e-15) innacurate for all
- low (4 digit and below) whole numbers, so you could do the reverse of Addition 1 to fix this.<br>
+ It's slightly innacurate (at most 1e-9 but usually aroud 1e-16) for the square roots of certain numbers. There's also
+ no discernable pattern in which numbers it's innacurate for and increasing the amount of iterations doesn't help.
+ Increasing the number of decimals handleable in Addition 1 makes it much more accurate for all numbers but can have an
+ effect on execution time.<br>
 <br>
 ***Addition 3:<br>
-In some cases, it's faster than the browser's Math.sqrt() although it doesn't seem to matter which number. In most cases,
+In some cases, it's faster than the browser's Math.sqrt() although the input doesn't seem to have an effect on the speed. In most cases,
 it's the same speed as Math.sqrt() (measured in ms with 16 decimals of precision).
     </span>
     <script>
@@ -63,11 +64,11 @@ it's the same speed as Math.sqrt() (measured in ms with 16 decimals of precision
                 squareRoot:value^0.5 //would be done with a table lookup in actual use but to save on memory (this is a browser so I can't hardcode values) it's generated like this
             }
         }
-        var decimals = 4 //amount of handleable decimals + 1
-        var factor = 10**decimals
         function solve() {
-            var x = document.querySelector('.x').value*factor
             let iterations = document.querySelector('.iterations').value;
+            let decimals = document.querySelector('.decimals').value
+            let factor = 10**decimals
+            var x = document.querySelector('.x').value*factor
             let start = performance.now()
             let nps = nearestPerfectSquare(x).squareRoot;
             let a = (x - nps * nps) / nps
@@ -88,6 +89,13 @@ it's the same speed as Math.sqrt() (measured in ms with 16 decimals of precision
             Time for this method (ms): ${(end-start)}<br>
             Time for Math.sqrt (ms): ${mEnd-mStart}`
         }
+
+
+
+        //other stuff:
+        Array.from(document.querySelectorAll('input')).forEach(function(i,v){
+            i.style.width = (i.offsetWidth*1.5)+'px'
+        })
     </script>
 </body>
 
