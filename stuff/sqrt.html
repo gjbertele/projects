@@ -14,44 +14,67 @@
             padding: none;
         }
     </style>
-    <span>It's less accurate with decimals but still close</span><br>
-    <input class='x' placeholder='Number (x)'><br>
+    <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
     <br>
     Code example:
     <pre><code>
-let x = x;
-let iterations = 5;                                            //higher numbers need more iterations
-let nps = nearestPerfectSquare(x).squareRoot;                  //probably by looking through a pre-made table of integers squared<br>
-let a = (x - nps*nps)/nps                                      //initial guess of <i>a</i>- could definitely be improved.<br>
-for (i = 1; i < iterations; i++){                              <br>
-    a = ((2*x / ((a / 2) + (x*(x - Math.floor(x))) / a))+a)/2   //averages 2*(guess of square root of x with new guess of a) and the last value of a<br>
-}<br>
-let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)          //final iteration
+let x = x*10;                                                  //multiply by 10 to handle decimals.*
+let iterations = 5;                                            //higher numbers need more iterations, although 20 should be more than enough for any number
+let nps = nearestPerfectSquare(x).squareRoot;                  //probably by looking through a pre-made table of integers squared
+let a = (x - nps*nps)/nps;                                     //initial guess of <i>a</i> - could definitely be improved.
+let xp1 = x % 1;                                               //save a bit of time by pre-calculating
+let x2 = x * 2
+let sqrtTen = 3.162277660168379331998893...                    //saved as a constant to avoid having to find the square root of it every time you run it.
+for (i = 1; i < iterations; i++){                              
+    a = ((x2 / ((a / 2) + (xp1 / a)))+a)/2                     //averages 2*(guess of square root of <i>x</i> with new guess of <i>a</i>) and the last value of <i>a</i>
+}
+let sqrt = -((a / 2) + (xp1 / a))/sqrtTen                      //final iteration (returned values can be negative or positive)
 
-    </code></pre>
+    </code></pre><br>
+    <pre>
+*multiply by 10 to handle decimals because it does a bit of rounding and is innacurate for decimals as a result.
+ If it's multiplied by 10, then you have to divide the square root by sqrt(10) in the final iteration to counter
+ this. For handling hundreths places, multiply by 100 and divide by sqrt(100) at the end and so on. Keep in mind
+ the denominator can be a pre-calculated constant.
+
+**It's slightly innacurate for whole numbers of an even length, so you could change the decimal correction
+  factor you multiply by to an even or odd number to make it an odd length.
+    </pre>
     <script>
         function nearestPerfectSquare(x){
             var value = Math.pow(Math.round(Math.sqrt(x)), 2);
             return {
                 value:value,
-                squareRoot:value^0.5 //would be done with a table lookup in actual use
+                squareRoot:value^0.5 //would be done with a table lookup in actual use but to save on memory (this is a browser so I can't hardcode values) it's generated like this
             }
         }
+        var decimals = 5 //amount of handleable decimals + 1
+        var factor = 10**decimals
         function solve() {
-            var x = document.querySelector('.x').value
+            var x = document.querySelector('.x').value*factor
             let iterations = document.querySelector('.iterations').value;
+            let start = performance.now()
             let nps = nearestPerfectSquare(x).squareRoot;
             let a = (x - nps * nps) / nps
+            let xp1 = (x % 1)
+            let x2 = x * 2
             for (i = 1; i < iterations; i++) {
-                a = ((2 * x / ((a / 2) + (x*(x - Math.floor(x))) / a)) + a) / 2
+                a = ((x2 / ((a / 2) + (xp1 / a))) + a) / 2
             }
-            let sqrt = -x / ((a / 2) + (x*(x - Math.floor(x))) / a) //values are negative for whatever reason so the numerator is negative to reverse that.
-            document.querySelector('.res').innerHTML = `Guessed:  ${sqrt}<br>
-            Actual: ${Math.sqrt(x)}<br>
-            Difference: ${Math.sqrt(x)-sqrt}<br>`
+            let sqrt = Math.abs(((a / 2) + (xp1 / a))/Math.sqrt(factor))
+            let end = performance.now()
+            var v = x/factor
+            let mStart = performance.now()
+            let msqrt = Math.sqrt(v)
+            let mEnd = performance.now()
+            document.querySelector('.res').innerHTML = `This method:  ${sqrt}**<br>
+            Math.sqrt(x): ${msqrt}<br>
+            Difference: ${msqrt-sqrt}<br>
+            Time for this method (ms): ${(end-start)}<br>
+            Time for Math.sqrt (ms): ${mEnd-mStart}`
         }
     </script>
 </body>
