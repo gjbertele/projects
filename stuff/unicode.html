@@ -47,11 +47,16 @@
             document.querySelector('.stuff').textContent += str
         }
         add()
+        var scroll = false
         setInterval(function () {
             if (window.scrollY + window.innerHeight > document.querySelector('.stuff').offsetHeight - 1000 && c < 170000) {
                 add()
             }
-        }, 10)
+            if(scroll == true) window.scrollBy(0,15)
+        }, 1)
+        document.body.onkeypress = function(e){
+            if(e.key == ' ') scroll = !scroll
+        }
     </script>
 </body>
 
