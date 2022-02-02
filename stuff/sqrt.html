@@ -18,8 +18,7 @@
     <input class='x' placeholder='Number (x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
     <button onclick='solve()'>solve</button><br>
-    <p class='actual'></p><br>
-    <p class='guessed'></p><br>
+    <p class='res'></p><br>
     <br>
     Code example:
     <pre><code>
@@ -49,9 +48,10 @@ let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)          //final iteratio
             for (i = 1; i < iterations; i++) {
                 a = ((2 * x / ((a / 2) + (x*(x - Math.floor(x))) / a)) + a) / 2
             }
-            let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)
-            document.querySelector('.guessed').textContent = 'Guessed: ' + -sqrt //values are negative for some reason, don't know why
-            document.querySelector('.actual').textContent = 'Actual: ' + Math.sqrt(x)
+            let sqrt = -x / ((a / 2) + (x*(x - Math.floor(x))) / a) //values are negative for whatever reason so the numerator is negative to reverse that.
+            document.querySelector('.res').innerHTML = `Guessed:  ${sqrt}<br>
+            Actual: ${Math.sqrt(x)}<br>
+            Difference: ${Math.sqrt(x)-sqrt}<br>`
         }
     </script>
 </body>
