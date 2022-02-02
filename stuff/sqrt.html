@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        p{
+            padding:none;
+        }
+    </style>
+    <span>Code:</span><br>
+    <code>x / ((a / 2) + (x(x - Math.floor(x))) / a)</code><br>
+    <input class='x' placeholder='Number (x)'><br>
+    <input class='a' placeholder='Number (a)'><br>
+    <button onclick='solve()'>solve</button><br>
+    <p class='actual'></p>
+    <p class='guessed'></p>
+    <script>
+        function solve(){
+            var x = document.querySelector('.x').value
+            var a = document.querySelector('.a').value
+            document.querySelector('.guessed').textContent = 'Guessed: '+(x / ((a / 2) + (x*(x - Math.floor(x))) / a))
+            document.querySelector('.actual').textContent = 'Actual: '+Math.sqrt(x)
+        }
+    </script>
+</body>
+</html>
