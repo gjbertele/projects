@@ -1,32 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <style>
-        p{
-            padding:none;
+        p {
+            padding: none;
         }
     </style>
     <span>Code:</span><br>
-    <code>x / ((a / 2) + (x(x - Math.floor(x))) / a)</code><br>
+    <code>x / ((a / 2) + (x*(x - Math.floor(x))) / a)</code><br>
     Returns no correct values until <code>x = (a/2)²</code><br>
     <input class='x' placeholder='Number (x)'><br>
-    <input class='a' placeholder='Number (a)'><br>
-    <button onclick='solve()'>solve</button><br>
+    <button onclick='solve()'>solve (5 iterations)</button><br>
     <p class='actual'></p><br>
     <p class='guessed'></p><br>
+    <br>
+    Iteration example:
+    <pre><code>
+let x = x;
+let iterations = 5;
+let nps = nearestPerfectSquare(x).squareRoot;                  //probably by looking through a pre-made table of integers squared<br>
+let a = (x - nps*nps)/nps                                      //initial guess of a<br>
+for (i = 1; i < iterations; i++){<br>
+    a = ((2*x / ((a / 2) + (x*(x - Math.floor(x))) / a))+a)/2   //averages 2sqrt(x) with new a and the last value of a<br>
+}<br>
+let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)          //final iteration
+
+    </code></pre>
     <script>
-        function solve(){
+        function nearestPerfectSquare(x){
+            var value = Math.pow(Math.round(Math.sqrt(x)), 2);
+            return {
+                value:value,
+                squareRoot:value^0.5 //would be done with a table lookup in actual use
+            }
+        }
+        function solve() {
             var x = document.querySelector('.x').value
-            var a = document.querySelector('.a').value
-            document.querySelector('.guessed').textContent = 'Guessed: '+(x / ((a / 2) + (x*(x - Math.floor(x))) / a))
-            document.querySelector('.actual').textContent = 'Actual: '+Math.sqrt(x)
+            let iterations = 5;
+            let nps = nearestPerfectSquare(x).squareRoot;
+            let a = (x - nps * nps) / nps
+            for (i = 1; i < iterations; i++) {
+                a = ((2 * x / ((a / 2) + (x*(x - Math.floor(x))) / a)) + a) / 2
+            }
+            let sqrt = x / ((a / 2) + (x*(x - Math.floor(x))) / a)
+            document.querySelector('.guessed').textContent = 'Guessed: ' + -sqrt //values are negative for some reason, don't know why
+            document.querySelector('.actual').textContent = 'Actual: ' + Math.sqrt(x)
         }
     </script>
 </body>
+
 </html>
