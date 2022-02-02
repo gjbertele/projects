@@ -13,6 +13,11 @@
         p {
             padding: none;
         }
+        .additions{
+            position:absolute;
+            width:50%;
+            font-size:0.9em;
+        }
     </style>
     <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
@@ -34,15 +39,18 @@ for (i = 1; i < iterations; i++){
 let sqrt = -((a / 2) + (xp1 / a))/sqrtTen                      //final iteration (returned values can be negative or positive)
 
     </code></pre><br>
-    <pre>
-*multiply by 10 to handle decimals because it does a bit of rounding and is innacurate for decimals as a result.
- If it's multiplied by 10, then you have to divide the square root by sqrt(10) in the final iteration to counter
- this. For handling hundreths places, multiply by 100 and divide by sqrt(100) at the end and so on. Keep in mind
- the denominator can be a pre-calculated constant.
-
-**It's slightly innacurate for whole numbers of an even length, so you could change the decimal correction
-  factor you multiply by to an even or odd number to make it an odd length.
-    </pre>
+    <span class='additions'>
+*Addition 1:<br>
+ multiply by 10 to handle decimals because it does a bit of rounding and is innacurate for decimals as
+ a result. If it's multiplied by 10, then you have to divide the square root by sqrt(10) in the final iteration
+ to counter this. For handling hundreths places, multiply by 100 and divide by sqrt(100) at the end and so on. Keep
+ in mind the denominator can be a pre-calculated constant.<br>
+<br>
+**Addition 2:<br>
+ It's slightly innacurate for whole numbers of an even length, so you could change the decimal correction factor
+ you multiply by to an even or odd number to make it an odd length. It's also a bit (around 1e-15) innacurate for low (2048 and below) whole numbers
+ in general, so you could do the reverse of Addition 1 to fix this.
+    </span>
     <script>
         function nearestPerfectSquare(x){
             var value = Math.pow(Math.round(Math.sqrt(x)), 2);
