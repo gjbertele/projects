@@ -32,6 +32,10 @@
       {
         "source":"/unicode",
         "destination":"/stuff/unicode"
+      },
+      {
+        "source":"/sqrt",
+        "destination":"/stuff/sqrt"
       }
     ]
 }
