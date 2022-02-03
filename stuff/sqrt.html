@@ -47,7 +47,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
  in mind the denominator can be a pre-calculated constant.<br>
 <br>
 **Addition 2:<br>
- It's slightly innacurate (at most 1e-9 but usually aroud 1e-16) for the square roots of certain numbers. There's also
+ It's slightly innacurate (by at most 1e-9 but usually aroud 1e-16) for the square roots of certain numbers. There's also
  no discernable pattern in which numbers it's innacurate for and increasing the amount of iterations doesn't help.
  Increasing the number of decimals handleable in Addition 1 makes it much more accurate for all numbers but can have an
  effect on execution time.<br>
