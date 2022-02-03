@@ -34,9 +34,9 @@ let xp1 = x % 1;                                               //save a bit of p
 let x2 = x * 2
 let sqrtTen = 3.162277660168379331998893...
 for (i = 1; i < iterations; i++){                              
-    a = ((x2 / ((a / 2) + (xp1 / a)))+a)/2                     //averages 2*(guess of square root of <i>x</i> with new guess of <i>a</i>) and the last value of <i>a</i>
+    a = ((x2 / ((a * 0.5) + (xp1 / a)))+a) * 0.5               //averages 2*(guess of square root of <i>x</i> with new guess of <i>a</i>) and the last value of <i>a</i>
 }
-let sqrt = -((a / 2) + (xp1 / a))/sqrtTen                      //final iteration (returned values can be negative or positive)
+let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration (returned values can be negative or positive)
 
     </code></pre><br>
     <span class='additions'>
@@ -79,9 +79,9 @@ but this is more accurate with less iterations for higher numbers (but this has 
             let xp1 = (x % 1)
             let x2 = x * 2
             for (i = 1; i < iterations; i++) {
-                a = ((x2 / ((a / 2) + (xp1 / a))) + a) / 2
+                a = ((x2 / ((a * 0.5) + (xp1 / a))) + a) * 0.5
             }
-            let sqrt = Math.abs(((a / 2) + (xp1 / a))/(10**(decimals >> 1)))
+            let sqrt = Math.abs(((a * 0.5) + (xp1 / a))/(10**(decimals * 0.5)))
             let end = performance.now()
             var v = x/factor
             let mStart = performance.now()
