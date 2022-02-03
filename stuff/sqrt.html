@@ -72,7 +72,7 @@ but this is more accurate with less iterations for higher numbers (but this has 
             let decimals = document.querySelector('.decimals').value
             if(decimals == '') decimals = 10
             let factor = 10**decimals
-            var x = document.querySelector('.x').value*factor
+            var x = Number(document.querySelector('.x').value)*factor
             let start = performance.now()
             let nps = nearestPerfectSquare(x).squareRoot;
             let a = (x - nps * nps) / nps
