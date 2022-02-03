@@ -35,7 +35,7 @@ let x2 = x * 2
 let sqrtTen = 3.162277660168379331998893...
 for (i = 1; i < iterations; i++){                              //start at <i>i</i> = 1 instead of 0 because final iteration still counts as 1
     a = ((x2 / ((a * 0.5) + (xp1 / a)))+a) * 0.5               //averages 2*(guess of square root of <i>x</i> with new guess of <i>a</i>) and the last value of <i>a</i>
-}
+}                                                              //(this is basically the Newton-Raphson method with a different way of finding the new a)
 let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration (returned values can be negative or positive)
 
     </code></pre><br>
@@ -55,7 +55,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
  effect on execution time.<br>
 <br>
 ***Addition 3:<br>
-In some cases, it's faster than the browser's Math.sqrt() when running both only once, although when running both 10 million times Math.sqrt() is around 100 times faster.<br>
+In <u>some</u> cases, it's faster than the browser's Math.sqrt() when running both only once, although when running both 10 million times Math.sqrt() is around 100 times faster.<br>
 <br>
 ****Addition 4:<br>
 This is VERY similar to a method of approximating square roots by repeatedly averaging (Newton-Raphson),
