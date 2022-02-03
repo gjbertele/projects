@@ -53,8 +53,10 @@ let sqrt = -((a / 2) + (xp1 / a))/sqrtTen                      //final iteration
  effect on execution time.<br>
 <br>
 ***Addition 3:<br>
-In some cases, it's faster than the browser's Math.sqrt() although the input doesn't seem to have an effect on the speed. In most cases,
-it's the same speed as Math.sqrt() (measured in ms with 16 decimals of precision).
+In some cases, it's faster than the browser's Math.sqrt() when running both only once, although when running both 10 million times Math.sqrt() is around 100 times faster.<br>
+<br>
+****Addition 4:<br>
+This is VERY similar to a method of approximating square roots by <a href="http://mathandmultimedia.com/2012/08/18/approximating-square-root/">repeatedly averaging</a>, but this is more accurate with less iterations for higher numbers.
     </span>
     <script>
         function nearestPerfectSquare(x){
@@ -67,6 +69,7 @@ it's the same speed as Math.sqrt() (measured in ms with 16 decimals of precision
         function solve() {
             let iterations = document.querySelector('.iterations').value;
             let decimals = document.querySelector('.decimals').value
+            if(decimals == '') decimals = 10
             let factor = 10**decimals
             var x = document.querySelector('.x').value*factor
             let start = performance.now()
