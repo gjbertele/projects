@@ -27,8 +27,6 @@
     </style>
     <input class='x' placeholder='Number (variable x)'><br>
     <br>
-    <input class='iterations' placeholder='# of iterations'><br>
-    <input class='decimals' placeholder='# of decimals in x to account for'><br>
     Leave parameters blank for default values<br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
@@ -43,7 +41,7 @@
         }
         function solve() {
             let iterations = 100
-            let decimals = 0
+            let decimals = 2
 
             let factor = 10 ** decimals
             var x = Number(document.querySelector('.x').value) * factor
