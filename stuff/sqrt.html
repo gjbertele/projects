@@ -20,6 +20,7 @@
         }
     </style>
     <input class='x' placeholder='Number (variable x)'><br>
+    <br>
     <input class='iterations' placeholder='# of iterations'><br>
     <input class='decimals' placeholder='# of decimals in x to account for'><br>
     Leave parameters blank for default values<br>
@@ -88,7 +89,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         }
         function solve() {
             let iterations = document.querySelector('.iterations').value;
-            iterations == '' ? iterations = 2048 : null;
+            iterations == '' ? iterations = 2**13 : null;
             let decimals = document.querySelector('.decimals').value;
             decimals == '' ? decimals = 10 : null;
 
@@ -113,9 +114,8 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
                 lv == a && iterationReq == 0 ? iterationReq = i : lv = a;
             }
             let sqrt = Math.abs(((a * 0.5) + (xp1 / a)) / (10 ** (decimals * 0.5)))
-            iterationReq == 0 ? iterationReq = iterations : null;
-
             let end = performance.now()
+            iterationReq == 0 ? iterationReq = iterations : null;
 
             let diff = msqrt - sqrt
             let diff2 = (x / factor) - (sqrt ** 2)
