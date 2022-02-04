@@ -75,7 +75,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         the iterations needed until it settles, you can reduce the amount of iterations needed as well as sometimes
         increase the accuracy. For whatever reason, this only works if the initial guess's nearest perfect square's
         square root variable is calculated by using
-        <code>Math.pow(Math.round(Math.sqrt(x)), 2)^0.5;</code> (^ is XOR, not an exponent)
+        <code>Math.pow(Math.round(Math.sqrt(x)), 2)^0.5;</code> (^ is XOR, not an exponent), even though it's almost always wildly off by a few orders of magnitude.
     </span>
     <script>
         var s = function (i) { var e = Math.sign(i); if (i = Math.abs(i), /\d+\.?\d*e[\+\-]*\d+/i.test(i)) { var n = String(i).toLowerCase().split("e"), t = n.pop(), a = Math.abs(t), s = t / a, r = n[0].split("."); if (-1 === s) i = (a -= r[0].length) < 0 ? r[0].slice(0, a) + "." + r[0].slice(a) + (2 === r.length ? r[1] : "") : "0." + new Array(a + 1).join("0") + r.join(""); else { var l = r[1]; l && (a -= l.length), i = a < 0 ? r[0] + l.slice(0, a) + "." + l.slice(a) : r.join("") + new Array(a + 1).join("0") } } return e < 0 ? "-" + i : i };
