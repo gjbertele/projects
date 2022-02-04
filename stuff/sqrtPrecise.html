@@ -43,10 +43,8 @@
             }
         }
         function solve() {
-            let iterations = document.querySelector('.iterations').value;
-            iterations == '' ? iterations = 100 : null;
-            let decimals = document.querySelector('.decimals').value;
-            decimals == '' ? decimals = 10 : null;
+            let iterations = 100
+            let decimals = 2
 
             let factor = 10 ** decimals
             var x = Number(document.querySelector('.x').value) * factor
