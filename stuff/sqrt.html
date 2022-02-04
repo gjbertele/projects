@@ -21,12 +21,13 @@
     </style>
     <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
-    <input class='decimals' placeholder='# of decimals in x to account for'> (defaults to 10)<br>
-    <button onclick='autofillIterations()'>try to optimize parameters</button><br>
+    <input class='decimals' placeholder='# of decimals in x to account for'><br>
+    Leave parameters blank for default values<br>
+    <button onclick='autofillIterations()'>try to optimize parameters*****</button><br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
     <br>
-    Code example:
+    Basic Code example:
     <pre><code>
 let x = x*10;                                                  //multiply by 10 to handle decimals.*
 let iterations = 5;                                            //higher numbers need more iterations, although 20 should be more than enough for any number
@@ -43,7 +44,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
     </code></pre><br>
     <span class='additions'>
         *Addition 1:<br>
-        multiply by 10 to handle decimals because it does a bit of rounding and is innacurate for decimals as
+        multiply by 10 to handle decimals because it does a bit of rounding and is inaccurate for decimals as
         a result. If it's multiplied by 10, then you have to divide the square root by sqrt(10) in the final iteration
         to counter this. For handling hundreths places, multiply by 100 and divide by sqrt(100) at the end and so on.
         Keep
@@ -54,16 +55,17 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         to Infinity by computers.<br>
         <br>
         **Addition 2:<br>
-        It's slightly innacurate (by at most 1e-9 but usually aroud 1e-16) for the square roots of certain numbers.
+        It's slightly inaccurate (by at most 1e-9 but usually aroud 1e-16) for the square roots of certain numbers.
         There's also
-        no discernable pattern in which numbers it's innacurate for and increasing the amount of iterations doesn't
+        no discernable pattern in which numbers it's inaccurate for and increasing the amount of iterations doesn't
         help.
         Increasing the number of decimals handleable in Addition 1 makes it much more accurate for all numbers but can
         have an
-        effect on execution time and can limit the size of numbers.<br>
+        effect on execution time and can limit the size of numbers. Whenever it's slightly inaccurate, Math.sqrt() is
+        sometimes also slightly inaccurate which means that the inaccuracy might be caused by the browser.<br>
         <br>
         ***Addition 3:<br>
-        In <u>some</u> cases, it's faster than the browser's Math.sqrt() when running both only once, although when
+        In <u>some</u> cases, it's faster than the browser's Math.sqrt() when running both only once (it's seemingly random), although when
         running both 10 million times Math.sqrt() is around 100 times faster.<br>
         <br>
         ****Addition 4:<br>
