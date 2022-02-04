@@ -22,7 +22,7 @@
     <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
     <input class='decimals' placeholder='# of decimals in x to account for'> (defaults to 10)<br>
-    <button onclick='autofillIterations()'>optimize parameters for iterations</button><br>
+    <button onclick='autofillIterations()'>optimize parameters for time</button><br>
     <button onclick='autofillDiff()'>optimize parameters for accuracy</button><br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
@@ -80,7 +80,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         <code>Math.pow(Math.round(Math.sqrt(x)), 2)^0.5;</code> (^ is XOR, not an exponent)
     </span>
     <script>
-        var s=function(i){var e=Math.sign(i);if(i=Math.abs(i),/\d+\.?\d*e[\+\-]*\d+/i.test(i)){var n=String(i).toLowerCase().split("e"),t=n.pop(),a=Math.abs(t),s=t/a,r=n[0].split(".");if(-1===s)i=(a-=r[0].length)<0?r[0].slice(0,a)+"."+r[0].slice(a)+(2===r.length?r[1]:""):"0."+new Array(a+1).join("0")+r.join("");else{var l=r[1];l&&(a-=l.length),i=a<0?r[0]+l.slice(0,a)+"."+l.slice(a):r.join("")+new Array(a+1).join("0")}}return e<0?"-"+i:i};
+        var s = function (i) { var e = Math.sign(i); if (i = Math.abs(i), /\d+\.?\d*e[\+\-]*\d+/i.test(i)) { var n = String(i).toLowerCase().split("e"), t = n.pop(), a = Math.abs(t), s = t / a, r = n[0].split("."); if (-1 === s) i = (a -= r[0].length) < 0 ? r[0].slice(0, a) + "." + r[0].slice(a) + (2 === r.length ? r[1] : "") : "0." + new Array(a + 1).join("0") + r.join(""); else { var l = r[1]; l && (a -= l.length), i = a < 0 ? r[0] + l.slice(0, a) + "." + l.slice(a) : r.join("") + new Array(a + 1).join("0") } } return e < 0 ? "-" + i : i };
         function nearestPerfectSquare(x) {
             var value = Math.pow(Math.round(Math.sqrt(x)), 2);
             if (value == 0) value = 1
@@ -116,12 +116,12 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
                 lv == a && iterationReq == 0 ? iterationReq = i : lv = a;
             }
             let sqrt = Math.abs(((a * 0.5) + (xp1 / a)) / (10 ** (decimals * 0.5)))
-            iterationReq == 0 ? (sqrt == msqrt ? iterationReq = iterations : iterationReq = '?') : null;
+            iterationReq == 0 ? iterationReq = iterations : null;
 
             let end = performance.now()
 
             let diff = msqrt - sqrt
-            let diff2 = (x/factor) - (sqrt**2)
+            let diff2 = (x / factor) - (sqrt ** 2)
             document.querySelector('.res').innerHTML = `This method:  ${s(sqrt)}**<br>
             Math.sqrt(x): ${s(msqrt)}<br>
             Difference (Math.sqrt(x) and this): ${s(diff)}<br>
@@ -133,40 +133,40 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
             Iterations until it settles on an answer: ${iterationReq}<br>`
         }
 
-        function solveBest(y,decimals) { //minified sqrt approx:
-            let factor=10**decimals;var x=+y*factor,v=x/factor;let msqrt=Math.sqrt(v),nps=.5^Math.round(Math.sqrt(x))**2,a=(x-nps*nps)/nps,xp1=x%1,x2=2*x,iterationReq=0;var lv=0;for(i=1;2048>i;i++)a=.5*(x2/(.5*a+xp1/a)+a),lv==a&&0==iterationReq?iterationReq=i:lv=a;let sqrt=Math.abs((.5*a+xp1/a)/10**(.5*decimals));0==iterationReq?iterationReq=iterations:null;
-            return [iterationReq,sqrt]
+        function solveBest(y, decimals) { //minified sqrt approx:
+            let iterations = 2048
+            let factor = 10 ** decimals; var x = +y * factor, v = x / factor; let msqrt = Math.sqrt(v), nps = .5 ^ Math.round(Math.sqrt(x)) ** 2, a = (x - nps * nps) / nps, xp1 = x % 1, x2 = 2 * x, iterationReq = 0; var lv = 0; for (i = 1; 2048 > i; i++)a = .5 * (x2 / (.5 * a + xp1 / a) + a), lv == a && 0 == iterationReq ? iterationReq = i : lv = a; let sqrt = Math.abs((.5 * a + xp1 / a) / 10 ** (.5 * decimals)); 0 == iterationReq ? iterationReq = iterations : null;
+            return [iterationReq, sqrt]
         }
-        function autofillIterations(){
+        function autofillIterations() {
             var x = Number(document.querySelector('.x').value)
             var min = 1e20;
-            var res = [0,0];
-            let maxdec = (((2**53)-1)/(10**x.toString().split('.')[0].length)).toString().split('.')[0].length
-            console.log(maxdec)
-            for(let i = 0; i<maxdec; i++){
-                var ans = solveBest(x,i)[0]
-                if(ans<min){
+            var res = [0, 0];
+            let maxdec = (((2 ** 53) - 1) / (10 ** x.toString().split('.')[0].length)).toString().split('.')[0].length
+            for (let i = 0; i < maxdec; i++) {
+                var ans = solveBest(x, i)[0]
+                if (ans < min) {
                     min = ans;
-                    res = [i,ans]
+                    res = [i, ans]
                 }
             }
             document.querySelector('.iterations').value = res[1]
             document.querySelector('.decimals').value = res[0]
         }
-        function autofillDiff(){
+        function autofillDiff() {
             var x = Number(document.querySelector('.x').value)
             var arr = []
             var min = 1e20;
-            var res = [0,0];
-            let maxdec = (((2**53)-1)/(10**x.toString().split('.')[0].length)).toString().split('.')[0].length
-            for(let i = 0; i<maxdec; i++){
-                var ans0 = solveBest(x,i)
+            var res = [0, 0];
+            let maxdec = (((2 ** 53) - 1) / (10 ** x.toString().split('.')[0].length)).toString().split('.')[0].length
+            for (let i = 0; i < maxdec; i++) {
+                var ans0 = solveBest(x, i)
                 var ans1 = ans0[1]
                 var ans2 = ans0[0]
-                var diff = Math.abs(x-(ans1**2))
-                if(diff<min){
+                var diff = Math.abs(x - (ans1 ** 2))
+                if (diff < min) {
                     min = diff
-                    res = [i,ans2]
+                    res = [i, ans2]
                 }
             }
             document.querySelector('.iterations').value = res[1]
