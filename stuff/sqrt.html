@@ -68,7 +68,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         ****Addition 4:<br>
         This is VERY similar to a method of approximating square roots by repeatedly averaging (Newton-Raphson),
         but this is more accurate with less iterations for very small numbers as well as for some normal-sized numbers
-        (assuming a₀ is <code>Math.round(Math.sqrt(x))</code> in the Newton-Raphson method and <code>Math.pow(Math.round(Math.sqrt(x)), 2)
+        (assuming a₀ is <code>Math.round(Math.sqrt(x))</code> in the Newton-Raphson method and <code>Math.pow(Math.round(Math.sqrt(x*(10**decimals))), 2)
         ^ 0.5</code> in this one).<br>
         <br>
         *****Addition 5:<br>
@@ -84,6 +84,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         function nearestPerfectSquare(x) {
             var value = Math.pow(Math.round(Math.sqrt(x)), 2);
             if (value == 0) value = 1
+            console.log(value ^ 0.5)
             return {
                 value: value,
                 squareRoot: value ^ 0.5 //would be done with a table lookup in actual use but to save on memory (this is a browser so I can't hardcode values into storage) it's generated like this
