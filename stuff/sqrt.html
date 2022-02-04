@@ -22,8 +22,7 @@
     <input class='x' placeholder='Number (variable x)'><br>
     <input class='iterations' placeholder='# of iterations'><br>
     <input class='decimals' placeholder='# of decimals in x to account for'> (defaults to 10)<br>
-    <button onclick='autofillIterations()'>optimize parameters for time</button><br>
-    <button onclick='autofillDiff()'>optimize parameters for accuracy</button><br>
+    <button onclick='autofillIterations()'>try to optimize parameters</button><br>
     <button onclick='solve()'>solve</button><br>
     <p class='res'></p><br>
     <br>
@@ -69,8 +68,8 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         <br>
         ****Addition 4:<br>
         This is VERY similar to a method of approximating square roots by repeatedly averaging (Newton-Raphson),
-        but this is more accurate with less iterations for very small numbers as well as a few normal-sized numbers
-        (mostly perfect squares + some small decimal value).<br>
+        but this is more accurate with less iterations for very small numbers as well as for some normal-sized numbers
+        (assuming ).<br>
         <br>
         *****Addition 5:<br>
         By running it once with only the variable x filled in and then setting the decimals to account for in x as
@@ -142,31 +141,12 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
             var x = Number(document.querySelector('.x').value)
             var min = 1e20;
             var res = [0, 0];
-            let maxdec = (((2 ** 53) - 1) / (10 ** x.toString().split('.')[0].length)).toString().split('.')[0].length
-            for (let i = 0; i < maxdec; i++) {
-                var ans = solveBest(x, i)[0]
-                if (ans < min) {
-                    min = ans;
-                    res = [i, ans]
-                }
-            }
-            document.querySelector('.iterations').value = res[1]
-            document.querySelector('.decimals').value = res[0]
-        }
-        function autofillDiff() {
-            var x = Number(document.querySelector('.x').value)
-            var arr = []
-            var min = 1e20;
-            var res = [0, 0];
-            let maxdec = (((2 ** 53) - 1) / (10 ** x.toString().split('.')[0].length)).toString().split('.')[0].length
-            for (let i = 0; i < maxdec; i++) {
-                var ans0 = solveBest(x, i)
-                var ans1 = ans0[1]
-                var ans2 = ans0[0]
-                var diff = Math.abs(x - (ans1 ** 2))
-                if (diff < min) {
-                    min = diff
-                    res = [i, ans2]
+            var t = 100
+            for(let i = 0; i<t; i++){
+                var ans = solveBest(x,i)
+                if(ans[0]<min&&ans[1]!=Infinity){
+                    min = ans[0]
+                    res = [i,ans[0]]
                 }
             }
             document.querySelector('.iterations').value = res[1]
