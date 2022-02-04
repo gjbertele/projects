@@ -36,7 +36,7 @@
     <pre><code>
 let x = x*10;                                                  //multiply by 10 to handle decimals.*
 let iterations = 5;                                            //higher numbers need more iterations, although 20 should be more than enough for any number
-let nps = nearestPerfectSquare(x).squareRoot;                  //this would probably be done by looking through a pre-made table of whole numbers squared
+let nps = nearestPerfectSquare(x);                             //this would probably be done by looking through a pre-made table
 let a = (x - nps*nps)/nps;                                     //initial guess of <i>a</i> - could definitely be improved
 let xp1 = x % 1;                                               //save a bit of processing time by pre-calculating unchanging variables
 let x2 = x * 2
