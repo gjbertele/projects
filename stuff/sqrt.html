@@ -36,7 +36,7 @@
     <pre><code>
 let x = x*10;                                                  //multiply by 10 to handle decimals.*
 let iterations = 5;                                            //higher numbers need more iterations, although 20 should be more than enough for any number
-let nps = nearestPerfectSquare(x);                             //this would probably be done by looking through a pre-made table
+let nps = nearestPerfectSquare(x) ^ 0.5;                       //this would probably be done by looking through a pre-made table, and the ^ is a XOR gate, not an exponent (see Addition 5)
 let a = (x - nps*nps)/nps;                                     //initial guess of <i>a</i> - could definitely be improved
 let xp1 = x % 1;                                               //save a bit of processing time by pre-calculating unchanging variables
 let x2 = x * 2
@@ -90,13 +90,10 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         always wildly off by a few orders of magnitude.
     </span>
     <script>
-        function nearestPerfectSquare(x) {
+        function nearestPerfectSquareXORHalf(x) {
             var value = Math.pow(Math.round(Math.sqrt(x)), 2);
             if (value == 0) value = 1
-            return {
-                value: value,
-                squareRoot: value ^ 0.5 //would be done with a table lookup in actual use but to save on memory (this is a browser so I can't hardcode values into storage) it's generated like this
-            }
+            return value ^ 0.5 //probably would be done with a table
         }
         function solve() {
             let iterations = document.querySelector('.iterations').value;
@@ -115,7 +112,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
 
             let iterationReq = solveBest(x / factor, decimals)[0]
             let start = performance.now()
-            let nps = nearestPerfectSquare(x).squareRoot;
+            let nps = nearestPerfectSquareXORHalf(x);
             let a = (x - nps * nps) / nps
             let xp1 = (x % 1)
             let x2 = x * 2
