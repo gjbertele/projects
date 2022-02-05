@@ -56,8 +56,9 @@
             let sqrt = (Decimal(a).times(0.5).plus(Decimal(xp1 / a))).times(10 ** (-decimals * 0.5))
             let end = performance.now()
 
-            let diff2 = Decimal(x / factor).minus(Decimal(sqrt).toPower(2)).toString()
-            let tms = Decimal(x / factor).minus(Decimal(diff2))
+            
+            let tms = Decimal(sqrt).toPower(2)
+            let diff2 = Decimal(x / factor).minus(tms).toString()
             document.querySelector('.res').innerHTML = `This method:  ${(sqrt)}**<br>
             Difference (x and this squared): ${(diff2)}<br>
             This method squared: ${tms}<br>
