@@ -86,8 +86,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         the iterations needed until it settles, you can reduce the amount of iterations needed as well as sometimes
         increase the accuracy. For whatever reason, this only works if the initial guess's nearest perfect square's
         square root variable is calculated by using
-        <code>Math.pow(Math.round(Math.sqrt(x)), 2)^0.5;</code> (^ is XOR, not an exponent), even though it's almost
-        always wildly off by a few orders of magnitude.<br>
+        <code>Math.pow(Math.round(Math.sqrt(x)), 2)^0.5;</code> (^ is XOR, not an exponent), even though it's sometimes wildly off by a few orders of magnitude.<br>
     </span>
     <script>
         function nearestPerfectSquareXORHalf(x) {
@@ -129,13 +128,13 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
             let diff3 = (x / factor) - (msqrt**2)
             let tms = sqrt**2
             let mss = msqrt**2
-            document.querySelector('.res').innerHTML = `This method:  ${s(sqrt)}**<br>
+            document.querySelector('.res').innerHTML = `This:  ${s(sqrt)}**<br>
             Math.sqrt(x): ${s(msqrt)}<br>
-            Difference (Math.sqrt(x) and this): ${s(diff)}<br>
-            Difference (x and this squared): ${s(diff2)}<br>
+            Difference (Math.sqrt(x) and my): ${s(diff)}<br>
+            Difference (x and my squared): ${s(diff2)}<br>
             Math.sqrt(x) squared: ${mss}<br>
-            This method squared: ${tms}<br>
-            Time for this method (ms): ${(end - start)} <br>
+            This squared: ${tms}<br>
+            Time for this (ms): ${(end - start)} <br>
             Time for Math.sqrt (ms): ${mEnd - mStart}<br>
             Iterations until it settles on an answer: ${iterationReq}<br>`
         }
