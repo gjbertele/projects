@@ -167,7 +167,7 @@ Type 'help' for a list of commands
             } else if (cmd == 'echo') {
                 document.querySelector('.cmd').innerHTML += args.join(' ').replace(/</g, '&lt;') + `\n`
             } else if (cmd == 'help') {
-                document.querySelector('.cmd').innerHTML += `HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\nCURSOR    Toggles the ASCII cursor\nGOTO      Redirects to a URL under <span onclick="window.open('https://0-o.xyz')" class="link">https://0-o.xyz</span> or <span onclick="window.open('https://asp.sh')" class="link">https://asp.sh</span>`
+                document.querySelector('.cmd').innerHTML += `HELP      Displays list of commands\nDIR       Lists files in directory\nECHO      Prints text to the console\nCLEAR     Clears the console\nPROJECTS  Other projects\nCURSOR    Toggles the ASCII cursor\nGOTO      Redirects to a URL under <span onclick="window.open('https://0-o.xyz')" class="link">https://0-o.xyz</span> or <span onclick="window.open('https://asp.sh')" class="link">https://asp.sh</span>\n`
             } else if (cmd == 'clear') {
                 document.querySelector('.cmd').innerHTML = string
                 document.querySelector('.cmd').style.top = '1%'
