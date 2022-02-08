@@ -36,6 +36,10 @@
       {
         "source":"/sqrt",
         "destination":"/stuff/sqrt"
+      },
+      {
+        "source":"/fourier",
+        "destination":"/stuff/fourier"
       }
     ]
 }

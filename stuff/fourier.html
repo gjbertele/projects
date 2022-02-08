@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+        canvas{
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index:10;
+        }
+        .options{
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            z-index:100;
+        }
+        .loading{
+            display:none;
+        }
+    </style>
+    <canvas></canvas>
+    <div class='options'>
+        <span class='t'>Fourier Transform</span><br>
+        <span class='a'>List wave amplitudes separated by commas (no spaces):</span><br>
+        <input class='waves' value='2,3,5'>
+        <button onclick='graph()'>graph (it takes a second)</button>
+    </div>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        canvas.width = w
+        canvas.height = h
+
+        var waves = [2, 3, 5]
+        var pi = Math.PI
+
+        function f0(x) {
+            var s = 0;
+            for (let i = 0; i < waves.length; i++) {
+                s += Math.cos(waves[i] * pi * x)
+            }
+            return s;
+        }
+
+        function f1(x) {
+            return f0(x) + 3
+        }
+
+        function f2(x) {
+            var detail = 100
+            function integral(t) {
+                return f0(t) * Math.cos(pi * x * t)
+            }
+            var s = 0
+            for (let i = 0; i < (5 * detail); i++) {
+                let ti = i / detail
+                s += integral(ti) / detail
+            }
+            return s
+        }
+
+        function f3(x){
+            return f2(x)-5
+        }
+        var funcs = [f3,f1]
+
+        var scale = 50
+
+        var mx = 0;
+        var my = 0;
+
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+
+        function graph() {
+            waves = document.querySelector('.waves').value.split(',')
+            ctx.clearRect(0,0,w,h)
+            funcs.forEach(function (i,v) {
+                var cacheArr = [0]
+                for (let x = 0; x < w * scale; x++) {
+                    let tx = x / scale
+                    ctx.beginPath()
+                    ctx.moveTo((x - 1), (h / 2) - cacheArr.pop() * scale)
+                    var yRes = i(tx)
+                    cacheArr.push(yRes)
+                    ctx.lineTo(x, (h / 2) - yRes * scale)
+                    ctx.stroke()
+                }
+            })
+
+            for (let x = 0; x < w * scale; x++) {
+                let tx = x / scale
+                if (tx % 1 == 0) {
+                    ctx.fillText(tx, x, h / 2 + 300)
+                }
+            }
+        }
+        graph()
+    </script>
+</body>
+
+</html>
