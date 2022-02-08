@@ -40,6 +40,18 @@
       {
         "source":"/fourier",
         "destination":"/stuff/fourier"
+      },
+      {
+        "source":"/finder",
+        "destination":"/stuff/finder"
+      },
+      {
+        "source":"/math",
+        "destination":"/stuff/math/formulas"
+      },
+      {
+        "source":"/elements",
+        "destination":"/stuff/elements2"
       }
     ]
 }

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+
+    <body>
+        <style>
+            body {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+
+            canvas {
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 1
+            }
+
+            .options {
+                position: absolute;
+                left: 1%;
+                top: 1%;
+                z-index: 100;
+            }
+        </style>
+        <canvas></canvas>
+        <div class='options'>
+            <span class='t'>Options</span><br>
+            <input class='v0' placeholder='V₀' value='15'> Initial force<br>
+            <input class='drag' placeholder='Drag coefficient' value='0.05'> Drag coefficient<br>
+            <input class='density' placeholder='Air density' value='1.21'> Air density<br>
+            <input class='area' placeholder='Projectile surface area' value='1'> Projectile surface area<br>
+            <input class='grav' placeholder='Gravity speed' value='9.8'> Gravity speed<br>
+            <br>
+            <input class='bounce' placeholder='Bounce off walls' type='checkbox'> Bounce off walls<br>
+            <input class='bounces' placeholder='Maximum bounces' value='2'> Maximum bounces<br>
+        </div>
+        <script>
+            const canvas = document.querySelector('canvas')
+            const ctx = canvas.getContext('2d')
+            const dragE = document.querySelector('.drag')
+            const v0E = document.querySelector('.v0')
+            const areaE = document.querySelector('.area')
+            const densityE = document.querySelector('.density')
+            const gravE = document.querySelector('.grav')
+            const maxbE = document.querySelector('.bounces')
+            const bounceE = document.querySelector('.bounce')
+            var w = document.body.clientWidth
+            var h = document.body.clientHeight
+            canvas.width = w
+            canvas.height = h
+            var mx = 0;
+            var my = 0;
+            var dc = 0.05
+            var density = 1.21
+            var area = 1
+            var v = 15
+            var gravitySpeed = 9.8
+            var maxb = 2
+            var bounce = true
+
+            setInterval(function () {
+                w = document.body.clientWidth
+                h = document.body.clientHeight
+                dc = dragE.value;
+                v = v0E.value;
+                density = densityE.value;
+                area = areaE.value;
+                gravitySpeed = gravE.value;
+                maxb = maxbE.value;
+                bounce = bounceE.checked;
+            }, 10)
+            document.body.onmousemove = function (e) {
+                mx = e.clientX
+                my = e.clientY
+            }
+            function frame() {
+                ctx.clearRect(0, 0, w, h)
+                var vy = ((h - my) * v) / 50
+                var vx = (mx * v) / 50
+                var cx = 0;
+                var cy = 0;
+                var b = 0;
+                ctx.beginPath()
+                ctx.moveTo(0, h)
+                for (let i = 0; i < 1000; i++) {
+                    if (bounce == true) {
+                        if (cx > w || cx < 0) {
+                            vx *= -1
+                            b++
+                        }
+                        if (cy > h || cy < 0) {
+                            vy *= -1
+                            b++
+                        }
+                    }
+                    if (b < maxb) {
+                        var sv = dc * density * area
+                        vx += -(sv * (vx ^ 2)) / 2
+                        vy += -(sv * (vy ^ 2)) / 2
+                        vy += -gravitySpeed
+                        cx += vx
+                        cy += vy
+                        ctx.lineTo(cx, h - cy)
+                    }
+                }
+                ctx.stroke()
+                requestAnimationFrame(frame)
+            }
+            frame()
+        </script>
+    </body>
+
+    </html>
+</body>
+
+</html>
