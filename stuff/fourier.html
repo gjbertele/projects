@@ -39,7 +39,7 @@
         <span class='t'>Fourier Transform</span><br>
         <span class='a'>List wave amplitudes separated by commas (no spaces):</span><br>
         <input class='waves' value='2,3,5'>
-        <button onclick='graph()'>graph (it takes a second)</button>
+        <button onclick='graph()'>graph (graphing is slow)</button>
     </div>
     <script>
         const canvas = document.querySelector('canvas')
@@ -65,7 +65,7 @@
         }
 
         function f2(x) {
-            var detail = 100
+            var detail = 25
             function integral(t) {
                 return f0(t) * Math.cos(pi * x * t)
             }
