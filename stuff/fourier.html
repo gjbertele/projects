@@ -81,6 +81,7 @@
             return f2(x)-5
         }
         var funcs = [f3,f1]
+        var fcols = ['#FF0000','#0000FF']
 
         var scale = 50
 
@@ -96,6 +97,7 @@
             waves = document.querySelector('.waves').value.split(',')
             ctx.clearRect(0,0,w,h)
             funcs.forEach(function (i,v) {
+                ctx.strokeStyle = fcols[v]
                 var cacheArr = [0]
                 for (let x = 0; x < w * scale; x++) {
                     let tx = x / scale
