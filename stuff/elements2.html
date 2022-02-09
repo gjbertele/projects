@@ -283,7 +283,7 @@
         }
         setInterval(() => {
             if (keysdown.includes('e')) {
-                var parts = document.querySelector('textarea').value.split(/([A-Z][a-z]*)(\d*)/).filter(i => i != '')
+                var parts = document.querySelector('textarea').value.toLocaleUpperCase().split(/([A-Z][a-z]*)(\d*)/).filter(i => i != '')
                 var elemArr = []
                 parts.forEach(function (i, v) {
                     if (elems[i.replaceAll(/[0-9]/g, '')]) {
