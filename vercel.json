@@ -56,6 +56,10 @@
       {
         "source":"/proof",
         "destination":"/stuff/proof.txt"
+      },
+      {
+        "source":"/trajectory",
+        "destination":"/stuff/trajectory"
       }
     ]
 }
