@@ -117,11 +117,11 @@
                     }
                     if (b < maxb) {
                         var sv = dc * density * area
-                        vx += -(sv * (vx ^ 2)) / 2
-                        vy += -(sv * (vy ^ 2)) / 2
-                        vy += -gravitySpeed
-                        cx += vx
-                        cy += vy
+                        vx += -(sv * (vx ^ 2)) / 20
+                        vy += -(sv * (vy ^ 2)) / 20
+                        vy += -gravitySpeed/10
+                        cx += vx/10
+                        cy += vy/10
                         ctx.lineTo(cx, h - cy)
                     }
                 }
