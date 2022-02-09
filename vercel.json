@@ -51,7 +51,7 @@
       },
       {
         "source":"/elements",
-        "destination":"/stuff/elements2"
+        "destination":"/stuff/elements"
       },
       {
         "source":"/proof",
