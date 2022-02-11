@@ -118,7 +118,7 @@
         }
     </style>
     <a class='tt gradientColor' href="proof">0-o.xyz</a>
-    <span class='t'><span class='gradientColor'>//</span> Projects</span>
+    <span class='t'><span class='slash gradientColor'>//</span> </span>
     <span class='mt gradientColor'>Math</span>
     <div class='math'>
         <a href="sqrt">Square Root Approximation</a>
@@ -157,6 +157,57 @@
         <br>
         <a href="stuff/finder">URL Finder</a>
     </div>
+    <script>
+        var t = document.querySelector('.t')
+        var str = 'Projects'
+        var strSplit = str.split('')
+        var mx = my = 0
+        var mouseover = false
+
+        strSplit.forEach(function (i, v) {
+            t.innerHTML += `<span class="letter letter${v}">${i}</span>`
+        })
+
+        t.onmouseover = function () {
+            mouseover = true
+        }
+
+        t.onmouseout = function () {
+            mouseover = false
+        }
+
+        document.body.onmousemove = function (e) {
+            mx = e.clientX
+            my = e.clientY
+        }
+
+        setInterval(function () {
+            if (mouseover == true) {
+                var elem = document.elementFromPoint(mx, my)
+                var cl = Array.from(elem.classList)
+                if (!cl.includes('t') && !cl.includes('slash')) {
+                    var nums = new Array(str.length).fill(0).map((i, v) => i = v)
+                    nums = nums.filter(i => i != cl[1].split('letter')[1])
+                    if (elem.textContent != 1 && elem.textContent != 0) {
+                        elem.textContent = Math.round(Math.random())
+                        elem.classList.add('gradientColor')
+                    }
+                    for (let i of nums) {
+                        var e2 = document.querySelector(`.letter${i}`)
+                        e2.textContent = strSplit[i]
+                        e2.classList.remove('gradientColor')
+                    }
+                }
+            } else {
+                var nums = new Array(str.length).fill(0).map((i, v) => i = v)
+                for (let i of nums) {
+                    var e2 = document.querySelector(`.letter${i}`)
+                    e2.textContent = strSplit[i]
+                    e2.classList.remove('gradientColor')
+                }
+            }
+        }, 10)
+    </script>
 </body>
 
 </html>
