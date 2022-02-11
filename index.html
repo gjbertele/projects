@@ -161,6 +161,7 @@
         var t = document.querySelector('.t')
         var str = 'Projects'
         var strSplit = str.split('')
+        var binArr = '01011100'.split('')
         var mx = my = 0
         var mouseover = false
 
@@ -187,9 +188,10 @@
                 var cl = Array.from(elem.classList)
                 if (!cl.includes('t') && !cl.includes('slash')) {
                     var nums = new Array(str.length).fill(0).map((i, v) => i = v)
-                    nums = nums.filter(i => i != cl[1].split('letter')[1])
+                    var en = cl[1].split('letter')[1]
+                    nums = nums.filter(i => i != en)
                     if (elem.textContent != 1 && elem.textContent != 0) {
-                        elem.textContent = Math.round(Math.random())
+                        elem.textContent = binArr[en]
                         elem.classList.add('gradientColor')
                     }
                     for (let i of nums) {
