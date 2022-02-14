@@ -5,134 +5,198 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Trajectory Calculator</title>
 </head>
 
 <body>
-    <!DOCTYPE html>
-    <html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-    </head>
-
-    <body>
-        <style>
-            body {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                margin: 0;
-            }
-
-            canvas {
-                position: absolute;
-                left: 0;
-                top: 0;
-                z-index: 1
-            }
-
-            .options {
-                position: absolute;
-                left: 1%;
-                top: 1%;
-                z-index: 100;
-            }
-        </style>
-        <canvas></canvas>
-        <div class='options'>
-            <span class='t'>Options</span><br>
-            <input class='v0' placeholder='V₀' value='15'> Initial force<br>
-            <input class='drag' placeholder='Drag coefficient' value='0.05'> Drag coefficient<br>
-            <input class='density' placeholder='Air density' value='1.21'> Air density<br>
-            <input class='area' placeholder='Projectile surface area' value='1'> Projectile surface area<br>
-            <input class='grav' placeholder='Gravity speed' value='9.8'> Gravity speed<br>
-            <br>
-            <input class='bounce' placeholder='Bounce off walls' type='checkbox'> Bounce off walls<br>
-            <input class='bounces' placeholder='Maximum bounces' value='2'> Maximum bounces<br>
-        </div>
-        <script>
-            const canvas = document.querySelector('canvas')
-            const ctx = canvas.getContext('2d')
-            const dragE = document.querySelector('.drag')
-            const v0E = document.querySelector('.v0')
-            const areaE = document.querySelector('.area')
-            const densityE = document.querySelector('.density')
-            const gravE = document.querySelector('.grav')
-            const maxbE = document.querySelector('.bounces')
-            const bounceE = document.querySelector('.bounce')
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1
+        }
+        
+        .options {
+            position: absolute;
+            left: 1%;
+            top: 1%;
+            z-index: 100;
+        }
+    </style>
+    <canvas></canvas>
+    <div class='options'>
+        <span class='t'>Options</span><br>
+        <input class='v0' placeholder='V₀' value='15'> Initial force (n)<br>
+        <input class='drag' placeholder='Drag coefficient' value='0.05'> Drag coefficient<br>
+        <input class='density' placeholder='Air density' value='1.21'> Air density (kg/m^3)<br>
+        <input class='area' placeholder='Projectile surface area' value='1'> Projectile surface area (m^2)<br>
+        <input class='mass' placeholder='Projcetile mass' value='1'> Projectile mass (kg)<br>
+        <input class='grav' placeholder='Gravity speed' value='9.8'> Gravity speed (m/s)<br>
+        <input class='realGrav' placeholder='Realistic Gravity' type="checkbox" checked> Realistic Gravity<br>
+        <input class='bounce' placeholder='Bounce off walls' type='checkbox'> Bounce off walls<br>
+        <input class='bounces' placeholder='Maximum bounces' value='2'> Maximum bounces<br>
+        <br> Hit the G key to create a gravity point where your mouse is.<br> Hold the R key to remove any points near your mouse.<br>
+        <input class='pointWeight' placeholder='Gravity point weight' value='1e18'> Gravity point weight (kg)<br>
+    </div>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        const dragE = document.querySelector('.drag')
+        const v0E = document.querySelector('.v0')
+        const areaE = document.querySelector('.area')
+        const densityE = document.querySelector('.density')
+        const gravE = document.querySelector('.grav')
+        const maxbE = document.querySelector('.bounces')
+        const bounceE = document.querySelector('.bounce')
+        const massE = document.querySelector('.mass')
+        const realGravE = document.querySelector('.realGrav')
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+        canvas.width = w
+        canvas.height = h
+        var mx = 1;
+        var my = 1;
+        var dc = 0.05
+        var density = 1.21
+        var area = 1
+        var v = 15
+        var gravitySpeed = 9.8
+        var maxb = 2
+        var bounce = true
+        var fps = 60
+        var realisticGravity = true
+        var pMass = 1
+        var scale = 10
+        var frames = 1000
+        const gravConstant = 6.574e-11
+        document.body.onresize = function() {
             var w = document.body.clientWidth
             var h = document.body.clientHeight
             canvas.width = w
             canvas.height = h
-            var mx = 0;
-            var my = 0;
-            var dc = 0.05
-            var density = 1.21
-            var area = 1
-            var v = 15
-            var gravitySpeed = 9.8
-            var maxb = 2
-            var bounce = true
-
-            setInterval(function () {
-                w = document.body.clientWidth
-                h = document.body.clientHeight
-                dc = dragE.value;
-                v = v0E.value;
-                density = densityE.value;
-                area = areaE.value;
-                gravitySpeed = gravE.value;
-                maxb = Number(maxbE.value)+1;
-                bounce = bounceE.checked;
-            }, 10)
-            document.body.onmousemove = function (e) {
+        }
+        var keysdown = []
+        setInterval(function() {
+            w = document.body.clientWidth
+            h = document.body.clientHeight
+            pMass = +(massE.value);
+            dc = dragE.value;
+            v = v0E.value / pMass;
+            density = densityE.value;
+            area = areaE.value;
+            gravitySpeed = gravE.value;
+            maxb = +(maxbE.value) + 1;
+            bounce = bounceE.checked;
+            realisticGravity = realGravE.checked;
+            if (keysdown.includes('r')) {
+                gravPts.forEach(function(i, v) {
+                    if (((i.x - mx) ** 2 + (i.y - my) ** 2) < (70 ** 2)) {
+                        gravPts = gravPts.filter(l => l != i)
+                    }
+                })
+            }
+        }, 10)
+        document.body.onmousemove = function(e) {
+            if (!paused) {
                 mx = e.clientX
                 my = e.clientY
             }
-            function frame() {
-                ctx.clearRect(0, 0, w, h)
-                var vy = ((h - my) * v) / 50
-                var vx = (mx * v) / 50
-                var cx = 0;
-                var cy = 0;
-                var b = 0;
-                ctx.beginPath()
-                ctx.moveTo(0, h)
-                for (let i = 0; i < 1000; i++) {
-                    if (bounce == true) {
-                        if (cx > w || cx < 0) {
-                            vx *= -1
-                            b++
-                        }
-                        if (cy > h || cy < 0) {
-                            vy *= -1
-                            b++
-                        }
+        }
+        document.body.onkeydown = function(e) {
+            if (!keysdown.includes(e.key)) keysdown.push(e.key)
+            if (e.key === ' ') {
+                paused = !paused
+            } else if (e.key === 'g') {
+                gravPts.push({
+                    x: mx,
+                    y: my,
+                    weight: +document.querySelector('.pointWeight').value
+                })
+            }
+        }
+        document.body.onkeyup = function(e) {
+            keysdown = keysdown.filter(i => i != e.key)
+        }
+        var vx = 0;
+        var vy = 0;
+        var paused = false
+        var gravPts = []
+        var lft = 0;
+
+        function frame() {
+            ctx.clearRect(0, 0, w, h)
+            var s = mx + (h - my)
+            var px = mx / s
+            var py = (h - my) / s
+            vy = (py * v) * 25
+            vx = (px * v) * 25
+            var cx = 0;
+            var cy = 0;
+            var b = 0;
+            ctx.beginPath()
+            ctx.moveTo(0, h)
+            for (let i = 0; i < frames; i++) {
+                var out = false
+                if (bounce == true) {
+                    if (cx > w || cx < 0) {
+                        vx *= -1
+                        b++
                     }
-                    if (b < maxb) {
-                        var sv = dc * density * area
-                        vx += -(sv * (vx ^ 2)) / 20
-                        vy += -(sv * (vy ^ 2)) / 20
-                        vy += -gravitySpeed/10
-                        cx += vx/10
-                        cy += vy/10
-                        ctx.lineTo(cx, h - cy)
+                    if (cy > h || cy < 0) {
+                        vy *= -1
+                        b++
                     }
                 }
-                ctx.stroke()
-                requestAnimationFrame(frame)
-            }
-            frame()
-        </script>
-    </body>
 
-    </html>
+                if (cx > w || cx < 0) {
+                    out = true
+                }
+                if (cy > h || cy < 0) {
+                    out = true
+                }
+                if (b < maxb && !out) {
+                    var sv = dc * density * area
+                    vx += -(sv * (vx ^ 2)) / 20
+                    vy += -(sv * (vy ^ 2)) / 20
+                    if (realisticGravity) {
+                        vy += -gravConstant * (pMass * 5.972e24) / ((6371000 + (h - cy)) ** 2)
+                    } else {
+                        vy += -gravitySpeed
+                    }
+                    gravPts.forEach(function(k, v) {
+                        var dx = k.x - cx
+                        var dy = k.y - cy
+                        var d = (dx ** 2) + (dy ** 2)
+                        var fGrav = (gravConstant * (pMass * k.weight) / d)
+                        vy += (fGrav * (Math.abs(dy) / dy)) / pMass || 0
+                        vx += (fGrav * (Math.abs(dx) / dx)) / pMass || 0
+                    })
+                    cx += vx / scale
+                    cy += vy / scale
+                    ctx.lineTo(cx, h - cy)
+                }
+            }
+            ctx.stroke()
+            gravPts.forEach(function(i, v) {
+                ctx.beginPath();
+                ctx.arc(i.x, i.y, 5, 0, 2 * Math.PI, false);
+                ctx.fill();
+            })
+            requestAnimationFrame(frame)
+        }
+        frame()
+    </script>
 </body>
 
 </html>
