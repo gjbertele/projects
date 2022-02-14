@@ -46,8 +46,6 @@
         <input class='realGrav' placeholder='Realistic Gravity' type="checkbox" checked> Realistic Gravity<br>
         <input class='bounce' placeholder='Bounce off walls' type='checkbox'> Bounce off walls<br>
         <input class='bounces' placeholder='Maximum bounces' value='2'> Maximum bounces<br>
-        <br> Hit the G key to create a gravity point where your mouse is.<br> Hold the R key to remove any points near your mouse.<br>
-        <input class='pointWeight' placeholder='Gravity point weight' value='1e18'> Gravity point weight (kg)<br>
     </div>
     <script>
         const canvas = document.querySelector('canvas')
@@ -86,7 +84,6 @@
             canvas.width = w
             canvas.height = h
         }
-        var keysdown = []
         setInterval(function() {
             w = document.body.clientWidth
             h = document.body.clientHeight
@@ -98,14 +95,6 @@
             gravitySpeed = gravE.value;
             maxb = +(maxbE.value) + 1;
             bounce = bounceE.checked;
-            realisticGravity = realGravE.checked;
-            if (keysdown.includes('r')) {
-                gravPts.forEach(function(i, v) {
-                    if (((i.x - mx) ** 2 + (i.y - my) ** 2) < (70 ** 2)) {
-                        gravPts = gravPts.filter(l => l != i)
-                    }
-                })
-            }
         }, 10)
         document.body.onmousemove = function(e) {
             if (!paused) {
@@ -114,19 +103,9 @@
             }
         }
         document.body.onkeydown = function(e) {
-            if (!keysdown.includes(e.key)) keysdown.push(e.key)
             if (e.key === ' ') {
                 paused = !paused
-            } else if (e.key === 'g') {
-                gravPts.push({
-                    x: mx,
-                    y: my,
-                    weight: +document.querySelector('.pointWeight').value
-                })
             }
-        }
-        document.body.onkeyup = function(e) {
-            keysdown = keysdown.filter(i => i != e.key)
         }
         var vx = 0;
         var vy = 0;
@@ -174,14 +153,6 @@
                     } else {
                         vy += -gravitySpeed
                     }
-                    gravPts.forEach(function(k, v) {
-                        var dx = k.x - cx
-                        var dy = k.y - cy
-                        var d = (dx ** 2) + (dy ** 2)
-                        var fGrav = (gravConstant * (pMass * k.weight) / d)
-                        vy += (fGrav * (Math.abs(dy) / dy)) / pMass || 0
-                        vx += (fGrav * (Math.abs(dx) / dx)) / pMass || 0
-                    })
                     cx += vx / scale
                     cy += vy / scale
                     ctx.lineTo(cx, h - cy)
