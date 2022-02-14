@@ -139,12 +139,6 @@
                     }
                 }
 
-                if (cx > w || cx < 0) {
-                    out = true
-                }
-                if (cy > h || cy < 0) {
-                    out = true
-                }
                 if (b < maxb && !out) {
                     var sv = dc * density * area
                     vx += -(sv * (vx ^ 2)) / 20
