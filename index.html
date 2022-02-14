@@ -12,12 +12,11 @@
 <body>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
-
         body {
             background: #040815;
             overflow: hidden;
         }
-
+        
         .t {
             position: absolute;
             left: 5%;
@@ -29,7 +28,7 @@
             transition: all 0.5s;
             padding-bottom: 2px;
         }
-
+        
         .tt {
             position: absolute;
             bottom: 1%;
@@ -38,13 +37,13 @@
             font-weight: 800;
             font-family: 'Inter', sans-serif;
         }
-
+        
         .gradientColor {
             background-image: linear-gradient(45deg, rgba(255, 69, 69, 1) 0%, rgba(255, 179, 0, 1) 100%, rgba(159, 75, 92, 1) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
+        
         .mt {
             position: absolute;
             left: 5%;
@@ -53,13 +52,13 @@
             font-weight: 800;
             font-family: 'Inter', sans-serif;
         }
-
+        
         .math {
             position: absolute;
             left: 5.1%;
             top: 29%;
         }
-
+        
         .math>a {
             font-size: 1em;
             font-weight: 800;
@@ -68,7 +67,7 @@
             text-decoration: none;
             cursor: pointer;
         }
-
+        
         .st {
             position: absolute;
             left: 5%;
@@ -77,13 +76,13 @@
             font-weight: 800;
             font-family: 'Inter', sans-serif;
         }
-
+        
         .sims {
             position: absolute;
             left: 5.1%;
             top: 49%;
         }
-
+        
         .sims>a {
             font-size: 1em;
             font-weight: 800;
@@ -92,7 +91,7 @@
             text-decoration: none;
             cursor: pointer;
         }
-
+        
         .mst {
             position: absolute;
             left: 5%;
@@ -101,13 +100,13 @@
             font-weight: 800;
             font-family: 'Inter', sans-serif;
         }
-
+        
         .misc {
             position: absolute;
             left: 5.1%;
             top: 74%;
         }
-
+        
         .misc>a {
             font-size: 1em;
             font-weight: 800;
@@ -137,8 +136,6 @@
         <br>
         <a href="elements">Atoms Simulation</a>
         <br>
-        <a href="trajectory">Projectile Trajectory</a>
-        <br>
         <a href="rtx">Ray Tracing</a>
         <br>
         <a href="stuff/gravity">Gravity Simulator</a>
@@ -165,24 +162,24 @@
         var mx = my = 0
         var mouseover = false
 
-        strSplit.forEach(function (i, v) {
+        strSplit.forEach(function(i, v) {
             t.innerHTML += `<span class="letter letter${v}">${i}</span>`
         })
 
-        t.onmouseover = function () {
+        t.onmouseover = function() {
             mouseover = true
         }
 
-        t.onmouseout = function () {
+        t.onmouseout = function() {
             mouseover = false
         }
 
-        document.body.onmousemove = function (e) {
+        document.body.onmousemove = function(e) {
             mx = e.clientX
             my = e.clientY
         }
 
-        setInterval(function () {
+        setInterval(function() {
             if (mouseover == true) {
                 var elem = document.elementFromPoint(mx, my)
                 var cl = Array.from(elem.classList)
