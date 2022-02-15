@@ -163,17 +163,14 @@
         setInterval(function() {
             lamt = amt
             amt = Math.sin(t)
-            if (amt < lamt) {
-                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
-                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
-                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
-                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
-            } else {
-                move()
-                move()
-                move()
-                move()
-            }
+            objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+            objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+            objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+            objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+            move()
+            move()
+            move()
+            move()
             t += 1 / 30
         }, 1000 / 60)
         frame()
