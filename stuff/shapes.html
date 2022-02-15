@@ -164,10 +164,10 @@
             lamt = amt
             amt = Math.sin(t)
             if (amt < lamt) {
-                objects = objects.filter(i => i != objects[0])
-                objects = objects.filter(i => i != objects[0])
-                objects = objects.filter(i => i != objects[0])
-                objects = objects.filter(i => i != objects[0])
+                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
+                objects = objects.filter(i => i != objects[Math.floor(Math.random() * objects.length)])
             } else {
                 move()
                 move()
