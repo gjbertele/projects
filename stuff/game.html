@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+        body {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            background:#FFF;
+        }
+
+        canvas {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform:translate(-50%,-50%);
+        }
+        .score{
+            position:absolute;
+            top:10%;
+            font-size:xx-large;
+        }
+        .controls{
+            position:absolute;
+            bottom:10%;
+            font-size:medium;
+        }
+        .text{
+            position:absolute;
+            left:50%;
+            transform:translateX(-50%);
+            font-family:'Inter';
+            font-weight:700;
+        }
+        .failed{
+            position:absolute;
+            left:50%;
+            top:50%;
+            transform:translate(-50%,-50%);
+            width:25%;
+            height:25%;
+            background:#fff;
+            border-radius:15px;
+            display:none;
+        }
+        .size{
+            position:absolute;
+            top:30%;
+            font-size:xx-large;
+            text-align:center;
+        }
+        .restart{
+            position:absolute;
+            top:55%;
+            left:50%;
+            transform:translateX(-50%);
+            text-align:center;
+            padding:2%;
+            background:#4572e4;
+            border-radius:15px;
+            font-size:x-large;
+            vertical-align: middle;
+            color:#fff;
+            font-family:'Inter';
+            text-decoration:none;
+        }
+    </style>
+    <canvas></canvas>
+    <span class='score text'>0 Points</span>
+    <span class='controls text'>WASD/Arrow key steering & Spacebar to pause</span>
+    <div class='failed'><span class='size text'>11</span><a class='restart' href=''>Restart</a></div>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        var w = document.body.clientWidth
+        var h = document.body.clientHeight
+
+        const score = document.querySelector('.score')
+        const params = new URLSearchParams(window.location.search);
+        let posx = 1
+        let posy = 5
+        let gridW = 16
+        let gridH = 16
+        if(params.get('size')){
+            var dimensions = params.get('size').split('x')
+            gridW = dimensions[0]*2
+            gridH = dimensions[1]*2
+        }
+        let squareW = 80
+        while(gridH*squareW>h*(2/3)){
+            squareW+=-1
+        }
+        while(gridW*squareW>w*(3/4)){
+            squareW+=-1
+        }
+        let squareH = squareW
+        canvas.width = gridW*squareW;
+        canvas.height = gridH*squareH;
+        let vx = 1
+        let vy = 0
+        let paused = false;
+        let colors = ['#a3d049', '#aad751']
+        let snakeColor = '#4572e4'
+        let startY = Math.round(gridH/2)
+        let snake = [{ x: 3, y: startY }, { x: 2, y: startY }, { x: 1, y: startY }]
+        let failed = false
+        var rx = Math.floor(Math.random() * gridW)
+        var ry = Math.floor(Math.random() * gridH)
+        while (snake.map(i => i = i.x).includes(rx)) {
+            rx = Math.floor(Math.random() * gridW)
+        }
+        while (snake.map(i => i = i.y).includes(ry)) {
+            ry = Math.floor(Math.random() * gridH)
+        }
+        apple = {
+            x: rx,
+            y: ry
+        }
+        let snakeLength = 3;
+        let tps = 4;
+        const tick = () => {
+            ctx.clearRect(0, 0, w, h)
+            for (let x = 0; x < gridW; x++) {
+                for (let y = 0; y < gridH; y++) {
+                    const color = colors[+((((gridW * y) + x) - (y % 2)) % 2)]
+                    ctx.fillStyle = color
+                    ctx.fillRect(x * squareW, y * squareH, squareW, squareH)
+                }
+            }
+            ctx.fillStyle = '#FF0000'
+            ctx.fillRect(apple.x * squareW, apple.y * squareH, squareW, squareH)
+            snake.forEach(function (pos, v) {
+                ctx.fillStyle = snakeColor
+                ctx.fillRect(pos.x * squareW, pos.y * squareH, squareW, squareH)
+            })
+            if (snake[0].x == apple.x && snake[0].y == apple.y) {
+                snakeLength += 1
+                score.textContent = snakeLength - 3 + ' Points'
+                var rx = Math.floor(Math.random() * gridW)
+                var ry = Math.floor(Math.random() * gridH)
+                while (snake.map(i => i = i.x).includes(rx)) {
+                    rx = Math.floor(Math.random() * gridW)
+                }
+                while (snake.map(i => i = i.y).includes(ry)) {
+                    ry = Math.floor(Math.random() * gridH)
+                }
+                apple = {
+                    x: rx,
+                    y: ry
+                }
+            }
+            if(!paused) snake = [{ x: snake[0].x + vx, y: snake[0].y + vy }].concat(snake.slice(0, snakeLength - 1))
+            if (snake[0].x >= gridW + 1 || snake[0].x < -1 || snake[0].y >= gridH + 1 || snake[0].y < -1) {
+                if(!paused) fail()
+            }
+            let snakeJoined = snake.map(i => i = i.x + ',' + i.y)
+            if (Array.from(new Set(snakeJoined)).join('-') != snakeJoined.join('-')) {
+                fail()
+            }
+        }
+        setInterval(function(){
+            tick()
+        },1000/tps)
+        document.body.onkeydown = function (e) {
+            if (!failed) {
+                if (e.key == 'ArrowUp' || e.key == 'w') {
+                    var st = (vx != 0 && vy != 1)
+                    vx = 0;
+                    vy = -1;
+                    if(st) tick()
+                } else if (e.key == 'ArrowLeft' || e.key == 'a') {
+                    var st = (vx != -1 && vy != 0)
+                    vx = -1;
+                    vy = 0;
+                    if(st) tick()
+                } else if (e.key == 'ArrowRight' || e.key == 'd') {
+                    var st = (vx != 1 && vy != 0)
+                    vx = 1;
+                    vy = 0;
+                    if(st) tick()
+                } else if (e.key == 'ArrowDown' || e.key == 's') {
+                    var st = (vx != 0 && vy != 1)
+                    vy = 1;
+                    vx = 0;
+                    if(st) tick()
+                } else if(e.key == ' '){
+                    paused = !paused
+                }
+            }
+        }
+        function fail() {
+            vx = 0;
+            vy = 0;
+            failed = true;
+            document.querySelector('.failed').style.display = 'inline-block'
+            document.querySelector('.size').textContent = snakeLength-3+' Points'
+        }
+    </script>
+</body>
+
+</html>
