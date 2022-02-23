@@ -61,6 +61,7 @@
             background:#fff;
             border-radius:15px;
             display:none;
+            z-index:15;
         }
         .size{
             position:absolute;
@@ -175,6 +176,7 @@
         let vx = 1
         let vy = 0
         let paused = false;
+        let renderpause = false;
         let colors = ['#a3d049', '#aad751']
         let snakeColor = '#4572e4'
         let startY = Math.round(gridH/2)
@@ -216,9 +218,9 @@
                     y: ry
                 }
             }
-            if(!paused) snake = [{ x: snake[0].x + vx, y: snake[0].y + vy }].concat(snake.slice(0, snakeLength - 1))
+            if(!paused && !renderpause) snake = [{ x: snake[0].x + vx, y: snake[0].y + vy }].concat(snake.slice(0, snakeLength - 1))
             if (snake[0].x >= gridW + 1 || snake[0].x < -1 || snake[0].y >= gridH + 1 || snake[0].y < -1) {
-                if(!paused) fail()
+                fail()
             }
             let snakeJoined = snake.map(i => i = i.x + ',' + i.y)
             if (Array.from(new Set(snakeJoined)).join('-') != snakeJoined.join('-')) {
@@ -238,6 +240,14 @@
             }
         }
         initial()
+        document.onvisibilitychange = function(){
+            if (document.visibilityState == 'visible') {
+                initial()
+                renderpause = false
+            } else {
+                renderpause = true
+            }
+        }
         document.body.onkeydown = function (e) {
             if (!failed) {
                 if (e.key == 'ArrowUp' || e.key == 'w') {
