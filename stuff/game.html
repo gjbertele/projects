@@ -28,6 +28,12 @@
             top: 50%;
             transform:translate(-50%,-50%);
         }
+        .main{
+            z-index:10
+        }
+        .bg{
+            z-index:2;
+        }
         .score{
             position:absolute;
             top:10%;
@@ -77,14 +83,48 @@
             font-family:'Inter';
             text-decoration:none;
         }
+        .controlsBox{
+            position:absolute;
+            left:1.5%;
+            top:2%;
+            transform:translate(0%,0%);
+        }
+        .controlsBox > input {
+            border:none;
+            border-bottom: 1px solid #000;
+        }
+        .changeButton {
+            background:#4572e4;
+            border:none;
+            color:#fff;
+            width:20%;
+            height:20%;
+            font-family:'Inter';
+            padding-left:3px;
+            padding-right:3px;
+            padding-top:1px;
+            padding-bottom:1px;
+            border-radius:5px;
+            cursor:pointer;
+        }
     </style>
-    <canvas></canvas>
+    <canvas class='bg'></canvas>
+    <canvas class='main'></canvas>
     <span class='score text'>0 Points</span>
     <span class='controls text'>WASD/Arrow key steering & Spacebar to pause</span>
     <div class='failed'><span class='size text'>11</span><a class='restart' href=''>Restart</a></div>
+    <div class='controlsBox text'>
+        <input class='snakeLength' type="number" value="3"> Default snake length<br>
+        <input class='speed' type="number" value="1"> Default snake speed<br>
+        <input class='sizeW' type="number" value="8"> Board width<br>
+        <input class='sizeH' type="number" value="8"> Board height<br>
+        <button class='changeButton'>Change</button>
+    </div>
     <script>
-        const canvas = document.querySelector('canvas')
+        const canvas = document.querySelector('.main')
         const ctx = canvas.getContext('2d')
+        const bgcanvas = document.querySelector('.bg')
+        const bgctx = bgcanvas.getContext('2d')
         var w = document.body.clientWidth
         var h = document.body.clientHeight
 
@@ -94,11 +134,34 @@
         let posy = 5
         let gridW = 16
         let gridH = 16
+        let tps = 4;
+        let snakeLength = 3;
         if(params.get('size')){
             var dimensions = params.get('size').split('x')
             gridW = dimensions[0]*2
             gridH = dimensions[1]*2
         }
+        if(params.get('speed')){
+            tps = +params.get('speed')*4
+        }
+        if(params.get('length')){
+            snakeLength = +params.get('length')
+        }
+
+        let snakeLengthElem = document.querySelector('.snakeLength')
+        let speedElem = document.querySelector('.speed')
+        let sizeWElem = document.querySelector('.sizeW')
+        let sizeHElem = document.querySelector('.sizeH')
+
+        snakeLengthElem.value = snakeLength
+        speedElem.value = tps/4
+        sizeWElem.value = gridW/2
+        sizeHElem.value = gridH/2
+
+        document.querySelector('.changeButton').onclick = function(){
+            window.location.href = window.location.protocol+'//'+window.location.host+window.location.pathname+`?size=${sizeWElem.value}x${sizeHElem.value}&speed=${speedElem.value}&length=${snakeLengthElem.value}`
+        }
+
         let squareW = 80
         while(gridH*squareW>h*(2/3)){
             squareW+=-1
@@ -107,8 +170,8 @@
             squareW+=-1
         }
         let squareH = squareW
-        canvas.width = gridW*squareW;
-        canvas.height = gridH*squareH;
+        canvas.width = bgcanvas.width = gridW*squareW;
+        canvas.height = bgcanvas.height = gridH*squareH;
         let vx = 1
         let vy = 0
         let paused = false;
@@ -129,17 +192,8 @@
             x: rx,
             y: ry
         }
-        let snakeLength = 3;
-        let tps = 4;
         const tick = () => {
             ctx.clearRect(0, 0, w, h)
-            for (let x = 0; x < gridW; x++) {
-                for (let y = 0; y < gridH; y++) {
-                    const color = colors[+((((gridW * y) + x) - (y % 2)) % 2)]
-                    ctx.fillStyle = color
-                    ctx.fillRect(x * squareW, y * squareH, squareW, squareH)
-                }
-            }
             ctx.fillStyle = '#FF0000'
             ctx.fillRect(apple.x * squareW, apple.y * squareH, squareW, squareH)
             snake.forEach(function (pos, v) {
@@ -148,7 +202,7 @@
             })
             if (snake[0].x == apple.x && snake[0].y == apple.y) {
                 snakeLength += 1
-                score.textContent = snakeLength - 3 + ' Points'
+                score.textContent = snakeLength - snakeLength + ' Points'
                 var rx = Math.floor(Math.random() * gridW)
                 var ry = Math.floor(Math.random() * gridH)
                 while (snake.map(i => i = i.x).includes(rx)) {
@@ -174,6 +228,16 @@
         setInterval(function(){
             tick()
         },1000/tps)
+        function initial(){
+            for (let x = 0; x < gridW; x++) {
+                for (let y = 0; y < gridH; y++) {
+                    const color = colors[+((((gridW * y) + x) - (y % 2)) % 2)]
+                    bgctx.fillStyle = color
+                    bgctx.fillRect(x * squareW, y * squareH, squareW, squareH)
+                }
+            }
+        }
+        initial()
         document.body.onkeydown = function (e) {
             if (!failed) {
                 if (e.key == 'ArrowUp' || e.key == 'w') {
@@ -206,7 +270,7 @@
             vy = 0;
             failed = true;
             document.querySelector('.failed').style.display = 'inline-block'
-            document.querySelector('.size').textContent = snakeLength-3+' Points'
+            document.querySelector('.size').textContent = snakeLength-snakeLength+' Points'
         }
     </script>
 </body>
