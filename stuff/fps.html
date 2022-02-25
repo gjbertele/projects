@@ -17,20 +17,17 @@
         canvas.width = document.body.clientWidth
         canvas.height = document.documentElement.clientHeight-400
         ctx.strokeStyle = '#fff'
-        let be = performance.now(), fps = 0;
+        let x = performance.now(), fps = 0;
         var frames = 0
         var current = 0
         var lf = 0
         requestAnimationFrame(
             function loop() {
                 let now = performance.now()
-                fps = 1000 / (now - be)
-                be = now
-                if(fps!==143){
-                    console.log(fps)
-                }
+                fps = 1000 / (now - x)
+                x = now
                 requestAnimationFrame(loop)
-                frames+=1
+                frames++
                 document.querySelector('.text').textContent = (Math.round(fps*10)/10).toLocaleString()+' FPS'
             }
         )
