@@ -122,9 +122,6 @@
         }
         var precision = s
         var lastFrame = Date.now()
-        function randomStr() {
-            return Math.random().toString().split('.')[1]
-        }
         function upd() {
             document.querySelector('.time').fontSize = cem + 'em'
             var t = (performance.now() - start) / 1000
@@ -143,8 +140,6 @@
                     while (decimals.length > Math.floor(precision)) {
                         decimals = decimals.substr(0, decimals.length - 1)
                     }
-                    var rs1 = randomStr()
-                    var rs2 = randomStr()
                     document.querySelector('.time').textContent = str + '.' + decimals
                     var iterations = 10
                     while (iterations > 0) {
