@@ -86,7 +86,6 @@
         var cem = 5
         var start = performance.now()
         var paused = false
-        var stp = 0
         var tp = 0
         var e = performance.now().toString().split('.')[1]
         var s;
@@ -153,7 +152,10 @@
                         }
                     }
                     document.querySelector('.time').style.fontSize = cem + 'em'
-                } catch { }
+                } catch(err) {
+                    var placeholderVar;
+                    delete placeHolderVar;
+                 }
             }
             requestAnimationFrame(upd)
         }
