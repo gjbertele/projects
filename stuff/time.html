@@ -88,11 +88,11 @@
         var paused = false
         var stp = 0
         var tp = 0
-        var e =  performance.now().toString().split('.')[1]
+        var e = performance.now().toString().split('.')[1]
         var s;
-        if(e == undefined){
+        if (e == undefined) {
             e = performance.now().toString().split('.')[1]
-            if(e == undefined){
+            if (e == undefined) {
                 s = 16
             } else {
                 s = e.length
@@ -117,7 +117,7 @@
             }
             document.documentElement.scroll(0, document.body.clientHeight / 2 - screen.availHeight / 2)
             document.body.onscroll = function (e) {
-                precision = ((s+3) - ((s / document.body.clientHeight) * (document.documentElement.scrollTop - (document.body.clientHeight / 2))) * 2)
+                precision = ((s + 3) - ((s / document.body.clientHeight) * (document.documentElement.scrollTop - (document.body.clientHeight / 2))) * 2)
             }
         }
         var precision = s
@@ -127,14 +127,15 @@
         }
         function upd() {
             document.querySelector('.time').fontSize = cem + 'em'
-            if (paused == true) {
-                tp += (Date.now() - lastFrame)
-            }
-            lastFrame = Date.now()
             var t = (performance.now() - start) / 1000
+            if(paused == true){
+                tp+=(performance.now()-lastFrame)
+                console.log(tp)
+            }
+            lastFrame = performance.now()
             if (!isNaN(t) && paused == false) {
                 try {
-                    var str = new Date(t * 1000 - (tp / 1000)).toISOString().substr(11, 8)
+                    var str = new Date((t) * 1000 - tp).toISOString().substr(11, 8)
                     var decimals = t.toString().split('.')[1]
                     while (decimals.length < Math.floor(precision)) {
                         decimals += '0'
@@ -161,6 +162,7 @@
             }
             requestAnimationFrame(upd)
         }
+        lastFrame = (performance.now()-lastFrame)
         upd()
     </script>
 </body>
