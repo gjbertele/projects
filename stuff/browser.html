@@ -66,7 +66,7 @@
                         //The website isn't drawn to the canvas, but the current tab is made transparent so that the previous page/tab under it is shown.
                         //By quickly opening and closing a tab, I can choose the previous page and grab a user's view of any website.
                         //It can also capture any browser-owned UI features which are over the page, like search suggestions and inspect
-                        //Might be possible to completely copy a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content.
+                        //Might be possible to display a user's screen by enabling fullscreen although I haven't been able to get that to work because it keeps wiping the content of the canvas/resetting its transparency.
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         ctx.fillStyle = '#000'
                         ctx.fillRect(6, 6, ctx.measureText('BACK').width + 6, 9 + 6)
