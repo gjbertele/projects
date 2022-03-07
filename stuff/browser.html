@@ -88,19 +88,12 @@
             }
         })
         //temporarily open tab
-        //ex. targets would be 
-        /* 
-            https://google.com/maps which after about 1500ms puts a dot at your exact location (better than IP geolocation)
-            https://myactivity.google.com/product/search?hl=en&max=Date.now()*1000 which loads your search history in about 300ms
-            web dashboards
-        */
         function grab() {
             var w = window.open(document.querySelector('.url').value);
             setTimeout(function () {
                 w.close()
             }, document.querySelector('.delay').value)
         }
-            //the lower the time the better because the user has less time to see it. some websites take longer though, since you have to wait for content to load
 
     </script>
 </body>
