@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs</title>
+</head>
+<body>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+        body{
+            background:rgb(247, 240, 240)
+        }
+        .title{
+            position:absolute;
+            left:1.25em;
+            top:0.25em;
+            color:rgb(32, 33, 36);
+            font-family:'Inter';
+            font-size:3.5em;
+        }
+        .endpoint{
+            position:absolute;
+            left:1.5em;
+            width:60%;
+            height:8em;
+            text-overflow:wrap;
+        }
+        .method {
+            position:absolute;
+            left:1.5em;
+            top:0.5em;
+            font-size:2em;
+            font-family:'Inter';
+            color:rgb(78, 165, 217)
+        }
+        .path {
+            position:absolute;
+            left:5em;
+            top:0.875em;
+            font-size:1.5em;
+            font-family:'Inter';
+            color:rgb(42, 43, 44);
+        }
+        .description{
+            position:absolute;
+            left:2.5em;
+            top:3.2em;
+            font-size:1.25em;
+            font-family:'Inter';
+            color:rgb(42, 43, 44);
+        }
+    </style>
+    <h1 class='title'>0pi.xyz</h1>
+    <div class='main'></div>
+    <script>
+        const main  = document.querySelector('.main')
+        var endpoints = [{
+            method:'GET',
+            path:'/color/<hex>/<width>/<height>',
+            description:'Returns the color in an image of specified width and height'
+        }]
+        for(let v in endpoints){
+            let i = endpoints[v] 
+            const div = document.createElement('div')
+            div.className = `endpoint endpoint_${v}`
+            const child1 = document.createElement('span')
+            child1.className = 'method'
+            child1.textContent = i.method
+            div.appendChild(child1)
+            const child2 = document.createElement('span')
+            child2.className = 'path'
+            child2.textContent = i.path
+            div.appendChild(child2)
+            const child3 = document.createElement('span')
+            child3.className = 'description'
+            child3.textContent = i.description
+            div.appendChild(child3)
+            main.appendChild(div)
+            div.style.top = v*div.offsetHeight+150+'px'
+        }
+    </script>
+</body>
+</html>
