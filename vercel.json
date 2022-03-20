@@ -63,6 +63,10 @@
         {
             "source": "/shapes",
             "destination": "/stuff/shapes"
+        },
+        {
+            "source":"/rg",
+            "destination":"/stuff/math/reverseGraph"
         }
     ]
 }
