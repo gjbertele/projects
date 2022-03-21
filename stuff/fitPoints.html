@@ -14,6 +14,7 @@
     <input class='p3' type="number"> y at x = 2<br>
     <input class='d' type="number" min='2'> Degree of Result (min 2)<br>
     <button onclick='find1()' class='btn'>Find</button><br>
+    <br>
     <span class='result'></span>
     <script>
         const p1e = document.querySelector('.p1')
@@ -45,7 +46,24 @@
             results.push(c)
             results.push(b)
             results.push(a)
-            span.textContent = results.map((i,v) => i = [i,v]).filter(i => i[0]!=0).map(i => i = i[0]+'x^'+i[1]).reverse().join(' + ')
+            results = results.map((i,v) => i = [i,v]).filter(i => i[0]!=0)
+            results.forEach(function(i,v){
+                var exp = ''
+                if(i[1]!=0){
+                    exp = 'x^'+i[1]
+                }
+                var sign = '+'
+                if(i[0]<0){
+                    sign = '-'
+                }
+                var sv = ' '
+                if(v == results.length-1){
+                    sv = ''
+                    if(sign == '+') sign = ''
+                }
+                results[v] = sign+sv+Math.abs(i[0])+exp
+            })
+            span.textContent = results.reverse().join(' ')
         }
     </script>
 </body>
