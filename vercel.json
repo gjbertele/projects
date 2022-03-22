@@ -67,6 +67,10 @@
         {
             "source":"/rg",
             "destination":"/stuff/math/reverseGraph"
+        },
+        {
+            "source":"/fp",
+            "destination":"/stuff/fitPoints"
         }
     ]
 }
