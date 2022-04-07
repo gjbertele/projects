@@ -13,16 +13,26 @@
     <var>c</var> - Air drag (ish) constant. Between 0 and 1, closer to 1 is more aerodynamic.<br>
     <var>v<sub>x</sub></var> - Initial horizontal velocity, arbitrary units<br>
     <var>v<sub>y</sub></var> - Initial vertical velocity, arbitrary units<br>
+    <var>t</var> - Detail level. This has an effect on the projectile's movement so keep it constant.
     <br>
     <br>
     <img src="projectileSummation.png"><br>
     This isn't the cleanest formula since I rearranged a function I made which generated a list of points along the projectile's path at irregular intervals to make this.<br>
     <img src="projectileIntegral.png"><br>
     <br>
-    Much simpler integral version<br>
+    Much simpler integral version (scaling is different to the summation version, but it's the same principle)<br>
     <br>
     <br>
     Function to give <var>k</var>th point along a projectile's path.<br>
-    <img src="projectileList.png">
+    <img src="projectileList.png"><br>
+    <br>
+    <br>
+    <br>
+    Mathematica Code<br>
+    Summation: Function[x, Sum[((c ^ n)*vy - (9.8*n)/t)/t, {n, 2, Log[c, ((x*t*c) - (x*t) + (vx*(c^2)))/(vx*c)]}]]<br>
+    Integral: Function[x, NIntegrate[vy*c^t - 9.8 t, {t, 0, x/(vx*c^x)}]]<br>
+    Coordinates:  Function[k, {Sum[c^n*vx/t, {n, 2, k}], Sum[(c^n*vy - (9.8 n/t))/t, {n, 2, k}]}]
+
+    
 </body>
 </html>
