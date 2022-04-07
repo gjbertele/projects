@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile</title>
+</head>
+<body>
+    Formula for a projectile's position at some point in time given a pseudo-airdrag constant and an inital horizontal/vertical velocity.<br>
+    It's not at all realistic/accurate but gets the right idea.<br>
+    Variables:
+    <var>c</var> - Air drag (ish) constant. Between 0 and 1, closer to 1 is more aerodynamic.<br>
+    <var>v<sub>x</sub></var> - Initial horizontal velocity, arbitrary units<br>
+    <var>v<sub>y</sub></var> - Initial vertical velocity, arbitrary units<br>
+    <br>
+    <br>
+    <img src="projectileSummation.png"><br>
+    This isn't the cleanest formula since I rearranged a function I made which generated a list of points along the projectile's path at irregular intervals to make this.<br>
+    <img src="projectileIntegral.png"><br>
+    <br>
+    Much simpler integral version<br>
+    <br>
+    <br>
+    Function to give <var>k</var>th point along a projectile's path.<br>
+    <img src="projectileList.png">
+</body>
+</html>
