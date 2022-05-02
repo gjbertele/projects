@@ -79,7 +79,7 @@ let sqrt = -((a * 0.5) + (xp1 / a))/sqrtTen                    //final iteration
         This is VERY similar to a method of approximating square roots by repeatedly averaging (Newton-Raphson),
         but this is more accurate with less iterations for very small numbers as well as for some normal-sized numbers
         (assuming a₀ is <code>Math.round(Math.sqrt(x))</code> in the Newton-Raphson method and <code>Math.pow(Math.round(Math.sqrt(x*(10**decimals))), 2)
-        ^ 0.5</code> in this one). It also uses <i>(x mod 1) / a</i> instead of <i>x / a</i> for its guess.<br>
+        ^ 0.5</code> in this one).
         <br>
         *****Addition 5:<br>
         By running it once with only the variable x filled in and then setting the decimals to account for in x as
