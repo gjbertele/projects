@@ -30,18 +30,19 @@
         const h = document.documentElement.clientHeight
         const fps = 30
         const fLimit = 100;
+        const sq = 8
         let mx, my = 0;
         canvas.width = w
         canvas.height = h
         let pts = []
         let sources = []
-        for (let x = 0; x < w / 10; x++) {
-            for (let y = 0; y < h / 10; y++) {
+        for (let x = 0; x < w / sq; x++) {
+            for (let y = 0; y < h / sq; y++) {
                 pts.push({
-                    x: 10 * x,
-                    y: 10 * y,
-                    opx: 10 * x,
-                    opy: 10 * y,
+                    x: sq * x,
+                    y: sq * y,
+                    opx: sq * x,
+                    opy: sq * y,
                     vx: 0,
                     vy: 0
                 })
@@ -68,19 +69,19 @@
                 let fx = 0;
                 let fy = 0;
                 sources.forEach(function (s) {
-                    if (Math.sqrt((s.x - pt.x) ** 2 + (s.y - pt.y) ** 2) < fLimit) {
-                        var fxc = -3*(s.x - pt.x)
-                        var fyc = -3*(s.y - pt.y)
+                    //if (Math.sqrt((s.x - pt.x) ** 2 + (s.y - pt.y) ** 2) < fLimit) {
+                        var fxc = 3*(s.x - pt.x)
+                        var fyc = 3*(s.y - pt.y)
                         fx += fxc
                         fy += fyc
-                    }
+                    //}
                 })
                 let dir = Math.atan2(fy, fx)
                 ptn = pts[v]
                 ptn.vx += 10 * Math.cos(dir) - 10
                 ptn.vy += 10 * Math.sin(dir)
-                ptn.vx += -2 * (pt.x - pt.opx) / (fps)
-                ptn.vy += -2 * (pt.y - pt.opy) / (fps)
+                ptn.vx += -1 * (pt.x - pt.opx) / (fps)
+                ptn.vy += -1 * (pt.y - pt.opy) / (fps)
 
                 ptn.vx = ptn.vx * 0.9
                 ptn.vy = ptn.vy * 0.9
