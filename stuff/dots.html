@@ -74,7 +74,7 @@
         window.onscroll = function (e) {
             if (window.pageYOffset > 150) {
                 force = Math.max(force - 0.1, -15)
-                fLimit = Math.max(fLimit - 3, 10)
+                fLimit = Math.max(fLimit - 3, 0)
             } else {
                 force = Math.min(force + 0.1, 15)
                 fLimit = Math.min(fLimit + 3, w*1.5)
