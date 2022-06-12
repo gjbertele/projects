@@ -36,8 +36,8 @@
         canvas.height = h
         let pts = []
         let sources = []
-        for (let x = 0; x < w / sq; x++) {
-            for (let y = 0; y < h / sq; y++) {
+        for (let x = 0; x < w / sq + 1; x++) {
+            for (let y = 0; y < h / sq + 1; y++) {
                 pts.push({
                     x: sq * x,
                     y: sq * y,
@@ -68,23 +68,23 @@
             pts.forEach(function (pt, v) {
                 let fx = 0;
                 let fy = 0;
-                sources.forEach(function (s) {
+                //sources.forEach(function (s) 
                     //if (Math.sqrt((s.x - pt.x) ** 2 + (s.y - pt.y) ** 2) < fLimit) {
-                        var fxc = 3*(s.x - pt.x)
-                        var fyc = 3*(s.y - pt.y)
+                        var fxc = 3*(mx - pt.x)
+                        var fyc = 3*(my - pt.y)
                         fx += fxc
                         fy += fyc
                     //}
-                })
+                //})
                 let dir = Math.atan2(fy, fx)
                 ptn = pts[v]
-                ptn.vx += 10 * Math.cos(dir) - 10
+                ptn.vx += 10 * Math.cos(dir)
                 ptn.vy += 10 * Math.sin(dir)
                 ptn.vx += -1 * (pt.x - pt.opx) / (fps)
                 ptn.vy += -1 * (pt.y - pt.opy) / (fps)
 
-                ptn.vx = ptn.vx * 0.9
-                ptn.vy = ptn.vy * 0.9
+                ptn.vx*=0.9
+                ptn.vy*=0.9
                 ptn.x += ptn.vx / fps
                 ptn.y += ptn.vy / fps
                 ctx.fillRect(ptn.x, ptn.y, 1, 1)
