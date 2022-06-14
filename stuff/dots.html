@@ -18,7 +18,7 @@
 
         canvas {
             position: fixed;
-            left: 0;
+            left: 0%;
             top: 0;
         }
 
@@ -34,10 +34,14 @@
         const w = document.body.clientWidth
         const h = document.documentElement.clientHeight
         const fps = 30
-        let fLimit = 100;
-        let force = 3
+        let fLimit = w;
+        let force = 150
         const sq = 8
-        let mx = my = 0;
+        let mx = w / 2;
+        let my = w / 2;
+        let dir = 0;
+        let mvx = 0;
+        let mvy = 0;
         document.body.style.height = (h + 300) + 'px'
         document.body.scrollTo(0, 150)
         canvas.width = w
@@ -63,40 +67,17 @@
             })
         }
         ctx.fillStyle = '#fff'
-        canvas.onmousemove = function (e) {
-            mx = e.clientX
-            my = e.clientY
-            sources[0] = {
-                x: e.clientX,
-                y: e.clientY
-            }
-        }
-        window.onscroll = function (e) {
-            if (window.pageYOffset > 150) {
-                force = Math.max(force - 0.1, -15)
-                fLimit = Math.max(fLimit - 3, 0)
-            } else {
-                force = Math.min(force + 0.1, 15)
-                fLimit = Math.min(fLimit + 3, w * 1.5)
-            }
-            window.scrollTo(0, 150)
-        }
-        canvas.onclick = function (e) {
-            oldForce = force
-            oldFLimit = fLimit
-            force *= 100
-            fLimit *= 100
-            console.log(force)
-            setTimeout(function () {
-                force *= -1
-                setTimeout(function () {
-                    force = oldForce
-                    fLimit = oldFLimit
-                }, 1000 / fps)
-            }, 3000 / fps)
-        }
         setInterval(function () {
             ctx.clearRect(0, 0, w, h)
+            mx += mvx / fps
+            my += mvy / fps
+            if ((mx < 300 && mvx < 0) || (mx > w - 300 && mvx > 0) || (my < 300 && mvy < 0) || (my > h - 300 && mvy > 0)) {
+                dir += (Math.random()) * 15 / fps
+            } else {
+                dir += (Math.random()) / (fps*5)
+            }
+            mvx = Math.cos(dir) * 50
+            mvy = Math.sin(dir) * 50
             pts.forEach(function (pt, v) {
                 ptn = pts[v]
                 if (Math.sqrt((mx - pt.x) ** 2 + (my - pt.y) ** 2) < fLimit) {
