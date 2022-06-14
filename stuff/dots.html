@@ -73,8 +73,6 @@
             my += mvy / fps
             if ((mx < 300 && mvx < 0) || (mx > w - 300 && mvx > 0) || (my < 300 && mvy < 0) || (my > h - 300 && mvy > 0)) {
                 dir += -(Math.random()) * 15 / fps
-            } else {
-                dir += (Math.random()) / (fps*5)
             }
             mvx = Math.cos(dir) * 50
             mvy = Math.sin(dir) * 50
