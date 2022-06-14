@@ -37,8 +37,8 @@
         let fLimit = w;
         let force = 150
         const sq = 8
-        let mx = w / 2;
-        let my = w / 2;
+        let mx = w * 3/5;
+        let my = h / 2;
         let dir = 0;
         let mvx = 0;
         let mvy = 0;
@@ -72,7 +72,7 @@
             mx += mvx / fps
             my += mvy / fps
             if ((mx < 300 && mvx < 0) || (mx > w - 300 && mvx > 0) || (my < 300 && mvy < 0) || (my > h - 300 && mvy > 0)) {
-                dir += (Math.random()) * 15 / fps
+                dir += -(Math.random()) * 15 / fps
             } else {
                 dir += (Math.random()) / (fps*5)
             }
