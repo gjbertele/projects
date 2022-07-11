@@ -1,0 +1,42 @@
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface">
+    </script>
+</head>
+
+<body>
+    <video class="a"></video>
+    <canvas class="b" width="1920" height="1080"></canvas>
+    <script>
+        (async function () {
+            const video = document.querySelector('.a');
+            const canvas = document.querySelector('.b').getContext('2d');
+
+            let model = await blazeface.load()
+
+            const constraints = {
+                audio: false,
+                video: {
+                    width: 1920,
+                    height: 1080
+
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
+                video.srcObject = stream;
+                video.play()
+            });
+            setInterval(function () {
+                canvas.clearRect(0, 0, 1920, 1080)
+
+                model.estimateFaces(video, false).then(function (k) {
+                    if (k.length == 0) {
+                        canvas.drawImage(video, 0, 0)
+                    }
+                })
+            }, 100)
+        })()
+    </script>
+</body>
