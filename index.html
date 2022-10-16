@@ -128,7 +128,8 @@
         var timestep = 20
         var totalstr = ''
         var string = `
-Type 'PAGES' for a list of pages
+Type 'PROJECTS' for a list of projects
+Type 'MATH' for a list of math related projects
 `
         var strings = string.split('\n')
         var asciiCursor = false
@@ -151,7 +152,7 @@ Type 'PAGES' for a list of pages
             document.querySelector('.inp').style.left = document.querySelector('.dir').offsetWidth + 5 + 'px'
             var cmd = cmdt.split(' ')[0].toLowerCase()
             var args = cmdt.split(' ').splice(1)
-            if (cmd == 'pages') {
+            if (cmd == 'projects') {
                 document.querySelector('.cmd').innerHTML += `
                 <span onclick="window.open('https://g1.cx/stuff/3d.html')" class="link">3d.html</span>\n
                 <span onclick="window.open('https://g1.cx/stuff/dots.html')" class="link">dots.html</span>\n
@@ -174,6 +175,12 @@ Type 'PAGES' for a list of pages
                 <span onclick="window.open('https://g1.cx/stuff/trajectory.html')" class="link">trajectory.html</span>\n
                 <span onclick="window.open('https://g1.cx/stuff/wave.html')" class="link">wave.html</span>\n
                     `
+            } else if(cmd == 'math'){
+                `
+                <span onclick="window.open('https://g1.cx/stuff/math/reverseGraph.html')" class="link">math\\reverseGraph.html</span>\n
+                <span onclick="window.open('https://g1.cx/stuff/math/sqrtapprox2.html')" class="link">math\\sqrtapprox2.html</span>\n
+                <span onclick="window.open('https://g1.cx/stuff/math/spinning.html')" class="link">math\\spinning.html</span>\n
+                `
             }
 
             if (document.querySelector('.cmd').getBoundingClientRect().bottom > h - 50) {
