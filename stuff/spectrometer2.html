@@ -217,9 +217,11 @@
                         cctx.fillRect(totalCurrent, v / 2, 1, 1)
                         current += 1
                     }
-                    var crgbd = wavelengthToRgb(400 + (v / 2))
-                    ectx.fillStyle = `rgb(${crgbd[0]},${crgbd[1]},${crgbd[2]})`
-                    ectx.fillRect(step * current, 0, step, 50)
+                    var crgbd = table[Math.floor(v)]
+                    if (crgbd != undefined) {
+                        ectx.fillStyle = `rgb(${crgbd[0]},${crgbd[1]},${crgbd[2]})`
+                        ectx.fillRect(step * current, 0, step, 50)
+                    }
                 })
                 gtx.stroke()
                 totalCurrent += 1
