@@ -65,7 +65,6 @@
                 green = 0.0;
                 blue = 0.0;
             };
-            // Let the intensity fall off near the vision limits
             if ((wavelength >= 380) && (wavelength < 420)) {
                 factor = 0.3 + 0.7 * (wavelength - 380) / (420 - 380);
             } else if ((wavelength >= 420) && (wavelength < 701)) {
@@ -198,6 +197,7 @@
             gtx.strokeStyle = '#ff0000'
             var step = bc.clientWidth / 300
             var totalCurrent = 0
+            var correction = 1243 / 990
             setInterval(function () {
                 var current = 0;
                 d.getContext('2d').drawImage(a, 0, 0)
@@ -207,15 +207,14 @@
                 var data = spectro()
                 var ld = 0;
                 gtx.beginPath()
-                var correction = (1+(2.8111111111111 / 11))
-                gtx.moveTo(((step * current) - 295)*correction, bc.clientHeight - (data[0] / 1.5))
+                gtx.moveTo(((step * current) - 295) * correction, bc.clientHeight - (data[0] / 1.5))
                 data.forEach(function (i, v) {
                     if ((v + 1) % 2 != 0) {
-                        gtx.lineTo(((step * (current + 1))-295)*correction, bc.clientHeight - (i / 1.5))
-                        var lightVal = (i/3)
-                        if(v == 400) console.log([lightVal,i])
+                        gtx.lineTo(((step * (current + 1)) - 295) * correction, bc.clientHeight - (i / 1.5))
+                        var lightVal = (i / 3)
+                        if (v == 400) console.log([lightVal, i])
                         cctx.fillStyle = `rgb(${lightVal},${lightVal},${lightVal})`
-                        cctx.fillRect(totalCurrent,v/2,1,1)
+                        cctx.fillRect(totalCurrent, v / 2, 1, 1)
                         current += 1
                     }
                     var crgbd = wavelengthToRgb(400 + (v / 2))
@@ -223,7 +222,7 @@
                     ectx.fillRect(step * current, 0, step, 50)
                 })
                 gtx.stroke()
-                totalCurrent+=1
+                totalCurrent += 1
             }, delay)
         }
         function spectro() {
@@ -300,10 +299,11 @@
             left: 0%;
             bottom: 0%;
         }
-        #endChart{
-            position:absolute;
-            left:0%;
-            top:100%;
+
+        #endChart {
+            position: absolute;
+            left: 0%;
+            top: 100%;
         }
     </style>
 </body>
