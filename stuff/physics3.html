@@ -35,7 +35,7 @@
     <canvas></canvas>
     <span class='ctrls'>
         E key = make circle<br>
-        Radius: <input type='range' class='radius' min="2" max="1000" value="50"><span class='rv'></span><br>
+        Radius: <input type='range' class='radius' min="2" max="500" value="50"><span class='rv'></span><br>
         Weight: <input type='range' class='weight' min="0" max="1000" value="100"><span class='wv'></span><br>
         Elasticity: <input type='range' class='elasticity' step="0.01" min="0" max="1" value="0.9"><span
             class='ev'></span><br>
@@ -47,6 +47,9 @@
         Air Drag: <input type='range' class='airDrag' step="0.01" min="0" max="1" value="0.01"><span
             class='av'></span><br>
         Gravity: <input type='checkbox' class='gravity' checked><br>
+        <br>
+        M key = spawn multiple<br>
+        Size: <input type="range" class="amount" step="1" min="1" max="500"><span class='amv'></span>
     </span>
     <script>
         var canvas = document.querySelector('canvas')
@@ -114,6 +117,7 @@
             document.querySelector('.wv').textContent = document.querySelector('.weight').value
             document.querySelector('.av').textContent = document.querySelector('.airDrag').value
             document.querySelector('.gv').textContent = document.querySelector('.gweight').value
+            document.querySelector('.amv').textContent = document.querySelector('.amount').value
             ctx.clearRect(0, 0, w, h)
             gravityPoints.forEach(function (i, v) {
                 ctx.beginPath()
@@ -167,7 +171,7 @@
                                     dist = 1000000
                                 }
                                 var dy = Math.abs(i.y - k.y)
-                                if (dist < i.radius + k.radius && dy < i.radius + k.radius && i.y+i.radius < k.y+k.radius) {
+                                if (dist < i.radius + k.radius && dy < i.radius + k.radius && i.y + i.radius < k.y + k.radius) {
                                     var myint = (Math.abs(dy) / dy)
                                     isNaN(dy) ? myint = 0 : null
                                     if (!isNaN(-1 * myint)) {
@@ -192,9 +196,9 @@
                     i.vx += -fx / i.weight
 
                 })
-                
-                i.vx *=airDrag
-                i.vy *=airDrag
+
+                i.vx *= airDrag
+                i.vy *= airDrag
                 ctx.beginPath()
                 ctx.arc(i.x, i.y, i.radius, 0, 2 * Math.PI, false)
                 ctx.fillStyle = '#ff0000'
@@ -219,9 +223,21 @@
                     }
                 })
             }
+            if (keysdown.includes('m')) {
+                let amount = document.querySelector('.amount').value
+                let radiusStep = document.querySelector('.radius').value
+                let sw = Math.ceil(Math.sqrt(amount))
+                for (let tx = 0; tx < sw; tx++) {
+                    for (let ty = 0; ty < sw; ty++) {
+                        let ttx = mx - sw / 2 + tx * radiusStep
+                        let tty = my - sw / 2 + ty * radiusStep
+                        newCircle(ttx, tty, Number(document.querySelector('.weight').value), Number(document.querySelector('.radius').value), 0, 0, Number(document.querySelector('.elasticity').value))
+                    }
+                }
+            }
         }, 100)
-        newCircle(w*0.2, h*0.2, 100, 50, 300, 0, 0.9)
-        newCircle(w*0.3, h*0.6, 80, 40, 0, 0, 0.9)
+        newCircle(w * 0.2, h * 0.2, 100, 50, 300, 0, 0.9)
+        newCircle(w * 0.3, h * 0.6, 80, 40, 0, 0, 0.9)
     </script>
 </body>
 
