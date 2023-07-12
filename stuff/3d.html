@@ -36,8 +36,8 @@
     <span class='ctrls'>
         T key = Gravitate<br>
         C key = create cube<br><br>
-        Left click & drag = move<br>
-        Right click & drag = look around<br>
+        Click & Drag = move<br>
+        Ctrl Click & Drag = look around<br>
         <br>
     </span>
     <script>
@@ -240,12 +240,14 @@
                 }
             })
             if (lmousedown == true) {
-                coffsetx2 += -(mx - lmx)
-                coffsetz2 += (my - lmy) * 2
-            }
-            if (rmousedown == true) {
-                coffsetx += (mx - lmx)
-                coffsety += (my - lmy)
+                console.log(keysdown)
+                if(!keysdown.includes('Meta')&&!keysdown.includes('Control')){
+                    coffsetx2 += -(mx - lmx)
+                    coffsetz2 += (my - lmy) * 2
+                } else {
+                    coffsetx += (mx - lmx)
+                    coffsety += (my - lmy)
+                }
             }
             if (keysdown.includes('t')) {
                 var coords = shapeFromPoint(mx, my)
@@ -270,6 +272,10 @@
 
                 } catch { }
             }
+            if (keysdown.includes('m')) {
+                var coords = shapeFromPoint(mx,my)
+                if (coords.id!=1) { shapes = shapes.filter(i => i.id !=coords.id)} ;
+            }
         }, 100)
         newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
         var psx = 25
@@ -285,6 +291,7 @@
         }
         var plane = newShape(0, 301, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
         plane.color = 'gray'
+        plane.id = 1
         newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
         newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
     </script>
