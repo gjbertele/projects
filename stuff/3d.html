@@ -35,7 +35,8 @@
     <canvas oncontextmenu="return false;"></canvas>
     <span class='ctrls'>
         T key = Gravitate<br>
-        C key = create cube<br><br>
+        C key = create cube<br>
+        M key = delete cube<br><br>
         Click & Drag = move<br>
         Ctrl Click & Drag = look around<br>
         <br>
@@ -118,7 +119,8 @@
             my = e.clientY
         }
         var coffsetx2 = coffsety2 = coffsetz2 = 0
-        function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false, render = true) {
+        let colors = [`#964B00`]
+        function newShape(x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false, render = true, type = 0) {
             var shape = {
                 x: x,
                 y: y,
@@ -130,12 +132,13 @@
                 anchored: anchored,
                 screenBBoxes: [],
                 vy: vy,
+                type:type,
                 vz: vz,
                 r: 5,
                 render: render,
                 weight: weight + Math.random(),
                 elasticity: elasticity,
-                color: `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`,
+                color: colors[type],
                 id: Math.random(),
                 draw: function () {
                     var i = this
@@ -278,19 +281,19 @@
             }
         }, 100)
         newShape(100, 0, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
-        var psx = 25
-        var psy = 25
-        var tsx = w / 2
+        var psx = 50
+        var psy = 50
+        var tsx = w
         while (tsx > 0) {
-            var tsy = w / 2
+            var tsy = w
             while (tsy > 0) {
-                var s = newShape(tsx - (w / 4), 300, tsy - (w / 4), 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
+                var s = newShape(tsx - w/2, 300, tsy, 0, 0, 0, 1000, 0.9, psx, 150, psy, true, false)
                 tsy += -psy
             }
             tsx += -psx
         }
-        var plane = newShape(0, 301, 0, 0, 0, 0, 1000, 0.9, w / 2, 150, w / 2, true)
-        plane.color = 'gray'
+        var plane = newShape(0, 301, w/2, 0, 0, 0, 1000, 0.9, w, 150, w, true)
+        plane.color = 'Gray'
         plane.id = 1
         newShape(100, -500, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
         newShape(-300, 100, 0, 0, 0, 0, 10, 0.9, 50, 50, 50)
