@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas></canvas><br>
+    <input type="range" min="1" max="100" class="smoothening">
+    <input type="checkbox" class="path">
+    <style>
+        canvas{
+            position:absolute;
+            margin:0;
+            left:100px;
+            top:100px;
+            border:1px #000 solid;
+        }
+        body {
+            position:absolute;
+            margin:0;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <script>
+        const c = document.querySelector('canvas')
+        const smootheningElem = document.querySelector('.smoothening')
+        const pathSelect = document.querySelector('.path')
+        const ctx = c.getContext('2d')
+        let dc = 1
+        let mousedown = false
+        let w = 300;
+        let h = 300
+        c.width = w
+        c.height = h
+        let bw = 70;
+        let bh = 70;
+        let g = 1;
+        let mx = 0;
+        let pl = new Array(bw*bh)
+        let my = 0;
+        let smoothening = 50
+        let s = 3
+        let r = 50
+        let cr = 5
+        let bounceC = 0.7
+        document.body.onmousemove = (e) => {
+            mx = e.clientX-100;
+            my = e.clientY-100;
+        }
+        document.body.onkeydown = (e) => {
+            if(e.key == 'd'){dc=!dc}
+            if(e.key == 'p'){
+                particles.forEach(function(i){
+                    i.vx = 0;
+                    i.vy = 0;
+                })
+            }
+        }
+        document.body.onmousedown = function(e){
+            mousedown = true
+        }
+        document.body.onmouseup = function(e){
+            mousedown = false
+        }
+        let particles = (new Array(bw*bh)).fill(0)
+        for(let i = 0; i<particles.length; i++){
+            let mpx = w/2 - bw*g/2
+            let mpy = h/2 - bh*g/2
+            let txo = g*(i % bw)
+            let tyo = g*(i - (i % bw))/bw
+            p = {x:mpx + txo,y:mpy + tyo,vx:0,vy:0}
+            p.ox = mpx + txo
+            p.oy = mpy + tyo
+            pl[i] = [p.x,p.y]
+            particles[i] = p
+        }
+        ctx.fillStyle = '#0000FF'
+        setInterval(() => {
+            let tpl = pl
+            for(let v = 0; v<particles.length; v++){
+                let px = pl[v][0]
+                let py = pl[v][1]
+                let p = particles[v]
+                let d = (px - mx)**2 + (py- my)**2
+                let d2 = (px - p.ox)**2 + (py - p.oy)**2
+                let tvx = 0;
+                let tvy = 0;
+                if(d<dc*r**2){
+                 tvx = (-150/(d+0.00001))*Math.cos((my-py)/(mx-px))
+                 if(isNaN(tvx)) tvx = 0;
+               tvy = (-150/(d+0.00001))*Math.sin((my-py)/(mx-px))
+                 if(isNaN(tvy)) tvy = 0;
+                    } else {
+                        if(0<py<h) tvy += 1
+                    }
+               if(!isNaN(tvx)) p.vx += tvx;
+               if(!isNaN(tvy)) p.vy += tvy;
+            if(pl.includes([px,py])){
+                px+=cr*Math.abs(p.vx)/p.vx
+                py+=cr*Math.abs(p.vy)/p.vy
+                if(px>w){
+                    px = 2*w-px
+                }
+                if(py > h){
+                    py = 2*h-py
+                }
+                p.vx*=-bounceC
+                p.vy*=-bounceC
+             }
+               if(py>h){
+                py = h-cr
+                p.vy *= -bounceC
+               } else {
+                if(py<0){
+                    py = cr
+                    p.vy*=-bounceC
+                }else{
+                py+=p.vy
+            }
+             }
+               if(px>w){
+                px = w-cr
+                p.vx *= -bounceC
+               } else {
+                if(px<0){
+                    px = cr
+                    p.vx*=-bounceC
+                } else {
+                    px+=p.vx
+                }
+             }
+             
+                tpl[v] = [px,py]
+            }
+            pl = tpl
+        },100/3)
+        setInterval(() => {
+            let smoothening = smootheningElem.value
+            let topPath = pathSelect.checked
+            ctx.clearRect(0,0,w,h)
+            
+            if(topPath === true){
+                ctx.beginPath()
+            let topy = (new Array(w))
+            for(let tx = 0; tx<w; tx++){
+            topy[tx]=pl.filter(i => Math.round(i[0]) === tx).sort((a,b) => {a[1]-b[1]})[0]
+            }
+            let avgTopy = 0;
+            topy = topy.filter(i => i!==undefined)
+            for(let i = 0; i<topy.length; i++){
+                avgTopy+=topy[i][1]
+            }
+            avgTopy*=1/topy.length
+            ctx.lineTo(0,avgTopy)
+            topy.forEach(function(i,v){
+                if(avgTopy+smoothening>i[1]&&i[1]>avgTopy-smoothening){
+                    ctx.lineTo(i[0],i[1])
+                    console.log(i)
+                }
+            })
+            ctx.lineTo(w,avgTopy)
+            ctx.stroke()
+        } else {
+            pl.forEach(function(i,v){
+                ctx.fillRect(i[0]-1,i[1]-1,3,3)
+            })
+        }
+        if(dc == false && mousedown == true){
+                particles.push({x:mx,y:my,vx:0,vy:0})
+                pl.push([mx,my])
+            }
+        }, 100);
+    </script>
+</body>
+</html>
