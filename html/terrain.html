@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body{
+            position:absolute;
+            margin:0;
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <canvas></canvas>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        const w = document.body.clientWidth;
+        const h = document.body.clientHeight;
+        const faces = [[[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]], [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]], [[-1, -1, 1], [-1, -1, -1], [-1, 1, -1], [-1, 1, 1]], [[1, -1, 1], [1, -1, -1], [1, 1, -1], [1, 1, 1]], [[-1, 1, 1], [1, 1, 1], [1, 1, -1], [-1, 1, -1]]]
+//[[[1,0,1],[1,0,-1],[-1,0,-1],[-1,0,1]]]
+        let worldWidth = 16
+        let worldHeight = 16
+        let terrainDetail = 50
+        canvas.width = w;
+        canvas.height = h;
+        let shapes = []
+        let topmap = (new Array(worldWidth*worldHeight)).fill(0)
+        let fov = w*0.9
+        let coffsetx = 0;
+        let coffsety = 0;
+        let keysdown = []
+        let mousedown = false;
+        let mx = 0;
+        let my = 0;
+        let lmx = 0;
+        let lmy = 0;
+        let baseShapes = []
+        let cameraPos = {
+            x:0,
+            y:-100,
+            z:0,
+            rx:w/2,
+            ry:h/2
+        }
+        let heightMounds = []
+        let worldHillSpread = 40
+        function weightedRandom(min, max) {
+  return Math.round(max / (Math.random() * max + min));
+}
+        for(let i = 0; i<worldHillSpread; i++){
+            heightMounds.push({x:worldWidth-weightedRandom(0,worldWidth),y:worldHeight-weightedRandom(0,worldHeight)})
+        }
+        document.body.onmousedown = function(e){
+            mousedown = true;
+        }
+        document.body.onmousemove = function(e){
+            lmx = mx
+            lmy = my
+            mx = e.clientX;
+            my = e.clientY;
+        }
+        document.body.onmouseup = function(e){
+            mousedown = false
+        }
+        document.body.onkeydown = function(e){
+            if(!keysdown.includes(e.key)) { keysdown.push(e.key) }
+        }
+        document.body.onkeyup = function(e){
+            keysdown = keysdown.filter(i => i!=e.key)
+        }
+        const projectTo3D = (x, y, z) => {
+            var size = fov/(fov+z-cameraPos.z);
+            var xp = ((x-cameraPos.x) * size);
+            var yp = ((y-cameraPos.y) * size);
+            return {
+                x: xp,
+                y: yp
+            }
+        }
+        const shapeFromPoint = (x, y) => {
+            var answer = {
+                z: Infinity
+            }
+            shapes.forEach(function (i, v) {
+                i.screenBBoxes.forEach(function (k, t) {
+                    if (isPointInPolygon(x, y, k.map(i => i = [i.x, i.y])) == true && i.z < answer.z) {
+                        answer = i
+                    }
+                })
+            })
+            return answer
+        }
+        const cDist = (i) => {
+            return (i.x - cameraPos.x)**2 + (i.y - cameraPos.y)**2 + (i.z - cameraPos.z + 350)**2
+        }
+        class Shape {
+            constructor(x,y,z,r) {
+                let newObject = {
+                    x,
+                    y,
+                    z,
+                    vx:0,
+                    vy:0,
+                    vz:0,
+                    radius:r,
+                    color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
+                    elasticity:0.9,
+                    weight:100,
+                    type:1
+                }
+                shapes.push(newObject)
+                return newObject
+            }
+        }
+        class terrainSquare {
+            constructor(x,y,z) {
+                let newObject = {
+                    x,
+                    y,
+                    z,
+                    color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
+                    type:0,
+                    draw: function(){
+                        let i = this
+                    var pts = []
+                    faces.reverse().forEach(function (kt, tv) {
+                        var tpts = []
+                        kt.forEach(function (k, t) {
+                            var p1x = i.x + (terrainDetail* 0.5 * k[0]) - cameraPos.x
+                            var p1y = i.y + (terrainDetail* 0.5 * k[1]) - cameraPos.y
+                            var p1z = i.z + (terrainDetail * 0.5 * k[2]) - cameraPos.z
+                            var p1 = projectTo3D(p1x, p1y, p1z)
+                            tpts.push(p1)
+                        })
+                        pts.push(tpts)
+                    })
+                    return pts
+                    },
+                    id:Math.random()*1e16,
+                    index:shapes.length
+                }
+                shapes.push(newObject)
+                return newObject
+
+            }
+        }
+
+        const worldDraw = () => {
+            ctx.clearRect(0,0,w,h)
+            ctx.beginPath()
+            let a = shapes.sort((a,b) => cDist(a) - cDist(b)).reverse()
+            a.forEach(function(i,v){
+                ctx.fillStyle = i.color
+                if(i.type == 0 && i.z > cameraPos.z - 500){
+                    let pts = i.draw()
+                    pts.reverse().forEach(function(k,t){
+                        ctx.beginPath()
+                        k.forEach(function(j){
+                            ctx.lineTo(j.x,j.y)
+                        })
+                        ctx.lineTo(k[0].x,k[0].y)
+                        ctx.fill()
+                        ctx.stroke()
+
+                    })
+                }
+            })
+            
+        }
+        setInterval(function(){
+            ctx.clearRect(0,0,w,h)
+            if(mousedown == true){
+                if(keysdown.includes('Meta') || keysdown.includes('Control')){
+                    cameraPos.rx+=(mx-lmx)*1.5
+                    cameraPos.ry+=(my-lmy)*3
+                } else {
+                cameraPos.x+=-(mx-lmx)*2
+                cameraPos.z+=(my-lmy)*2
+                }
+            }
+            if(keysdown.includes('j')){
+                cameraPos.y+=-15
+            }
+            if(keysdown.includes('k')){
+                cameraPos.y+=15
+            }
+            worldDraw()
+        },100)
+        for(let x = 0; x<worldWidth; x++){
+            for(let y = 0; y<worldHeight; y++){
+                let targetY = 0;
+                heightMounds.forEach(function(i,v){
+                    targetY+=-terrainDetail/(2*Math.E**((x-i.x)**2 + (y-i.y)**2))
+                })
+                let a = new terrainSquare(x*terrainDetail,targetY,y*terrainDetail)
+                shapes[a.index].color = '#32CD32'
+                baseShapes.push({id:a.id,x:x,y:y})
+            }
+        }
+        let sortedShapesByHeight = shapes.filter(i => i.type == 0).sort((a,b) => a.y - b.y)
+        shapes.forEach(function(i,v){
+            if(i.y>sortedShapesByHeight[0].y+terrainDetail && i.y<-terrainDetail*2){
+                shapes[i.index].color = '#808080'
+            }
+        })
+    </script>
+</body>
+</html>

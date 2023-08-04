@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas>
+
+    </canvas>
+    <style>
+        canvas{
+            position:absolute;
+            margin:0;
+        }
+        body {
+            position:absolute;
+            margin:0;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <script>
+        const w = document.body.clientWidth
+        const h = document.body.clientHeight
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = w
+        canvas.height = h
+        let r = 300
+        setInterval(function(){
+            ctx.clearRect(0,0,w,h)
+        for(let d = 0; d<60; d++){
+            let angler = 6*d*Math.PI/180
+            let dist = [20,10,10,10,10,10][d%5]
+            let pos1 = [w/2 + r*Math.cos(angler),h/2+r*Math.sin(angler)]
+            let pos2 = [w/2 + (r+dist)*Math.cos(angler),h/2+(r+dist)*Math.sin(angler)]
+            if(d % 5 === 0){
+                ctx.fillText((d/5 + 2)% 12 + 1,w/2 + (r-20)*Math.cos(angler),h/2+(r-20)*Math.sin(angler))
+            }
+            ctx.beginPath()
+            ctx.lineTo(pos1[0],pos1[1])
+            ctx.lineTo(pos2[0],pos2[1])
+            ctx.stroke()
+        }
+            let seconds = Math.floor(performance.now()/1000 - 16)
+            let mins = seconds/60
+            let hours = mins/60
+            let secHand = 6*seconds*Math.PI/180
+            ctx.beginPath()
+            ctx.lineTo(w/2+20*Math.cos(secHand),h/2+20*Math.sin(secHand))
+            ctx.lineTo(w/2+100*Math.cos(secHand),h/2+100*Math.sin(secHand))
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.lineTo(w/2+20*Math.cos(secHand/60 - Math.PI/2),h/2+20*Math.sin(secHand/60 - Math.PI/2))
+            ctx.lineTo(w/2+(r-50)*Math.cos(secHand/60 - Math.PI/2),h/2+(r-50)*Math.sin(secHand/60 - Math.PI/2))
+            ctx.stroke()
+    },1000)
+    </script>
+</body>
+</html>

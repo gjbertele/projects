@@ -62,9 +62,10 @@
     <span class="typeSelector">Type: </span><input type="textbox" class="ti" value="0"><span class="tshow"></span><br>
     <span class="elasticitySelector">Elasticity: </span><input step="0.1" type="range" min="0" max="1" class="ei" value="0.9"><br>
     <span class="strengthSelector">Piston Strength: </span><input type="range" min="100" max="1000" value="200" class="si"><span class="sshow"></span><br>
-    <span class="wallWidthSelector">Wall Width:</span><input type="range" min="1" max="15" value="3" class="wwi"><span class="wwshow"></span><br>
+    <span class="wallWidthSelector">Wall Width:</span><input type="range" min="1" max="25" value="3" class="wwi"><span class="wwshow"></span><br>
     <span class="wallHeightSelector">Wall Height:</span><input type="range" min="1" max="15" value="3" class="whi"><span class="whshow"></span><br>
-    <span class="wallDepthSelector">Wall Depth:</span><input type="range" min="1" max="15" value="3" class="wdi"><span class="wdshow"></span><br>
+    <span class="wallDepthSelector">Wall Depth:</span><input type="range" min="1" max="25" value="3" class="wdi"><span class="wdshow"></span><br>
+    <span class="deleteRadiusSelector">Deletion Radius:</span><input type="range" min="1" max="1500" value="200" class="dri"><span class="drshow"></span><br>
 </div>
     <script>
         var canvas = document.querySelector('canvas')
@@ -102,6 +103,7 @@
         const wallWidthElem = document.querySelector('.wwi')
         const wallHeightElem = document.querySelector('.whi')
         const wallDepthElem = document.querySelector('.wdi')
+        const deleteRadiusElem = document.querySelector('.dri')
         const widthElemS = document.querySelector('.wshow')
         const heightElemS = document.querySelector('.hshow')
         const depthElemS = document.querySelector('.dshow')
@@ -110,8 +112,9 @@
         const wallWidthElemS = document.querySelector('.wwshow')
         const wallHeightElemS = document.querySelector('.whshow')
         const wallDepthElemS = document.querySelector('.wdshow')
+        const deleteRadiusElemS = document.querySelector('.drshow')
         let lastBlock = undefined;
-        const telem = [widthElemS,heightElemS,depthElemS,typeElemS, strengthElemS,wallWidthElemS,wallHeightElemS,wallDepthElemS]
+        const telem = [widthElemS,heightElemS,depthElemS,typeElemS, strengthElemS,wallWidthElemS,wallHeightElemS,wallDepthElemS,deleteRadiusElemS]
         
         const isPointInPolygon = (latitude, longitude, polygon) => {
 
@@ -181,12 +184,11 @@
                 vy: vy,
                 type:type,
                 vz: vz,
-                r: 5,
                 render: render,
                 weight: weight + Math.random(),
                 elasticity: elasticity,
                 color: colors[type],
-                id: Math.random(),
+                id: Math.random()*1e16,
                 draw: function () {
                     var i = this
                     var epts = []
@@ -392,7 +394,7 @@
             if(keysdown.includes('w')){
                 var coords = shapeFromPoint(mx,my)
                 shapes.forEach(function(i,v){
-                    if((i.x - coords.x)**2 + (i.y-coords.y)**2 + (i.z-coords.z)**2<200**2 && i.id != 1){
+                    if((i.x - coords.x)**2 + (i.y-coords.y)**2 + (i.z-coords.z)**2<deleteRadiusElem.value**2 && i.id != 1){
                         i.delete()
                     }
                 })
@@ -448,13 +450,13 @@
                                     var inRange = (Math.abs(k.x-i.x) < pistonRange && k.x-i.x>0&& Math.abs(k.y - i.y) < (k.h + i.h) / 2 && Math.abs(k.z - i.z) < (k.d + i.d) / 2) ?? true
                                     if(inRange){
                                         k.vx += pistonStrength;
-                                        k.vy += -50
+                                        k.vy += -100
                                     }
                                 } else if(i.type === 2){
                                     var inRange = (Math.abs(k.x-i.x) < pistonRange && k.x-i.x<0&& Math.abs(k.y - i.y) < (k.h + i.h) / 2 && Math.abs(k.z - i.z) < (k.d + i.d) / 2) ?? true
                                     if(inRange){
                                         k.vx += -pistonStrength;
-                                        k.vy += -50
+                                        k.vy += -100
                                     }
                                 } else if(i.type === 3){
                                     var inRange = (Math.abs(k.z-i.z) < pistonRange && k.z-i.z>0&& Math.abs(k.y - i.y) < (k.h + i.h) / 2 && Math.abs(k.x - i.x) < (k.w + i.w) / 2) ?? true
@@ -483,7 +485,7 @@
             if(keysdown.includes('k')){
                 coffsety2+=50
             }
-            let valueShow = [widthElem.value,heightElem.value,depthElem.value,blockTypes[typeElem.value],strengthElem.value,wallWidthElem.value,wallHeightElem.value,wallDepthElem.value]
+            let valueShow = [widthElem.value,heightElem.value,depthElem.value,blockTypes[typeElem.value],strengthElem.value,wallWidthElem.value,wallHeightElem.value,wallDepthElem.value,deleteRadiusElem.value]
             telem.forEach(function(i,v){
                 i.textContent = valueShow[v]
             })
@@ -506,10 +508,9 @@
         plane.color = 'Gray'
         plane.id = 1
         //x, y, z, vx, vy, vz, weight, elasticity, w, h, d, anchored = false, render = true, type = 0, pistonStrength = 150
-        let shapeA = newShape(0,200,100,0,0,0,10,1,50,50,50, true, true, 1, 1000)
-        let shapeB = newShape(150,200,100,-200,0,0,10,1,50,50,50, false, true, 0)
-        shapeB.collide = false
-    
+        let shapeA = newShape(0,200,100,0,0,0,10,1,50,50,50, true, true, 0)
+        let shapeB = newShape(150,200,100,0,0,0,10,1,50,50,50, false, true, 0)
+
     </script>
 </body>
 
