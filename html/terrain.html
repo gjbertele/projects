@@ -31,17 +31,15 @@
         const facesSquare = [[[1,0,1],[1,0,-1],[-1,0,-1],[-1,0,1]]]
         let worldWidth = 25
         let worldHeight = 25
-        let boundaryPanning = 200
+        let boundaryPanning = 500
         let terrainDetail = 50
         canvas.width = w;
         canvas.height = h;
         let shapes = []
         let fov = w*0.9
-        let coffsetx = 0;
-        let coffsety = 0;
         let keysdown = []
-        let riverWidth = 4;
-        let riverDepth = 5
+        let riverWidth = 10;
+        let riverDepth = 4
         let mousedown = false;
         let terrainDetailHalf = terrainDetail/2
         let mx = 0;
@@ -51,9 +49,9 @@
         let rockCount = 5;
         let baseShapes = []
         let cameraPos = {
-            x:-1840,
-            y:-1414,
-            z:-2925,
+            x:-1210,
+            y:-938,
+            z:-1095,
             rx:465,
             ry:0,
             rposX:0,
@@ -73,6 +71,7 @@
         //OPTIMIZATION CONSTANTS
         const wwtdh = worldWidth*terrainDetail/2
         const whtdh = worldHeight*terrainDetail/2
+        const MPDR = Math.PI/180
 
         function sin(ang){
             return sinArray[(ang + 360) % 360]
@@ -97,8 +96,8 @@ for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
 return inside
 };
         function lookArraysUpdate(){
-                    xAxis.x = Math.fround(Math.cos(cameraPos.rx*Math.PI/180));
-                    xAxis.y = Math.fround(Math.sin(cameraPos.rx*Math.PI/180));
+                    xAxis.x = Math.fround(Math.cos(cameraPos.rx*MPDR));
+                    xAxis.y = Math.fround(Math.sin(cameraPos.rx*MPDR));
 
                     yAxis.x = -xAxis.y//Math.cos(cameraPos.rx*Math.PI/180 + Math.PI/2);
                     yAxis.y = xAxis.x//Math.sin(cameraPos.rx*Math.PI/180 + Math.PI/2);
@@ -111,13 +110,19 @@ return inside
   return Math.round(max / (Math.random() * max + min));
 }
 function terrainAtPoint(x,z){
-    let modx = (x/worldWidth)>>0
-    let modz = (z/worldHeight)>>0
+    let modx = (x/terrainDetail)>>0
+    let modz = (z/terrainDetail)>>0
     return heightMap[modx+modz*worldWidth]
+}
+
+function colorMap(i){
+    let col = i.color.split('rgb(')[0].slice(0,-1).split(',')
+    return 100**2 * col[0] + 100 * col[1] + col[0]
 }
         for(let i = 0; i<worldHillSpread; i++){
             //heightMounds.push({x:worldWidth-weightedRandom(0,worldWidth),y:worldHeight-weightedRandom(0,worldHeight)})
             heightMounds.push({x:worldWidth-weightedRandom(1,worldWidth)>>0,y:Math.random()*worldHeight>>0})
+            //heightMounds.push({x:Math.random()*worldWidth>>0,y:Math.random()*worldHeight>>0})
         }
         document.body.onmousedown = function(e){
             mousedown = true;
@@ -214,9 +219,8 @@ function terrainAtPoint(x,z){
                     width:w,
                     height:h,
                     depth:d,
+                    faces:facesCube,
                     color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
-                    elasticity:0.9,
-                    weight:100,
                     type:2,
                     transparency:1,
                     chunk:[Math.floor(x/(4*terrainDetail)),Math.floor(z/(4*terrainDetail))],
@@ -238,6 +242,12 @@ function terrainAtPoint(x,z){
                     i.screenBBoxes = pts
                     return pts
                     },
+                    anchored:false,
+                    vx:0,
+                    vy:0,
+                    vz:0,
+                    elasticity:0.9,
+                    weight:100
                 }
                 shapes.push(newObject)
                 return newObject
@@ -317,7 +327,7 @@ function terrainAtPoint(x,z){
                     faces:[[[points[0].x,points[0].y,points[0].z],[points[1].x,points[1].y,points[1].z],[points[2].x,points[2].y,points[2].z],[points[3].x,points[3].y,points[3].z]], //top
                            [[points[4].x,points[4].y,points[4].z],[points[5].x,points[5].y,points[5].z],[points[6].x,points[6].y,points[6].z],[points[7].x,points[7].y,points[7].z]], //bottom
                            [[points[0].x,points[0].y,points[0].z],[points[3].x,points[3].y,points[3].z],[points[7].x,points[7].y,points[7].z],[points[4].x,points[4].y,points[4].z]], //left
-                           [[points[1].x,points[1].y,points[1].z],[points[2].z,points[2].y,points[2].z],[points[6].x,points[6].y,points[6].z],[points[5].x,points[5].y,points[5].z]], //right
+                           [[points[1].x,points[1].y,points[1].z],[points[2].x,points[2].y,points[2].z],[points[6].x,points[6].y,points[6].z],[points[5].x,points[5].y,points[5].z]], //right
                            [[points[0].x,points[0].y,points[0].z],[points[1].x,points[1].y,points[1].z],[points[5].x,points[5].y,points[5].z],[points[4].x,points[4].y,points[4].z]], //back
                            [[points[2].x,points[2].y,points[2].z],[points[3].x,points[3].y,points[3].z],[points[7].x,points[7].y,points[7].z],[points[6].x,points[6].y,points[6].z]] //front
                         ],
@@ -332,21 +342,22 @@ function terrainAtPoint(x,z){
 
         const worldDraw = () => {
             ctx.clearRect(0,0,w,h)
-            let a = shapes.sort((a,b) => cDist(a) - cDist(b)).reverse()//DEFFO OPTIMIZE THIA
+            let a = shapes.sort((a,b) => cDist(a) - cDist(b)).reverse()//DEFFO OPTIMIZE THIS
             let lt = 1;
             let lc = 0;
             for(let v = 0; v<a.length; v++){
                 let i = a[v]
+                let color = i.color
                 if(v == 0){
                     ctx.globalAlpha=i.transparency
-                    ctx.fillStyle = i.color
+                    ctx.fillStyle = color
                 }
             
                 if(i.transparency!=lt){
                     ctx.globalAlpha=i.transparency
                 }
-                if(i.color!=lc){
-                    ctx.fillStyle = i.color//OPTIMIZE THIS, CACHE I.COLOR + LIKELY OPTION IS I.COLOR == LC
+                if(color!=lc){
+                    ctx.fillStyle = color
                 }
                 lt = i.transparency
                 let points = i.draw()//OPTIMIZE THIS
@@ -368,7 +379,6 @@ function terrainAtPoint(x,z){
             }
                 if(render == true){
                 if(i.type == 0 || i.type == 2 || i.type == 3){
-                    ctx.beginPath()
                     points.reverse().forEach(function(k,t){
                         ctx.beginPath()
                         k.forEach(function(j){
@@ -376,13 +386,11 @@ function terrainAtPoint(x,z){
                         })
                         ctx.lineTo(k[0].x,k[0].y)
                         ctx.fill()//OPTIMIZE THIS
-
                     })
                 } else if(i.type == 1){
                     let centerPoint = projectTo3D(i.x,i.y,i.z)
                     ctx.beginPath()
                     ctx.arc(centerPoint.x,centerPoint.y,points,0,360)
-                    ctx.fillStyle = i.color
                     ctx.fill()
                     ctx.stroke()
                 }
@@ -419,10 +427,10 @@ function terrainAtPoint(x,z){
             }
             if(keysdown.includes('j')){
                 let targetShape = shapeFromPoint(mx,my)
-                targetShape.color = '#FF0000'
+                targetShape.color = 'rgb(255,0,0)'
             }
             worldDraw()
-        },50)
+        },75)
        
         //WORLD GEN        
         for(let i = 0; i< worldWidth; i++){
@@ -448,10 +456,10 @@ function terrainAtPoint(x,z){
                 if(shapeInRiver == false){
                     shapes[a.index].color = 'rgb(50,205,50)'//'rgb('+(50+Math.floor(Math.random()-0.5)*10)+','+(205+Math.floor(Math.random()-0.5)*10)+','+(50+Math.floor(Math.random()-0.5)*10)+')'
                 } else {
-                    shapes[a.index].color = '#DED5BB'
+                    shapes[a.index].color = 'rgb(222,213,187)'
                 }
                 baseShapes.push({id:a.id,x:x,y:y})
-                heightMap.push(targetY)
+                heightMap[y*worldWidth+x] = targetY
                 
             }
         }
@@ -460,10 +468,10 @@ function terrainAtPoint(x,z){
                 let b = new terrainSquare(i.x,i.y + terrainDetailHalf, i.z)
                 let bh = (-i.y)*2/terrainDetail + 0.5
                 if(i.y < 0){
-                    shapes[b.index].color = '#808080'
+                    shapes[b.index].color = 'rgb(128,128,128)'
                 } else {
                     bh+=-1
-                    shapes[b.index].color = '#0000FF'
+                    shapes[b.index].color = 'rgb(0,0,255)'
                 }
                 shapes[b.index].faces = 
                 [[[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]],
@@ -476,14 +484,52 @@ function terrainAtPoint(x,z){
         })  
         //end world gen
     
-        new Cube(wwtdh,-100,whtdh,100,100,100)
 
-        new Cube(wwtdh + terrainDetail,-100,whtdh,100,100,100)
-        new polygon(0,-100,0,
-        [{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-2},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
-        //new Sphere(worldWidth/2,-100,worldHeight/2 - terrainDetail*3,25)
-        //new polygon([{x:0,y:0,z:0},{x:1,y:1,z:1},{x:2,y:3,z:1},{x:1,y:1,z:3}])
-        //let cameraCube = new terrainSquare(0,0,0)
+        //PHYSICS
+        let physics = false
+        if(physics == true){
+        setInterval(function(){
+            for(let v = 0; v<shapes.length; v++){
+                let i = shapes[v]
+                //LIMIT CHUNK RENDER DISTANCE W/ CHUNK DISTANCE MAP TO OPTIMIZE
+                if(i.type == 2 && i.anchored == false){
+                    i.x+=i.vx;
+                    i.y+=i.vy;
+                    i.z+=i.vz;
+                    let colliding = false;
+                    let mappedCell = [i.x/terrainDetail >> 0,i.z/terrainDetail >> 0]
+                    let theight = terrainAtPoint(mappedCell[0],mappedCell[1])
+                    let offsetList = [i.x,i.y,i.z]
+                    let points = i.faces.map(j => j = j.map(k => k = {x:k[0]*terrainDetailHalf+i.x,y:k[1]*terrainDetailHalf+i.y,z:k[2]*terrainDetailHalf+i.z})).flat().filter((v,i,a)=>a.findIndex(v2=>['x','y','z'].every(k=>v2[k] ===v[k]))===i)
+                    for(let pv = 0; pv<8; pv++){
+                        let p = points[pv]
+                        if(p.y>=theight){
+                            colliding = true
+                        }
+                    }
+                    if(colliding){
+                        //
+                    } else {
+                        i.vy += 1
+                        let elast = i.elasticity
+                        i.vx *= elast
+                        i.vy *= elast
+                        i.vz *= elast
+                    }
+                    
+
+                    
+                }
+            }
+        },50)
+    }
+        //end physics
+
+
+        new Cube(wwtdh/2,-100,whtdh/2,100,100,100)
+
+        //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
+        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-2},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
     </script>
 </body>
 </html>

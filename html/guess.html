@@ -12,12 +12,12 @@
     <script>
         const input = document.querySelector('input')
         const res = document.querySelector('.res')
+                var stop = false
         function guess(){
             let value = input.value
             var start = performance.now()
             let tries = 150
             function g1(){
-                var stop = false
                 var str = ''
                 for(let i = 0; i<tries; i++){
                     let n = Math.floor(Math.random()*(10**(value.length)))
@@ -29,10 +29,11 @@
                 }
                 if(stop == false){
                     res.textContent = str
-                    requestAnimationFrame(g1)
                 }
             }
-            g1()
+            setInterval(function(){
+                g1()
+            })
         }
     </script>
 </body>
