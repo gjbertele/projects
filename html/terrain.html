@@ -30,7 +30,7 @@
         const facesCube = [[[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]], [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]], [[-1, -1, 1], [-1, -1, -1], [-1, 1, -1], [-1, 1, 1]], [[1, -1, 1], [1, -1, -1], [1, 1, -1], [1, 1, 1]], [[-1, 1, 1], [1, 1, 1], [1, 1, -1], [-1, 1, -1]]]
         const facesSquare = [[[1,0,1],[1,0,-1],[-1,0,-1],[-1,0,1]]]
         let worldWidth = 25
-        let worldHeight = 25
+        let worldHeight = 35
         let boundaryPanning = 500
         let terrainDetail = 50
         canvas.width = w;
@@ -72,6 +72,7 @@
         const wwtdh = worldWidth*terrainDetail/2
         const whtdh = worldHeight*terrainDetail/2
         const MPDR = Math.PI/180
+        const fovInv = 1/fov
 
         function sin(ang){
             return sinArray[(ang + 360) % 360]
@@ -112,7 +113,7 @@ return inside
 function terrainAtPoint(x,z){
     let modx = (x/terrainDetail)>>0
     let modz = (z/terrainDetail)>>0
-    return heightMap[modx+modz*worldWidth]
+    return heightMap[modx+modz*worldHeight]
 }
 
 function colorMap(i){
@@ -153,15 +154,16 @@ function colorMap(i){
             let ix = x - wwtdh
             let iy = y - cameraPos.y
             let iz = z - whtdh
-            let rotatedX = ix*xAxis.x+iz*yAxis.x - cameraPos.x //OPTIMIZE
-            let rotatedZ = ix*xAxis.y+iz*yAxis.y - cameraPos.z //OPTIMIZE
-            var size = 1/(1+(rotatedZ/fov));
-            var xp = (rotatedX * size);
-            var yp = (iy * size);
-            return { //OPTIMIZE
+            let rotatedX = ix*xAxis.x+iz*yAxis.x - cameraPos.x
+            let rotatedZ = ix*xAxis.y+iz*yAxis.y - cameraPos.z
+            var size = rotatedZ*fovInv + 1
+            var xp = (rotatedX / size);
+            var yp = (iy / size);
+            let objectReturn = {
                 x: xp>>0,
-                y: yp>>0 //OPTIMIZE THIS LINE FOR SOME REASON
+                y: yp>>0 
             }
+            return objectReturn
         }
         const shapeFromPoint = (x, y) => {
             var answer = {
@@ -272,7 +274,7 @@ function colorMap(i){
                         let kt = i.faces[kv]
                     for(let kvv = 0; kvv<kt.length; kvv++){
                             let k = kt[kvv]
-                            var p1x = i.x + (terrainDetailHalf * k[0]) //OPTIMIZE THIS
+                            var p1x = i.x + (terrainDetailHalf * k[0]) 
                             var p1y = i.y + (terrainDetailHalf * k[1]) //- cameraPos.y
                             var p1z = i.z + (terrainDetailHalf * k[2]) //- cameraPos.z
                             var p1 = projectTo3D(p1x, p1y, p1z)
@@ -312,7 +314,7 @@ function colorMap(i){
                         let kt = i.faces[kv]
                     for(let kvv = 0; kvv<kt.length; kvv++){
                             let k = kt[kvv]
-                            var p1x = i.x + (terrainDetailHalf * k[0]) //OPTIMIZE THIS
+                            var p1x = i.x + (terrainDetailHalf * k[0])
                             var p1y = i.y + (terrainDetailHalf * k[1]) //- cameraPos.y
                             var p1z = i.z + (terrainDetailHalf * k[2]) //- cameraPos.z
                             var p1 = projectTo3D(p1x, p1y, p1z)
@@ -341,7 +343,13 @@ function colorMap(i){
 
 
         const worldDraw = () => {
-            ctx.clearRect(0,0,w,h)
+            let boundaries = [projectTo3D(0,0,0),projectTo3D(0,-1e4,0),projectTo3D(wwtdh*2,0,whtdh*2),projectTo3D(wwtdh*2,-1e4,whtdh*2),projectTo3D(wwtdh*2,0,0),projectTo3D(wwtdh*2,-1e4,0),projectTo3D(0,0,whtdh*2),projectTo3D(0,-1e4,whtdh*2)]
+            let boundaryXMax = Math.max(...boundaries.map(i => i = i.x))
+            let boundaryXMin = Math.min(...boundaries.map(i => i = i.x))
+            let boundaryYMax = Math.max(...boundaries.map(i => i = i.y))
+            let boundaryYMin = Math.min(...boundaries.map(i => i = i.y))
+            ctx.clearRect(boundaryXMin-boundaryPanning,boundaryYMin-boundaryPanning,boundaryXMax-boundaryXMin+2*boundaryPanning,boundaryYMax-boundaryYMin+2*boundaryPanning)
+            lookArraysUpdate()
             let a = shapes.sort((a,b) => cDist(a) - cDist(b)).reverse()//DEFFO OPTIMIZE THIS
             let lt = 1;
             let lc = 0;
@@ -398,8 +406,6 @@ function colorMap(i){
             }
         }
         setInterval(function(){
-            lookArraysUpdate()
-            //ctx.clearRect(0,0,w,h)
             if(keysdown.includes('ArrowLeft')){
                 cameraPos.rx+=-5
             }
@@ -427,13 +433,13 @@ function colorMap(i){
             }
             if(keysdown.includes('j')){
                 let targetShape = shapeFromPoint(mx,my)
-                targetShape.color = 'rgb(255,0,0)'
+                targetShape.y = terrainAtPoint(targetShape.x,targetShape.z)
             }
             worldDraw()
         },75)
        
         //WORLD GEN        
-        for(let i = 0; i< worldWidth; i++){
+        for(let i = 0; i< worldHeight; i++){
             riverDips.push({x:i*riverSlope+y1+Math.sin(i/3),y:i})
         }
         for(let x = 0; x<worldWidth; x++){
@@ -442,7 +448,7 @@ function colorMap(i){
                 let shapeInRiver = false
                 for(let v = 0; v<heightMounds.length; v++){
                     let i = heightMounds[v]
-                    targetY+=-terrainDetail/(2**((x-i.x)**2 + (y-i.y)**2 + 1))//OPTIMIZE THIS
+                    targetY+=-terrainDetail/(2**((x-i.x)**2 + (y-i.y)**2 + 1))
                 }
                 riverDips.forEach(function(i,v){
                     let c = terrainDetail*riverDepth*Math.sqrt(1-1/riverWidth*(x-i.x)**2 - 1/riverWidth*(y-i.y)**2)
@@ -459,7 +465,7 @@ function colorMap(i){
                     shapes[a.index].color = 'rgb(222,213,187)'
                 }
                 baseShapes.push({id:a.id,x:x,y:y})
-                heightMap[y*worldWidth+x] = targetY
+                heightMap[y*worldHeight+x] = targetY
                 
             }
         }
@@ -481,18 +487,23 @@ function colorMap(i){
                 [[1, -1, 1], [1, -1, -1], [1, bh*1, -1], [1, bh*1, 1]],
                 [[-1, bh*1, 1], [1, bh*1, 1], [1, bh*1, -1], [-1, bh*1, -1]]]
             }
+            setTimeout(function(){
+                let c = -terrainAtPoint(i.x,i.z)
+                //i.color = 'rgb('+c+','+c+','+c+')'
+            },500)
         })  
         //end world gen
     
 
         //PHYSICS
-        let physics = false
+        let physics = true
         if(physics == true){
         setInterval(function(){
             for(let v = 0; v<shapes.length; v++){
                 let i = shapes[v]
+                if(i.anchored == false){
                 //LIMIT CHUNK RENDER DISTANCE W/ CHUNK DISTANCE MAP TO OPTIMIZE
-                if(i.type == 2 && i.anchored == false){
+                if(i.type == 2){
                     i.x+=i.vx;
                     i.y+=i.vy;
                     i.z+=i.vz;
@@ -500,15 +511,18 @@ function colorMap(i){
                     let mappedCell = [i.x/terrainDetail >> 0,i.z/terrainDetail >> 0]
                     let theight = terrainAtPoint(mappedCell[0],mappedCell[1])
                     let offsetList = [i.x,i.y,i.z]
+                    let d = 0;
                     let points = i.faces.map(j => j = j.map(k => k = {x:k[0]*terrainDetailHalf+i.x,y:k[1]*terrainDetailHalf+i.y,z:k[2]*terrainDetailHalf+i.z})).flat().filter((v,i,a)=>a.findIndex(v2=>['x','y','z'].every(k=>v2[k] ===v[k]))===i)
                     for(let pv = 0; pv<8; pv++){
                         let p = points[pv]
-                        if(p.y>=theight){
+                        if(p.y+i.vy>=theight){
                             colliding = true
+                            d = p.y+i.vy-theight
                         }
                     }
                     if(colliding){
-                        //
+                        i.y=theight-i.vy-d-terrainDetail/2
+                        i.vy*=-0.5
                     } else {
                         i.vy += 1
                         let elast = i.elasticity
@@ -516,17 +530,15 @@ function colorMap(i){
                         i.vy *= elast
                         i.vz *= elast
                     }
-                    
-
-                    
                 }
+            }
             }
         },50)
     }
         //end physics
 
 
-        new Cube(wwtdh/2,-100,whtdh/2,100,100,100)
+        let a = new Cube(Math.random()*worldWidth*terrainDetail,-500,Math.random()*worldHeight*terrainDetail,100,100,100)
 
         //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
         new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-2},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
