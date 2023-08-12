@@ -39,7 +39,8 @@
         let fov = w*0.9
         let keysdown = []
         let riverWidth = 10;
-        let riverDepth = 4
+        let riverDepth = 4;
+        const airDrag = 0.7
         let mousedown = false;
         let terrainDetailHalf = terrainDetail/2
         let mx = 0;
@@ -96,6 +97,9 @@ for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
 
 return inside
 };
+function chunkCalc(x,z){
+    return 1e6*((x/(4*terrainDetail))>>0) + (z/(4*terrainDetail)) >> 0
+}
         function lookArraysUpdate(){
                     xAxis.x = Math.fround(Math.cos(cameraPos.rx*MPDR));
                     xAxis.y = Math.fround(Math.sin(cameraPos.rx*MPDR));
@@ -200,7 +204,7 @@ function colorMap(i){
                     color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
                     elasticity:0.9,
                     weight:100,
-                    chunk:[Math.floor(x/(4*terrainDetail)),Math.floor(z/(4*terrainDetail))],
+                    chunk:chunkCalc(x,z),
                     type:1,
                     draw:function(){
                         let i = this;
@@ -225,7 +229,7 @@ function colorMap(i){
                     color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
                     type:2,
                     transparency:1,
-                    chunk:[Math.floor(x/(4*terrainDetail)),Math.floor(z/(4*terrainDetail))],
+                    chunk:chunkCalc(x,z),
                     screenBBoxes:[],
                     draw: function(){
                         let i = this
@@ -249,7 +253,8 @@ function colorMap(i){
                     vy:0,
                     vz:0,
                     elasticity:0.9,
-                    weight:100
+                    weight:100,
+                    lcy:0
                 }
                 shapes.push(newObject)
                 return newObject
@@ -265,7 +270,7 @@ function colorMap(i){
                     color:'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')',
                     type:0,
                     transparency:1,
-                    chunk:[Math.floor(x/(4*terrainDetail)),Math.floor(z/(4*terrainDetail))],
+                    chunk:chunkCalc(x,z),
                     draw: function(){
                         let i = this
                     var pts = []
@@ -325,7 +330,7 @@ function colorMap(i){
                     i.screenBBoxes = pts
                     return pts
                     },
-                    chunk:[Math.floor(x/(4*terrainDetail)),Math.floor(z/(4*terrainDetail))],
+                    chunk:chunkCalc(x,z),
                     faces:[[[points[0].x,points[0].y,points[0].z],[points[1].x,points[1].y,points[1].z],[points[2].x,points[2].y,points[2].z],[points[3].x,points[3].y,points[3].z]], //top
                            [[points[4].x,points[4].y,points[4].z],[points[5].x,points[5].y,points[5].z],[points[6].x,points[6].y,points[6].z],[points[7].x,points[7].y,points[7].z]], //bottom
                            [[points[0].x,points[0].y,points[0].z],[points[3].x,points[3].y,points[3].z],[points[7].x,points[7].y,points[7].z],[points[4].x,points[4].y,points[4].z]], //left
@@ -507,29 +512,36 @@ function colorMap(i){
                     i.x+=i.vx;
                     i.y+=i.vy;
                     i.z+=i.vz;
-                    let colliding = false;
-                    let mappedCell = [i.x/terrainDetail >> 0,i.z/terrainDetail >> 0]
-                    let theight = terrainAtPoint(mappedCell[0],mappedCell[1])
-                    let offsetList = [i.x,i.y,i.z]
-                    let d = 0;
-                    let points = i.faces.map(j => j = j.map(k => k = {x:k[0]*terrainDetailHalf+i.x,y:k[1]*terrainDetailHalf+i.y,z:k[2]*terrainDetailHalf+i.z})).flat().filter((v,i,a)=>a.findIndex(v2=>['x','y','z'].every(k=>v2[k] ===v[k]))===i)
-                    for(let pv = 0; pv<8; pv++){
-                        let p = points[pv]
-                        if(p.y+i.vy>=theight){
-                            colliding = true
-                            d = p.y+i.vy-theight
+                    let mappedCell = (i.x/terrainDetail) >> 0 + ',' + (i.z/terrainDetail) >> 0
+                    let chunk = shapes.filter(j => j.chunk == i.chunk)
+                    for(let vc = 0; vc<15; vc++){
+                        let ic = chunk[vc]
+                        let mbx = Math.abs(i.x - ic.x)
+                        let mby = Math.abs(i.y - ic.y)
+                        let mbz = Math.abs(i.z - ic.z)
+                        let dirs = [mbx,mby,mbz]
+                        let colliding = (mbx < terrainDetail && mby < terrainDetail && mbz < terrainDetail)
+                        if(colliding){
+                            let dir = dirs.indexOf(Math.min(mbx,mby,mbz))
+                            if(dir == 0){
+                                i.vx *= -1
+                                i.x+= i.x - ic.x - terrainDetailHalf
+                            } else if(dir == 1){
+                                i.vy *= -1
+                                i.y += i.y - ic.y - terrainDetailHalf
+                            } else if(dir == 3){
+                                i.vz *= -1
+                                i.z += i.z-ic.z - terrainDetailHalf
+                            }
                         }
                     }
-                    if(colliding){
-                        i.y=theight-i.vy-d-terrainDetail/2
-                        i.vy*=-0.5
-                    } else {
-                        i.vy += 1
+                        if(0.1*(i.y - i.lcy) >> 0 != 0){
+                        i.vy += 2
+                        }
                         let elast = i.elasticity
                         i.vx *= elast
-                        i.vy *= elast
+                        i.vy *= elast*airDrag
                         i.vz *= elast
-                    }
                 }
             }
             }
