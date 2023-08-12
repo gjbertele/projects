@@ -38,7 +38,7 @@
         let shapes = []
         let fov = w*0.9
         let keysdown = []
-        let riverWidth = 10;
+        let riverWidth = 25;
         let riverDepth = 4;
         const airDrag = 0.7
         let mousedown = false;
@@ -391,7 +391,7 @@ function colorMap(i){
                     }
             }
                 if(render == true){
-                if(i.type == 0 || i.type == 2 || i.type == 3){
+                if(i.type == 0 || i.type == 2 || i.type == 3){ //IF COLLISIONS WITH MULTIPLE BOUNDING BOXES DO NOT DRAW
                     points.reverse().forEach(function(k,t){
                         ctx.beginPath()
                         k.forEach(function(j){
@@ -438,7 +438,7 @@ function colorMap(i){
             }
             if(keysdown.includes('j')){
                 let targetShape = shapeFromPoint(mx,my)
-                targetShape.y = terrainAtPoint(targetShape.x,targetShape.z)
+                targetShape.color = '#FF0000'
             }
             worldDraw()
         },75)
@@ -517,8 +517,8 @@ function colorMap(i){
                     for(let vc = 0; vc<15; vc++){
                         let ic = chunk[vc]
                         let mbx = Math.abs(i.x - ic.x)
-                        let mby = Math.abs(i.y - ic.y)
-                        let mbz = Math.abs(i.z - ic.z)
+                        let mby = Math.abs(i.y - ic.y) + 1e6
+                        let mbz = Math.abs(i.z - ic.z) + 1e6
                         let dirs = [mbx,mby,mbz]
                         let colliding = (mbx < terrainDetail && mby < terrainDetail && mbz < terrainDetail)
                         if(colliding){
@@ -553,7 +553,7 @@ function colorMap(i){
         let a = new Cube(Math.random()*worldWidth*terrainDetail,-500,Math.random()*worldHeight*terrainDetail,100,100,100)
 
         //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
-        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-2},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
+        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-50},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
     </script>
 </body>
 </html>
