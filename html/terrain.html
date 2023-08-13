@@ -392,14 +392,14 @@ function colorMap(i){
             }
                 if(render == true){
                 if(i.type == 0 || i.type == 2 || i.type == 3){ //IF COLLISIONS WITH MULTIPLE BOUNDING BOXES DO NOT DRAW
-                    points.reverse().forEach(function(k,t){
                         ctx.beginPath()
+                    points.reverse().forEach(function(k,t){
                         k.forEach(function(j){
                             ctx.lineTo(j.x,j.y)//OPTIMIZE THIS
                         })
-                        ctx.lineTo(k[0].x,k[0].y)
-                        ctx.fill()//OPTIMIZE THIS
-                    })
+                    })//OPTIMIZE THIS
+                        ctx.fill()
+                    
                 } else if(i.type == 1){
                     let centerPoint = projectTo3D(i.x,i.y,i.z)
                     ctx.beginPath()
@@ -444,6 +444,7 @@ function colorMap(i){
         },75)
        
         //WORLD GEN        
+        function regenWorld(){
         for(let i = 0; i< worldHeight; i++){
             riverDips.push({x:i*riverSlope+y1+Math.sin(i/3),y:i})
         }
@@ -497,6 +498,8 @@ function colorMap(i){
                 //i.color = 'rgb('+c+','+c+','+c+')'
             },500)
         })  
+    }
+    regenWorld()
         //end world gen
     
 
@@ -547,13 +550,14 @@ function colorMap(i){
             }
         },50)
     }
+    
         //end physics
 
 
         let a = new Cube(Math.random()*worldWidth*terrainDetail,-500,Math.random()*worldHeight*terrainDetail,100,100,100)
 
         //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
-        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:1,z:1},{x:1,y:1,z:-50},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
+        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:5,z:1},{x:1,y:1,z:-4},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
     </script>
 </body>
 </html>
