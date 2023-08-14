@@ -53,8 +53,9 @@ app.get('/api/*', (req, res) => {
                 let $ = cheerio.load(html.data)
                 let ingredientsListjson = JSON.parse($('#linkStore').text())
                 let ingredientsList = ingredientsListjson.page.product.currentSku.ingredientDesc
+                console.log(ingredientsList)
                 if(ingredientsList.includes('<')){
-                    ingredientsList = ingredientsList.split('<').filter(i => i.split('>')[1] && i.split('>')[1].includes(','))[0].split('>')[1]
+                    ingredientsList = ingredientsList.split('<').map(i => i = i.split('>')[1]).filter(i => i && i.length>5 && (i.includes('Water') || i.includes('+/-') || i.includes('peut') || i.includes('talc')))[0]
                 }
                 ingredientsList = ingredientsList.split(', ').map(i => i = i.split(']')[0].replaceAll('May Contain','').replaceAll('Peut Contenir',''))
                 res.send({ingredients:ingredientsList,name:objectResponse.productName})

@@ -133,6 +133,7 @@ function colorMap(i){
     let col = i.color.split('rgb(')[0].slice(0,-1).split(',')
     return 100**2 * col[0] + 100 * col[1] + col[0]
 }
+
         for(let i = 0; i<worldHillSpread; i++){
             //heightMounds.push({x:worldWidth-weightedRandom(0,worldWidth),y:worldHeight-weightedRandom(0,worldHeight)})
             heightMounds.push({x:worldWidth-weightedRandom(1,worldWidth)>>0,y:Math.random()*worldHeight>>0})

@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <meta name="application-name" content="Acne Checker">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="shortcut icon" href="appicon.jpg">
+    <link rel="icon" type="image/x-icon" href="appicon.jpg">
+    <link rel="apple-touch-icon" href="/appicon.jpg">
     <meta name="full-screen" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="❤️❤️❤️">
@@ -52,7 +52,7 @@
             left:0.3em;
             top:4.3em;
             color:#fff;
-            font-size:50px;
+            font-size:1em;
             font-family:Arial, Helvetica, sans-serif;
 
         }
@@ -116,13 +116,6 @@
         elem.style.color = 'rgb('+255+','+(255-c)+','+(255-c)+')'
     })
     div.innerHTML = div.innerHTML.slice(0,-1)
-    let ffs = 50
-    div.style.fontSize = '50px'
-    while(div.clientHeight+4.3*documentFontSize > h){
-        ffs+=-1
-        div.style.fontSize = ffs+'px'
-    }
-    div.style.fontSize = (ffs-5)+'px'
         }
     </script>
 </body>
