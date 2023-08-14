@@ -81,6 +81,15 @@
         function cos(ang){
             return cosArray[(ang + 360) % 360]
         }
+        function flatten(array){
+    for (var i = 0; i < array.length; i++) {
+        if(array[i] instanceof Array){
+            array.splice.apply(array,[i,1].concat(array[i]));
+            i--;
+        }
+    };
+    return array;
+}
         const isPointInPolygon = (latitude, longitude, polygon) => {
 
 let x = latitude; let y = longitude
@@ -285,7 +294,7 @@ function colorMap(i){
                             var p1 = projectTo3D(p1x, p1y, p1z)
                             tpts.push(p1)
                         }
-                        pts.push(tpts)
+                        pts.push(tpts.reverse())
                     }
                     i.screenBBoxes = pts
                     return pts
@@ -377,7 +386,7 @@ function colorMap(i){
                 let render = true
                 if(i.y < cameraPos.y - terrainDetail){
                     render = false
-                } else if(i.type == 0 || i.type == 2 || i.type == 3){
+                } else if(i.type == 0 || i.type == 3){
                 points.forEach(function(m){
                         m.forEach(function(j,k){
                         if(j.x < -boundaryPanning || j.x > w + boundaryPanning || j.y < -boundaryPanning || j.y > h + boundaryPanning){
@@ -390,17 +399,21 @@ function colorMap(i){
                         render = false
                     }
             }
+            if(i.type == 2){
+                render = true
+            }
                 if(render == true){
-                if(i.type == 0 || i.type == 2 || i.type == 3){ //IF COLLISIONS WITH MULTIPLE BOUNDING BOXES DO NOT DRAW
-                        ctx.beginPath()
-                    points.reverse().forEach(function(k,t){
-                        k.forEach(function(j){
-                            ctx.lineTo(j.x,j.y)//OPTIMIZE THIS
+                if(i.type == 0 || i.type == 3 || i.type == 2){ 
+                    ctx.beginPath()
+                    points.forEach(function(face){
+                        ctx.moveTo(face[0].x,face[0].y)
+                        face.forEach(function(pt){
+                            ctx.lineTo(pt.x,pt.y)
                         })
-                    })//OPTIMIZE THIS
+                        ctx.lineTo(face[0].x,face[0].y)
                         ctx.fill()
-                    
-                } else if(i.type == 1){
+                    })
+                }else if(i.type == 1){
                     let centerPoint = projectTo3D(i.x,i.y,i.z)
                     ctx.beginPath()
                     ctx.arc(centerPoint.x,centerPoint.y,points,0,360)
@@ -504,7 +517,7 @@ function colorMap(i){
     
 
         //PHYSICS
-        let physics = true
+        let physics = false
         if(physics == true){
         setInterval(function(){
             for(let v = 0; v<shapes.length; v++){
@@ -557,7 +570,7 @@ function colorMap(i){
         let a = new Cube(Math.random()*worldWidth*terrainDetail,-500,Math.random()*worldHeight*terrainDetail,100,100,100)
 
         //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
-        new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:5,z:1},{x:1,y:1,z:-4},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
+       // new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:5,z:1},{x:1,y:1,z:-4},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
     </script>
 </body>
 </html>

@@ -5,6 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <meta name="application-name" content="Acne Checker">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="appicon.jpg">
+    <meta name="full-screen" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="❤️❤️❤️">
+    <meta name="application-name" content="Acne Safe">
 </head>
 <body>
     <style>
@@ -20,12 +27,12 @@
         }
         input {
             position:absolute;
-            left:0.3em;
+            left:0.1em;
             top:0.3em;
             width:100%;
             overflow:wrap;
             color:#fff;
-            font-size:5em;
+            font-size:1.5em;
             font-weight:bold;
             border:none;
             background:transparent;
@@ -53,9 +60,19 @@
             color:#fff;
             font-weight:bold;
         }
+        .message {
+            position:absolute;
+            left:50%;
+            transform:translateX(-50%);
+            bottom:0.9em;
+            color:#fff;
+            font-family:Arial, Helvetica, sans-serif;
+
+        }
     </style>
     <input placeholder="Sephora Product Name">
     <div></div>
+    <span class="message">I love you sophie</span>
     <script>
         const input = document.querySelector('input')
         const div = document.querySelector('div')
@@ -63,14 +80,25 @@
     let documentFontSize = +getComputedStyle(document.body).fontSize.replace('px','')
         const badChemicals = [{name:"acetone", rating:5},{name:"acetylated lanolin", rating:4},{name:"acetylated lanolin alcohol", rating:6},{name:"algae extract", rating:9},{name:"algin", rating:8},{name:"allantoin", rating:0},{name:"almond oil", rating:2},{name:"aloe vera", rating:0},{name:"apricot kernel oil", rating:2},{name:"ascorbic acid", rating:0},{name:"ascorbyl palmitate", rating:2},{name:"avocado oil", rating:2},{name:"benzoic acid", rating:5},{name:"beta carotene", rating:1},{name:"beeswax", rating:2},{name:"cera alba (beeswax)", rating:2},{name:"butyl stearate", rating:3},{name:"butylene glycol", rating:1},{name:"calendula", rating:1},{name:"camphor", rating:4},{name:"candelilla wax", rating:1},{name:"capric acid", rating:4},{name:"caprylic acid", rating:4},{name:"carbomer", rating:1},{name:"carnuba wax", rating:1},{name:"carrageenan", rating:7},{name:"cetearyl alcohol", rating:4},{name:"cetyl alcohol", rating:4},{name:"cocoa butter", rating:4},{name:"coconut butter", rating:4},{name:"coconut oil", rating:5},{name:"colloidal sulfur", rating:7},{name:"corn oil", rating:3},{name:"d&c red # 17", rating:3},{name:"d&c red # 19", rating:2},{name:"d&c red # 21", rating:3},{name:"d&c red # 3", rating:3},{name:"d&c red # 4", rating:1},{name:"d&c red # 6", rating:1},{name:"d&c red # 7", rating:1},{name:"d&c red # 9", rating:1},{name:"dimethicone", rating:1},{name:"dioctyl succinate", rating:3},{name:"emu oil", rating:0},{name:"ethylparaben", rating:0},{name:"evening primrose oil", rating:4},{name:"glyceryl stearate nse", rating:1},{name:"glyceryl stearate se", rating:5},{name:"isocetyl stearate", rating:5},{name:"isopropyl alcohol", rating:4},{name:"isopropyl isostearate", rating:5},{name:"isopropyl myristate", rating:8},{name:"isopropyl palmitate", rating:4},{name:"jojoba oil", rating:2},{name:"lanolin alcohol", rating:2},{name:"lanolin oil", rating:1},{name:"lanolin wax", rating:1},{name:"laureth 23", rating:3},{name:"laureth 4", rating:9},{name:"lauric acid", rating:5},{name:"lithiumm stearate", rating:1},{name:"magneseium aluminum silicate ", rating:0},{name:"magnesium stearate", rating:1},{name:"myristic acid", rating:3},{name:"octyl palmitate", rating:5},{name:"octyl stearate", rating:10},{name:"oleth-3", rating:7},{name:"oleth-10", rating:3},{name:"olive oil", rating:2},{name:"papain", rating:3},{name:"peanut oil", rating:2},{name:"peg 75 lanolin", rating:5},{name:"peg 100 stearate", rating:1},{name:"peg 16 lanolin", rating:7},{name:"peg 8 stearate", rating:4},{name:"palmitic acid", rating:2},{name:"propylparaben", rating:0},{name:"polyethylene glycol (peg 400)", rating:1},{name:"propylene glycol monostearate", rating:4},{name:"red algea", rating:7},{name:"safflower oil", rating:2},{name:"simethicone", rating:1},{name:"sodium chloride", rating:8},{name:"sodium hyaluronate", rating:0},{name:"sodium laureth sulfate", rating:5},{name:"sodium lauryl sulfate", rating:7},{name:"sodium pca", rating:0},{name:"soybean oil", rating:3},{name:"squalene", rating:1},{name:"stearic acid", rating:2},{name:"stearyl alcohol", rating:4},{name:"sulfated castor oil", rating:5},{name:"sulfated jojoba oil", rating:5},{name:"sunflower oil", rating:0},{name:"syearyl heptanoate", rating:4},{name:"talc", rating:1},{name:"tocopherol (vitamin e)", rating:4},{name:"vitamin a palmitate", rating:3},{name:"wheat germ oil", rating:7},{name:"zinc oxide", rating:1}]
         let pressed = false;
-        document.body.onkeydown = function(e){
-            if(e.key == 'Enter'){
+        let clicks = 0;
+        document.body.ondblclick = function(e){
+            check()
+            }
+        document.body.onclick = function(e){
+            input.focus()
+            input.select()
+        }
+        document.body.onload = () => {
+            input.focus()
+        }
+        function check(){
+
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", 'http://127.0.0.1/api/'+encodeURIComponent(input.value), false ); // false for synchronous request
+    xmlHttp.open( "GET", '/api/'+encodeURIComponent(input.value), false ); // false for synchronous request
     xmlHttp.send( null );
     let data = JSON.parse(xmlHttp.responseText)
     let overall = 0
-        div.innerHTML = 'Results for: <span class="resultbold">'+data.name+'</span><br>'
+        div.innerHTML = '❤️ Results for: <span class="resultbold">'+data.name+'</span><br>'
     data.ingredients.forEach(function(i,v){
         div.innerHTML += `<span class='a${v}'>${i}</span>, `
         let rating = 0
@@ -89,18 +117,13 @@
     })
     div.innerHTML = div.innerHTML.slice(0,-1)
     let ffs = 50
+    div.style.fontSize = '50px'
     while(div.clientHeight+4.3*documentFontSize > h){
-        ffs+=-5
+        ffs+=-1
         div.style.fontSize = ffs+'px'
     }
     div.style.fontSize = (ffs-5)+'px'
-            }
         }
-        document.body.onload = () => {
-            input.focus()
-        }
-        //https://skinutritious.com/blogs/articles/comedogenic-ingredients-official-skinutritious-list
-        //MANUALLY CONVERT LIST TO NORMALIZED NAMES
     </script>
 </body>
 </html>
