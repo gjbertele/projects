@@ -29,6 +29,9 @@ function getObject(theObject) {
     return result;
 }
 
+app.get('/appicon.jpg', (req,res) => {
+    res.sendFile(__dirname+'/appicon.jpg')
+})
 app.get('/api/*', (req, res) => {
     let query = req.url.split('/api/')[1]
     let urlEncoded = query

@@ -518,7 +518,7 @@ function colorMap(i){
     
 
         //PHYSICS
-        let physics = false
+        let physics = true
         if(physics == true){
         setInterval(function(){
             for(let v = 0; v<shapes.length; v++){
@@ -534,22 +534,15 @@ function colorMap(i){
                     for(let vc = 0; vc<15; vc++){
                         let ic = chunk[vc]
                         let mbx = Math.abs(i.x - ic.x)
-                        let mby = Math.abs(i.y - ic.y) + 1e6
-                        let mbz = Math.abs(i.z - ic.z) + 1e6
+                        let mby = Math.abs(i.y - ic.y)
+                        let mbz = Math.abs(i.z - ic.z)
                         let dirs = [mbx,mby,mbz]
                         let colliding = (mbx < terrainDetail && mby < terrainDetail && mbz < terrainDetail)
-                        if(colliding){
-                            let dir = dirs.indexOf(Math.min(mbx,mby,mbz))
-                            if(dir == 0){
-                                i.vx *= -1
-                                i.x+= i.x - ic.x - terrainDetailHalf
-                            } else if(dir == 1){
-                                i.vy *= -1
-                                i.y += i.y - ic.y - terrainDetailHalf
-                            } else if(dir == 3){
-                                i.vz *= -1
-                                i.z += i.z-ic.z - terrainDetailHalf
-                            }
+                        if(colliding && i.y < ic.y){
+                            i.vx*=-1
+                            i.vy*=-1
+                            i.vz*=-1
+                            i.y+=mbz+-i.vy-terrainDetailHalf
                         }
                     }
                         if(0.1*(i.y - i.lcy) >> 0 != 0){
@@ -568,7 +561,8 @@ function colorMap(i){
         //end physics
 
 
-        let a = new Cube(Math.random()*worldWidth*terrainDetail,-500,Math.random()*worldHeight*terrainDetail,100,100,100)
+        let a = new Cube(0,-terrainDetail,0,100,100,100)
+        let b = new Cube(0,-3*terrainDetail,0,100,100,100)
 
         //new Cube(wwtdh/2 + terrainDetail,-100,whtdh/2,100,100,100)
        // new polygon(0,-100,0,[{x:-1,y:1,z:1},{x:1,y:5,z:1},{x:1,y:1,z:-4},{x:-1,y:1,z:-1},{x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:-1,z:-1},{x:-1,y:-1,z:-1}])
