@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body{
+            position:absolute;
+            margin:0;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+        }
+        .main{
+            position:absolute;
+            left:0;
+            top:0;
+        }
+        input {
+            position:absolute;
+            left:1em;
+            top:1em;
+            width:100%;
+            height:2em;
+            font-size:2em;
+            background:transparent;
+            color:#fff;
+            font-family:Arial, Helvetica, sans-serif;
+            border:none;
+            font-weight:bold;
+            transition:border 0.3s
+
+        }
+        input:focus {
+            outline:none;
+            border-bottom:2px solid #fff
+        }
+        .heatmap {
+            position:absolute;
+            left:1em;
+            bottom:1em;
+        }
+    </style>
+    <canvas class='main'></canvas>
+    <canvas class='heatmap'></canvas>
+    <input>
+    <script>
+        const canvas = document.querySelector('.main')
+        const heatmap = document.querySelector('.heatmap')
+        const input = document.querySelector('input')
+        const ctx = canvas.getContext('2d',{alpha:false})
+        const ctxh = heatmap.getContext('2d',{alpha:false})
+        const w = document.body.clientWidth;
+        const h = document.body.clientHeight;
+        let worldWidth = 50
+        let worldHeight = 50
+        heatmap.width = worldWidth*3
+        heatmap.height = worldHeight*3
+        let boundaryPanning = 800
+        canvas.width = w;
+        canvas.height = h;
+        let fov = w*0.9
+        let keysdown = []
+        let inputselected = true
+        const terrainDetail = 50
+        const terrainDetailHalf = 25
+        let mousedown = false;
+        let mx = 0;
+        let my = 0;
+        let cameraPos = {
+            x:-1210,
+            y:-938,
+            z:-1095,
+            rx:0,
+            ry:0,
+            rposX:0,
+            rposZ:0,
+        }
+        //OPTIMIZATION CONSTANTS
+        const wwtdh = worldWidth*terrainDetail/2
+        const whtdh = worldHeight*terrainDetail/2
+        const MPDR = Math.PI/180
+        const fovInv = 1/fov
+        input.onfocus = function(){
+            inputselected = true
+        }
+        input.onblur = function(){
+            inputselected = false
+        }
+        let basicEvaluate = function(x,y){
+            return Math.sqrt(25-(10-Math.sqrt(x**2 + y**2))**2)
+        }
+        function basicEquation(x,y){
+            let value = basicEvaluate(x,y)
+
+            if(isNaN(value)){
+                value = 0;
+            }
+            return -terrainDetail*value
+        }
+        const isPointInPolygon = (latitude, longitude, polygon) => {
+
+let x = latitude; let y = longitude
+
+let inside = false
+for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0]; const yi = polygon[i][1]
+    const xj = polygon[j][0]; const yj = polygon[j][1]
+
+    const intersect = ((yi > y) !== (yj > y)) &&
+        (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+    if (intersect) inside = !inside
+}
+
+return inside
+};
+        function lookArraysUpdate(){
+                    xAxis.x = Math.fround(Math.cos(cameraPos.rx*MPDR));
+                    xAxis.y = Math.fround(Math.sin(cameraPos.rx*MPDR));
+
+                    yAxis.x = -xAxis.y//Math.cos(cameraPos.rx*Math.PI/180 + Math.PI/2);
+                    yAxis.y = xAxis.x//Math.sin(cameraPos.rx*Math.PI/180 + Math.PI/2);
+                    
+
+                    cameraPos.rposZ = cameraPos.z + (cameraPos.x-terrainDetailHalf*worldWidth)*xAxis.x+(cameraPos.z-terrainDetailHalf*worldHeight)*yAxis.x
+                    cameraPos.rposX = cameraPos.x + (cameraPos.x-terrainDetailHalf*worldWidth)*xAxis.y+(cameraPos.z-terrainDetailHalf*worldHeight)*yAxis.y
+        }
+function terrainAtPoint(x,z){
+    let modx = (x/terrainDetail)>>0
+    let modz = (z/terrainDetail)>>0
+    return heightMap[modx+modz*worldHeight]
+}
+
+function cfaceDist(i){
+    return Math.sqrt((i[0].x - cameraPos.rposX)**2 + (i[0].y - cameraPos.y)**2 + (i[0].z - cameraPos.rposZ)**2)
+}
+
+        document.body.onmousedown = function(e){
+            mousedown = true;
+        }
+        document.body.onmousemove = function(e){
+            mx = e.clientX;
+            my = e.clientY;
+        }
+        document.body.onmouseup = function(e){
+            mousedown = false
+        }
+        document.body.onkeydown = function(e){
+            if(!keysdown.includes(e.key)) { keysdown.push(e.key) }
+        }
+        document.body.onkeyup = function(e){
+            keysdown = keysdown.filter(i => i!=e.key)
+        }
+    
+
+
+
+        let xAxis = {x:1,y:0}
+        let yAxis = {x:0,y:1}
+
+        const projectTo3D = (x, y, z) => {
+            let ix = x - wwtdh
+            let iy = y - cameraPos.y
+            let iz = z - whtdh
+            let rotatedX = ix*xAxis.x+iz*yAxis.x - cameraPos.x
+            let rotatedZ = ix*xAxis.y+iz*yAxis.y - cameraPos.z
+            var size = rotatedZ*fovInv + 1
+            var xp = (rotatedX / size);
+            var yp = (iy / size);
+            let objectReturn = {
+                x: xp>>0,
+                y: yp>>0 
+            }
+            return objectReturn
+        }
+
+        const terrainFaceFromPoint = (x, y) => {
+            var answer = [1e6,1e6,1e6]
+            terrainFaces.forEach(function(i,v){
+                let ptsProjected = [projectTo3D(i[0].x,i[0].y,i[0].z),projectTo3D(i[1].x,i[1].y,i[1].z),projectTo3D(i[2].x,i[2].y,i[2].z),projectTo3D(i[3].x,i[3].y,i[3].z)].map(j => j = [j.x,j.y])
+                if(isPointInPolygon(x,y,ptsProjected) == true ){
+                    answer = i
+                }
+            })
+            return answer
+        }
+        const cDist = (i) => {
+            return (i.x - cameraPos.rposX + cameraPos.x+ 350)**2 + (i.y - cameraPos.y)**2 + (i.z - cameraPos.rposZ + cameraPos.z - 250)**2
+        }
+  
+
+        const worldDraw = () => {
+            let boundaries = [projectTo3D(0,0,0),projectTo3D(0,-1e4,0),projectTo3D(wwtdh*2,0,whtdh*2),projectTo3D(wwtdh*2,-1e4,whtdh*2),projectTo3D(wwtdh*2,0,0),projectTo3D(wwtdh*2,-1e4,0),projectTo3D(0,0,whtdh*2),projectTo3D(0,-1e4,whtdh*2)]
+            let boundaryXMax = Math.max(...boundaries.map(i => i = i.x))
+            let boundaryXMin = Math.min(...boundaries.map(i => i = i.x))
+            let boundaryYMax = Math.max(...boundaries.map(i => i = i.y))
+            let boundaryYMin = Math.min(...boundaries.map(i => i = i.y))
+            ctx.clearRect(boundaryXMin-boundaryPanning,boundaryYMin-boundaryPanning,boundaryXMax-boundaryXMin+2*boundaryPanning,boundaryYMax-boundaryYMin+2*boundaryPanning)
+            lookArraysUpdate()
+
+            terrainFaces.sort((a,b) => cDist(b[0])-cDist(a[0])).forEach(function(i,v){
+                let ptsProjected = [projectTo3D(i[0].x,i[0].y,i[0].z),projectTo3D(i[1].x,i[1].y,i[1].z),projectTo3D(i[2].x,i[2].y,i[2].z),projectTo3D(i[3].x,i[3].y,i[3].z)]
+                let ptsarrx = ptsProjected.map(i => i = i.x)
+                let ptsarry = ptsProjected.map(i => i = i.y)
+                if(!(Math.max(...ptsarrx)>w+boundaryPanning || Math.min(...ptsarrx) < -boundaryPanning || Math.max(...ptsarry) > h+boundaryPanning || Math.min(...ptsarry) < -boundaryPanning || i[0].y < cameraPos.y)){
+                ctx.beginPath()
+                ptsProjected.forEach(function(j,v){
+                    ctx.lineTo(j.x,j.y)
+                })
+                ctx.fillStyle = i[4];
+                ctx.fill();
+                ctx.stroke()
+                }
+            })
+        }
+        setInterval(function(){
+            if(!inputselected){
+            if(keysdown.includes('ArrowLeft')){
+                cameraPos.rx+=-2
+            }
+            if(keysdown.includes('ArrowRight')){
+                cameraPos.rx+=2
+            }
+            if(keysdown.includes('w')){
+                cameraPos.z += 30
+            }
+            if(keysdown.includes('s')){
+                cameraPos.z += -30
+
+            }
+            if(keysdown.includes('a')){
+                cameraPos.x+=-30
+            }
+            if(keysdown.includes('d')){
+                cameraPos.x+=30
+            }
+            if(keysdown.includes('e')){
+                cameraPos.y+=-30
+            }
+            if(keysdown.includes('q')){
+                cameraPos.y+=30
+            }
+        }
+        if(keysdown.includes('Enter')){
+            basicEvaluate = Function('x','y','return '+input.value);
+            regenerateFaces()
+        }
+            worldDraw()
+        },1000/60)
+
+        //face gen
+        let heightmap = (new Array(worldWidth*worldHeight)).fill(0)
+        let terrainFaces = []
+        const randomC = 25*Math.random()
+        //seeded random
+        function genColor(v){
+            let ra = ((v % 3)*v*randomC % 1)*10 >> 0
+            let ga = ((v % 3)*v*randomC % 2)*10 >> 0
+            let ba = ((v % 3)*v*randomC % 3)*10 >> 0
+            return 'rgb('+(65+ra)+','+(220+ga)+','+(65+ba)+')'
+        }
+        function regenerateFaces(){
+            terrainFaces = []
+        for(let v = 0; v<worldWidth*worldHeight; v++){
+                let tx = v % worldWidth;
+                let ty = (v - tx)/worldWidth
+                heightmap[v] = {x:tx*terrainDetail,y:0,z:ty*terrainDetail,index:v,connections:[]}
+                heightmap[v].y = basicEquation(tx-worldWidth/2,ty-worldWidth/2)
+                heightmap[v].color = genColor(v)
+        }
+        for(let v = 0; v<worldWidth*worldHeight; v++){
+            let i = heightmap[v]
+            let tx = v % worldWidth;
+            let ty = (v - tx)/worldWidth
+            
+            let a1 = heightmap.filter(j => j.x == i.x+terrainDetail && j.z == i.z)[0] ?? i
+            let a2 = heightmap.filter(j => j.x == i.x + terrainDetail && j.z == i.z + terrainDetail)[0] ?? i
+            let a3 = heightmap.filter(j => j.x == i.x && j.z == i.z + terrainDetail)[0] ?? i
+
+            let rv = i.y/2
+            let gv = 255 - 2*i.y/2
+            let bv = -i.y/2
+            let tcolor = 'rgb('+rv+','+gv+','+bv+')'
+            ctxh.fillStyle = tcolor
+            ctxh.fillRect(tx*3,ty*3,3,3)
+            terrainFaces.push([i,a1,a2,a3,tcolor])
+            }
+            ctxh.fillStyle = '#000'
+            ctxh.fillRect(worldWidth*3/2,0,1,worldHeight*3)
+            ctxh.fillRect(0,worldHeight*3/2,worldWidth*3,1)
+            ctxh.fillRect(-cameraPos.rposX*3/50,-cameraPos.rposZ*3/50,3,3)
+        }
+    regenerateFaces()
+        //end face generation
+        input.select()
+
+        heatmap.onclick = function(e){
+            let s = getComputedStyle(heatmap)
+            let top = +s.top.slice(0,-2)
+            let left = +s.left.slice(0,-2)
+            let rx = e.clientX - left;
+            let ry = e.clientY - top;
+            cameraPos.x = rx*terrainDetail/3 - wwtdh;
+            cameraPos.z = ry*terrainDetail/3 - whtdh;
+            
+            console.log(rx,ry)
+        }
+</script>
+</body>
+</html>
