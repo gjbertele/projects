@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        const array = (new Array(10)).fill(0).map(i => i = {property:Math.random()})
+        function quicksort(arr) {
+  if (arr.length <= 1) {
+    return arr;
+  }
+
+  const pivot = arr[Math.floor(arr.length / 2)];
+  const left = [];
+  const right = [];
+
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].property < pivot.property) {
+      left.push(arr[i]);
+    } else if (arr[i].property > pivot.property) {
+      right.push(arr[i]);
+    }
+  }
+
+  return [...quicksort(left), pivot, ...quicksort(right)];
+}
+let s = performance.now()
+console.log(quicksort(array))
+console.log(performance.now()-s)
+let s2 = performance.now()
+console.log(array.sort((a,b) => a.property - b.property))
+console.log(performance.now()-s2)
+    </script>
+
+</body>
+</html>
