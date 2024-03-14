@@ -1,0 +1,71 @@
+    READ    X
+U   DC  100
+S   DC  100
+C   DC  200
+O   DC  0
+I   DC  -1
+D   DC  1
+T   DC  5
+F   DC  1
+P   DC 0
+MOD LOAD    X
+    SUB =3  Mod 3 time
+    BL  EMOD
+    STORE X
+    BU MOD
+EMOD    LOAD P
+    ADD X
+    STORE P
+START LOAD T
+    SUB =1
+    BE STOP Decrement time
+    STORE T
+    LOAD D  SIN
+    ADD =1  Increase counter
+    STORE D
+    LOAD F
+    MULT D  Factorial component increase
+    STORE F
+    LOAD P
+    MULT X  Increment power of x by 1
+    STORE P
+    LOAD O
+    SUB O   Operate
+    ADD P
+    MULT I
+    MULT U
+    DIV F
+    STORE O
+    LOAD S
+    ADD O
+    STORE S END SIN
+    LOAD D  COS
+    ADD =1  Increase counter
+    STORE D
+    LOAD F
+    MULT D  Factorial component increase
+    STORE F
+    LOAD P
+    MULT X  Increment power of x by 1
+    STORE P
+    LOAD O
+    SUB O   Operate
+    ADD P
+    MULT I
+    MULT U
+    DIV F
+    STORE O
+    LOAD C
+    ADD O
+    STORE C END COS
+    LOAD I
+    MULT =-1    Flip sign
+    STORE I
+    BU START
+STOP LOAD C
+    SUB U
+    BL FINAL
+    STORE C
+    BU STOP
+FINAL   PRINT C
+    PRINT S

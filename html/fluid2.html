@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body {
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            margin:0;
+        }
+        canvas{
+            border:1px blue solid;
+        }
+    </style>
+    <canvas></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        let w = 500
+        let h = 500
+        const dt = 0.1;
+        const g = -9.8;
+        canvas.width = w;
+        canvas.height = h;
+        let imgd = new ImageData(w,h);
+        w+=2;
+        h+=2;
+        let newData = (new Array(w*h*4)).fill(255);
+        let U =( new Array(w*h)).fill(0)
+        let V =( new Array(w*h)).fill(0)
+        let S  = (new Array(w*h)).fill(0);
+        for(let v = 0; v<w-2; v++){
+            S[v+1+w] = 1;
+            S[v+1+(h-3)*w] = 1;
+            S[(v+1)*w] = 1;
+            S[w+v*w] = 1;
+        }
+
+        U[h/2*w+1] = 0.000001
+        
+
+        function render(){
+            newData.fill(255);
+            for(let x = 1; x<=w-2; x++){
+                for(let y = 1; y<=h-2; y++){
+                    let v = 4*((x-1)+(y-1)*(w-2))
+                    if(x+y*w >= w*h) break;
+                    let c = Math.min(255,Math.sqrt(U[x+y*w]**2 + V[x+y*w]**2));
+                    newData[v] = c;
+                    newData[v+1] = c;
+                    newData[v+2] = c;
+                }
+            }
+            newData.length = (w-2)*(h-2)*4;
+            imgd.data.set(new Uint8Array(newData))
+            ctx.putImageData(imgd, 0,0)
+        }
+
+        function step(){
+            //grav
+            for(let x = 1; x<=w; x++){
+                for(let y = 1; y<=h; y++){
+                    //V[x+w*y] += dt*g;
+                }
+            }
+
+            //decompress
+            for(let n = 0; n<200; n++){
+            for(let x = 1; x<=w; x++){
+                for(let y = 1; y<=h; y++){
+                    let d = -U[x+y*w]+U[x+1+y*w]-V[x+(y+1)*w]+V[x+y*w];
+
+                    //if(x+y*w >= 503 && x+y*w <= 600) console.log(x+y*w,U[x+y*w],U[x+1+y*w],V[x+(y+1)*w],V[x+y*w]);
+                    d*=1.99;
+                    let s = 4-(S[x+1+y*w]+S[x-1+y*w]+S[x+(y-1)*w]+S[x+(y+1)*w]);
+                    if(s == 0) continue;
+                    U[x+y*w]+=d*(1-S[x-1+y*w])/s;
+                    U[x+1+y*w]-=d*(1-S[x+1+y*w])/s;
+                    V[x+y*w]+=d*(1-S[x+(y-1)*w])/s;
+                    V[x+(y+1)*w]-=d*(1-S[x+(y+1)*w])/s;
+                }
+            }
+            }
+            let newU = U;
+            let newV = V;
+            for(let x = 1; x<=w ; x++){
+                for(let y = 1; y<=h; y++){
+                    let tx = x*10;
+                    let ty = y*10;
+
+
+                    let Au = U[x+w*y];
+                    let Av = (V[x-1+y*w]+V[x-1+(y+1)*w]+V[x+y*w]+V[x+(y+1)*w])/4;
+                    tx -= Au/60;
+                    ty -= Av/60;
+                    let w01 = ( tx % 10)/1000;
+                    let w00 = 1 - w01
+                    let w11 = ( ty % 10)/1000;
+                    let w10 = 1 - w11
+                    let gu = w00*w10*U[x+y*w]+w01*w10*U[x+1+y*w]+w01*w11*U[x+(y+1)*w]+w00*w11*U[x+1+(y+1)*w];
+
+                    tx+=Au/60;
+                    ty+=Av/60;
+                    let Bu = (U[x-1+y*w]+U[x-1+(y+1)*w]+U[x+y*w]+U[x+(y+1)*w])/4;
+                    let Bv = V[x+w*y];
+                    tx -= Bu/60;
+                    ty -= Bv/60;
+                    w01 = ( tx % 10)/1000;
+                    w00 = 1 - w01
+                    w11 = ( ty % 10)/1000;
+                    w10 = 1 - w11
+                    let gv = w00*w10*U[x+y*w]+w01*w10*U[x+1+y*w]+w01*w11*U[x+(y+1)*w]+w00*w11*U[x+1+(y+1)*w];
+
+
+                    if(!isNaN(gu))newU[x + y*w] = gu;
+                    if(!isNaN(gv))newV[x + y*w] = gv;
+                }
+            }
+
+        }
+
+        setInterval(function(){
+            render();
+            step();
+        },500)
+    </script>
+    
+</body>
+</html>

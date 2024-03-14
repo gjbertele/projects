@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body{
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            margin:0;
+            overflow:hidden;
+        }
+        .b, video{
+            position:absolute;
+            top:100%;
+        }
+    </style>
+    <canvas class="a"></canvas>
+    <canvas class="b"></canvas>
+    <video></video>
+    <script>
+        const w = document.body.clientWidth;
+        const h = document.body.clientHeight;
+        const video = document.querySelector('video');
+        const canvasA = document.querySelector('.a');
+        const ctxA = canvasA.getContext('2d');
+        const canvasB = document.querySelector('.b');
+        const ctxB = canvasB.getContext('2d');
+        navigator.mediaDevices.getUserMedia({video: true}).then((stream) => {
+            video.srcObject = stream
+            video.oncanplay = function(){
+            let vcw = video.clientWidth;
+            let vch = video.clientHeight;
+            let imgd = new ImageData(vcw,vch);
+            canvasA.width = video.clientWidth;
+            canvasA.height = video.clientHeight;
+            canvasB.width = video.clientWidth;
+            canvasB.height = video.clientHeight;
+            setInterval(function(){
+                let pastFrame = ctxA.getImageData(0,0,vcw,vch).data;
+                ctxA.drawImage(video,0,0);
+                let currFrame = ctxA.getImageData(0,0,vcw,vch).data;
+                let newImageData = [];
+                let tx = 0;
+                let ty = 0;
+                let c = 0;
+                for(let v = 0; v<pastFrame.length; v+=4){
+                    let dv = Math.abs(pastFrame[v] + pastFrame[v+1] + pastFrame[v+2] - currFrame[v] - currFrame[v+1] - currFrame[v+2]);
+                    if(dv > 500){
+                        tx += (v % vcw);
+                        ty += (v/4 - (v % vcw))/(vcw)
+                        c++;
+                    }
+                }
+                tx/=c;
+                ty/=c;
+                ctxA.fillRect(tx-5,ty-5,10,10);
+                //console.log(tx,ty)
+                imgd.data.set(new Uint8Array(newImageData));
+                ctxB.putImageData(imgd,0,0);
+            },50)
+        }
+            video.play();
+        })
+    </script>
+</body>
+</html>

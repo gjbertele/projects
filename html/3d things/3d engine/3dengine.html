@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body{
+            position:absolute;
+            margin:0;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+        }
+        canvas{
+            position:absolute;
+            left:0;
+            top:0;
+            background:lightblue
+        }
+        .pressureForceText {
+            left:2%;
+            top:2em;
+        }
+        .gravityText {
+            left:2%;
+            top:4em;
+        }
+        .worldWidthText {
+            left:2%;
+            top:6em;
+        }
+        .worldHeightText {
+            left:2%;
+            top:8em;
+        }
+        .borderElasticityText {
+            left:2%;
+            top:10em;
+        }
+        .particleCountText {
+            left:2%;
+            top:12em;
+        }
+        .dtText {
+            left:2%;
+            top:14em;
+        }
+        .showDensityText {
+            left:2%;
+            top:16em;
+        }
+        .showDensityTextYZ {
+            left:2%;
+            top:18em;
+        }
+        .particleFountainText {
+            left:2%;
+            top:20em;
+        }
+        .inputContainer{
+            position:absolute;
+            color:#fff;
+            font-weight:bolder;
+            font-family:Arial, Helvetica, sans-serif;
+            font-size:1em;
+        }
+    </style>
+    <canvas></canvas>
+    <span class="pressureForceText inputContainer"><input class="pressureForce" type="range" min="0" max="200" step="1" value="100"> Fluid Expansion</span>
+    <span class="gravityText inputContainer"><input class="gravity" type="range" min="0" max="50" step="0.1" value="9.8"> Gravity</span>
+    <span class="worldWidthText inputContainer"><input class="worldWidth" type="range" min="1" max="100" step="1" value="25"> World Width</span>
+    <span class="worldHeightText inputContainer"><input class="worldHeight" type="range" min="1" max="100" step="1" value="25"> World Height</span>
+    <span class="borderElasticityText inputContainer"><input class="borderElasticity" type="range" min="0" max="1" step="0.05" value="0.8"> Border Elasticity</span>
+    <span class="particleCountText inputContainer"><input class="particleCount" type="range" min="0" max="1000" step="1" value="300"> Particle #</span>
+    <span class="dtText inputContainer"><input class="dt" type="range" min="0" max="0.2" step="0.001" value="0.1"> Speed</span>
+    <span class="showDensityText inputContainer"><input class="showDensity" type="checkbox"> Show Density XZ</span>
+    <span class="showDensityTextYZ inputContainer"><input class="showDensityYZ" type="checkbox"> Show Density YZ</span>
+    <span class="particleFountainText inputContainer"><input class="particleFountain" type="checkbox"> Particle Fountain</span>
+    <script src="helpers.js"></script>
+    <script src="gen.js"></script>
+    <script src="objects.js"></script>
+    <script src="physics.js"></script>
+</body>
+</html>

@@ -42,7 +42,7 @@
             canvas.width = w
             canvas.height = h
         }
-        const radConst = Math.PI / 180
+        let radConst = Math.PI / 180
 
         function obj(faces) {
             objects.push({
@@ -172,6 +172,7 @@
             move()
             move()
             t += 1 / 30
+            radConst += Math.PI/10000
         }, 1000 / 60)
         frame()
     </script>

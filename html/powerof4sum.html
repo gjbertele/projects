@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let s = ""
+        for(let v = 0; v<100; v++){
+            let p = 3**v;
+            let val = 0;
+            for(let j = 0; j<=Math.log10(p) + 1; j++){
+                val += p % 10;
+                p = Math.floor(p/10)
+            }
+            s+=val+'\n'
+        }
+        document.body.innerHTML = s;
+    </script>
+</body>
+</html>

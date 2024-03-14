@@ -1,0 +1,1 @@
+/usr/bin/env /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java -cp /Users/gbertele26/Library/Application\ Support/Code/User/workspaceStorage/e0f576d7ad98964bf51e608b9014fecc/redhat.java/jdt_ws/projects_faa6a04c/bin AALInterpreter ../acslasm/sin.acsl

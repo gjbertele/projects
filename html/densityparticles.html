@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body {
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            margin:0;
+        }
+        canvas{
+            border:1px black solid;
+        }
+    </style>
+    <canvas></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        const w = 500
+        const h = 500
+        const dt = 0.1;
+        canvas.width = w;
+        canvas.height = h;
+        const numParticles = 500;
+        const det = 20
+        const pressureForce = 2;
+        const smoothRadius = 5;
+        const divConst = Math.log(4);
+        const borderElasticity = 0.8;
+
+        let velocities = [];
+        let positions = [];
+        let densities = [];
+        let imgd = new ImageData(w,h);
+        let newData = (new Array(w*h*4)).fill(255);
+        let mx = 0;
+        let my = 0;
+        let mousedown = false;
+        ctx.fillStyle = '#000';
+
+        function createParticle(x,y,m){
+            positions.push({x,y});
+            velocities.push({x:0,y:0});
+        }
+
+        function calculateDensity(x,y){
+            let d = 0;
+            for(let v = 0; v<numParticles; v++){
+                d+=calculateInfluence(v, x, y);
+            }
+            return d
+        }
+
+        function calculateInfluence(p, x, y){
+            let d = ((positions[p].x + velocities[p].x*dt - x)/smoothRadius)**2 + ((positions[p].y + velocities[p].y*dt -y)/smoothRadius)**2;
+            let v = 1/(d + 1) //OPTIMIZE
+            return v;
+        }
+
+        function calculateDensityGradient(i){
+            let sumdx = 0;
+            let sumdy = 0;
+            for(p in positions){
+                let v = -2/((positions[p].x - positions[i].x)**2 + (positions[p].y - positions[i].y)**2 + 1);
+                sumdx += (positions[i].x - positions[p].x)*v;
+                sumdy += (positions[i].y - positions[p].y)*v;
+            }
+            return {dx: sumdx, dy: sumdy};
+        }
+        function render(){
+            newData.fill(255);
+            let densityArr = new Array(w*h/(det**2))
+           for(let v = 0; v<w/det; v++){
+                for(let i = 0; i<h/det; i++){
+                  //densityArr[v+i*w/det] = calculateDensity(v*det,i*det)
+                  let col = Math.min(calculateDensity(v*det,i*det)*255/5.6,255);
+                  if(col > 50)fillRect(newData,v*det,i*det,det,det,255-col,255-col,255);
+
+                  
+                }
+            }
+           /*for(let x = 0; x<w; x++){
+                for(let y = 0; y<h; y++){
+                    let dx = (x % det);
+                    let dy = y % det;
+                    let cx = (x - dx)/det;
+                    let cy = (y - dy)/det;
+                    let avg =dx/det * dy/det * densityArr[cx+1+w*(cy+1)/det] + (1-dx/det)*dy/det * densityArr[cx+w*(cy+1)/det] + (1-dx/det)*(1-dy/det)*densityArr[cx+(w/det)*(cy)] + (dx/det)*(1-dy/det)*densityArr[cx+1+(w/det)*cy];
+                    let col = Math.min(255,avg*50)
+                    if(isNaN(avg)){ col = 255;}
+                    let v = 4*(x+w*y);
+                    newData[v] = col;
+                    newData[v+1] = col;
+                    newData[v+2] = col;
+                }
+            }*/
+            /*for(p in positions){
+                v = 4*((positions[p].x >> 0)+ w*(positions[p].y >> 0));
+                newData[v] = 0;
+                newData[v+1] = 0;
+                newData[v+2] = 0;
+            }*/
+            newData.length = w*h*4;
+            imgd.data.set(new Uint8Array(newData));
+            ctx.putImageData(imgd,0,0);
+
+            
+        }
+
+        function step(){
+            if(mousedown && mx < 2*w) applyForce(mx % w ,my,10);
+            let nextpositions = positions;
+            let nextvelocities = velocities;
+            for(let p = 0; p<numParticles; p++){
+                nextpositions[p].x += velocities[p].x*dt;
+                nextpositions[p].y += velocities[p].y*dt;
+                for(let i = 0; i<numParticles; i++){
+                    if(i == p) continue;
+                    let v = -2/((positions[p].x - positions[i].x)**2 + (positions[p].y - positions[i].y)**2 + 1);
+                    let fx = (positions[p].x - positions[i].x)*v;
+                    let fy = (positions[p].y - positions[i].y)*v;
+                    nextvelocities[i].x += pressureForce*dt*fx/2;
+                    nextvelocities[p].x += -pressureForce*dt*fx/2;
+                    nextvelocities[i].y += pressureForce*dt*fy/2;
+                    nextvelocities[p].y += -pressureForce*dt*fy/2;
+                }
+                if(nextpositions[p].x > w || nextpositions[p].x < 0){
+                    nextpositions[p].x -= 2*velocities[p].x*dt;
+                    nextvelocities[p].x *= -borderElasticity;
+                }
+                if(nextpositions[p].y > w - det || nextpositions[p].y < 0){
+                    nextpositions[p].y -= 2*velocities[p].y*dt;
+                    nextvelocities[p].y *= -borderElasticity;
+                }
+                nextvelocities[p].y += pressureForce*20*dt;
+            }
+            positions = nextpositions;
+            velocities = nextvelocities;
+            for(let p = 0; p<numParticles; p++){
+                densities[p] = (calculateDensity(positions[p].x,positions[p].y));
+            }
+
+        }
+
+        for(let v = 0; v<numParticles; v++){
+            createParticle((v % 32) * 5 + w/2 - 16*5, (v - (v % 32))/32 * 5 + h/2, 10);
+        }
+        for(let p = 0; p<numParticles; p++){
+            densities[p] = (calculateDensity(positions[p].x,positions[p].y));
+        }
+        let tf = 0;
+        setInterval(function(){
+            step();
+            tf++;
+            if(tf == 3) { render(); tf = 0;} 
+        },1000*dt/5);
+
+        function applyForce(x, y, force){
+            for(p in positions){
+                if((positions[p].x - x)**2 + (positions[p].y - y) **2 < 1e3*smoothRadius){
+                    let ang = Math.atan2(positions[p].y - y,positions[p].x - x);
+                    velocities[p].x += Math.cos(ang)*force;
+                    velocities[p].y += Math.sin(ang)*force;
+                }
+            }
+        }
+        function fillRect(arr, x, y, wi, hi, valr, valg, valb){
+            for(let i = x; i<=x+wi; i++){
+                for(let j = y; j<=y+hi; j++){
+                    let v = 4*(i+j*w);
+                    arr[v] = valr;
+                    arr[v+1] = valg;
+                    arr[v+2] = valb;
+                }
+            }
+        }
+        document.body.onmousemove = function(e){
+            mx = e.clientX;
+            my = e.clientY;
+        }
+        document.body.onmousedown = function(e){
+            mousedown = true;
+        }
+        document.body.onmouseup = function(e){
+            mousedown = false;
+        }
+    </script>
+</body>
+</html>

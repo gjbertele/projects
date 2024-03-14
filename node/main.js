@@ -67,6 +67,13 @@ app.get('/api/*', (req, res) => {
     })
 })
 
+
+app.get('/basketball', (req,res) => {
+    console.log(1)
+    res.sendFile(__dirname.split('/').slice(0,-1).join('/')+'/html/longexposure.html')
+    
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas></canvas>
+    <style>
+        body{
+            position:absolute;
+            left:0;
+            top:0;
+            margin:0;
+            width: 100%;
+            height:100%;
+        }
+    </style>
+    <script src="./heatmapdata.js"></script>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.querySelector('img');
+        const w = document.body.clientWidth;
+        const h = document.body.clientHeight;
+        canvas.width = w;
+        canvas.height = h;
+        let totalRuns = [...run1,...run2,...run3,...run4,...run5,...run6,...run7,...run8,...run9,...run10,...run11,...run12,...run13,...run14,...run15, ...run16,...run17]
+        let runs = [run1,run2,run3,run4,run5,run6,run7,run8,run9, run10, run11, run12, run13, run14, run15, run16, run17]
+        runs.reverse();
+        let mp = [0,0];
+        let tl = 0;
+        for(let v = 0; v<totalRuns.length; v++){
+            mp[(v + 1) % 2] += totalRuns[v];
+        }
+        mp[0] /= totalRuns.length/2;
+        mp[1] /= totalRuns.length/2;
+        ctx.fillStyle = '#fc4c02'
+        let speed = 2;
+        let ptx = 0;
+        let pty = 0;
+        function drawslowrun(index){
+            let subpointer = 0;
+            let run = runs[index];
+            speed = Math.ceil(run.length / 8000)**2 + 1
+            setInterval(function(){
+                if(subpointer < run.length){
+                    for(let v = subpointer; v<subpointer+speed*2; v+=2){
+                        let tx = (run[v+1] - mp[0]) * 5 * 1e3 + w/2;
+                        let ty = -(run[v] - mp[1]) * 5 * 1e3 + h/2;
+                        let prog = Math.sqrt((tx-ptx)**2+(ty-pty)**2)/1
+                        prog = Math.max(0,prog);
+                        prog = Math.min(1,prog);
+                        ptx = tx;
+                        pty = ty;
+                        ctx.fillStyle = 'rgb('+Math.round(255*prog)+',0,'+Math.round(255*(1-prog))+')'
+                        //console.log('rgb('+Math.round(255*prog)+',0,'+Math.round(255*(1-prog))+')',tx,ty)
+                        ctx.fillRect(tx-2,ty-2,4,4)
+                    }
+                    subpointer+=speed*2;
+                }
+            },1)
+            if(index < 12){
+            setTimeout(function(){
+                drawslowrun(index+1);
+            },run.length / speed)
+            }
+        }
+        drawslowrun(0)
+    </script>
+</body>
+</html>

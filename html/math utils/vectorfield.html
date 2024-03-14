@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        body{
+            position:absolute;
+            margin:0;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+        }
+        canvas{
+            position:absolute;
+            left:0;
+            top:0;
+        }
+    </style>
+    <canvas></canvas>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        const w = document.body.clientWidth;
+        const h = document.body.clientHeight;
+        const dt = 5;
+        canvas.width = w;
+        canvas.height = h;
+        let points = [];
+        function vectorField(x,y){
+            return [Math.cos(x/100), Math.sin(y/100)]
+        }
+        ctx.fillStyle = '#000000'
+        function step(){
+            ctx.clearRect(0,0,w,h);
+            for(let v = 0; v<points.length; v++){
+                let vect = vectorField(points[v].x,points[v].y);
+                points[v].x += vect[0]*dt;
+                points[v].y += vect[1]*dt;
+                ctx.fillRect((points[v].x+w/2) >> 0, (points[v].y+h/2) >> 0, 3, 3);
+                console.log(points[v].x + w/2, points[v].y + h/2)
+            }
+        }
+        setInterval(function(){
+            step();
+        },50);
+        document.body.onclick = function(e){
+            points.push({x:e.clientX-w/2,y:e.clientY-h/2});
+        }
+    </script>
+</body>
+</html>

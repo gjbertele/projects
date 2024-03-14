@@ -44,13 +44,24 @@
             left:1em;
             bottom:1em;
         }
+        .camerapos {
+            position:absolute;
+            right:1em;
+            bottom:1em;
+            font-size:2em;
+            color:#fff;
+            font-family:Arial, Helvetica, sans-serif;
+            font-weight:bold;
+        }
     </style>
     <canvas class='main'></canvas>
+    <span class="camerapos"></span>
     <canvas class='heatmap'></canvas>
     <input>
     <script>
         const canvas = document.querySelector('.main')
         const heatmap = document.querySelector('.heatmap')
+        const cameraposelem = document.querySelector('.camerapos')
         const input = document.querySelector('input')
         const ctx = canvas.getContext('2d',{alpha:false})
         const ctxh = heatmap.getContext('2d',{alpha:false})
@@ -220,29 +231,29 @@ function cfaceDist(i){
         setInterval(function(){
             if(!inputselected){
             if(keysdown.includes('ArrowLeft')){
-                cameraPos.rx+=-2
+                cameraPos.rx+=-3
             }
             if(keysdown.includes('ArrowRight')){
-                cameraPos.rx+=2
+                cameraPos.rx+=3
             }
             if(keysdown.includes('w')){
-                cameraPos.z += 30
+                cameraPos.z += 60
             }
             if(keysdown.includes('s')){
-                cameraPos.z += -30
+                cameraPos.z += -60
 
             }
             if(keysdown.includes('a')){
-                cameraPos.x+=-30
+                cameraPos.x+=-60
             }
             if(keysdown.includes('d')){
-                cameraPos.x+=30
+                cameraPos.x+=60
             }
             if(keysdown.includes('e')){
-                cameraPos.y+=-30
+                cameraPos.y+=-60
             }
             if(keysdown.includes('q')){
-                cameraPos.y+=30
+                cameraPos.y+=60
             }
         }
         if(keysdown.includes('Enter')){
@@ -250,7 +261,8 @@ function cfaceDist(i){
             regenerateFaces()
         }
             worldDraw()
-        },1000/20)
+            cameraposelem.textContent = (cameraPos.rposX/50>>0)+', '+-(cameraPos.y/50>>0)+', '+(cameraPos.rposZ/50>>0)
+        },1000/45)
 
         //face gen
         let heightmap = (new Array(worldWidth*worldHeight)).fill(0)
@@ -282,7 +294,7 @@ function cfaceDist(i){
             let a3 = heightmap.filter(j => j.x == i.x && j.z == i.z + terrainDetail)[0] ?? i
 
             let rv = i.y/2
-            let gv = 255 - 2*i.y/2
+            let gv = 255 - i.y
             let bv = -i.y/2
             let tcolor = 'rgb('+rv+','+gv+','+bv+')'
             ctxh.fillStyle = tcolor

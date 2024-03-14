@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspirit AI Project Demo</title>
+</head>
+<body>
+    <button class="startButton">LOAD</button>
+    <video></video>
+    <p class='question'>TEST</p>
+    <div class="answer"><textarea class='textInput'></textarea><button class='testAnswer'>SUBMIT</button></div>
+    <style>
+        body{
+            position:absolute;
+            left:0;
+            top:0;
+            margin:0;
+            width:100%;
+            height:100%;
+            background:#000;
+        }
+        video{
+            position:absolute;
+            left:50%;
+            top:50%;
+            transform:translate(-50%,-50%);
+            display:none;
+        }
+        .startButton {
+            position:absolute;
+            left:50%;
+            top: 50%;
+            transform:translate(-50%,-50%);
+            color:#000;
+            background:#fff;
+            font-size:5em;
+            padding:0.2em;
+            font-family:Arial, Helvetica, sans-serif;
+            font-weight:bolder;
+            border:none;
+        }
+        .questionHolder {
+            position:absolute;
+            left:-50%;
+            top:-50%;
+            width:20em;
+            height:20em;
+            transform:translate(-50%,-50%);
+            color:#fff;
+        }
+        .question {
+            position:absolute;
+            left:50%;
+            bottom:45%;
+            font-size:3em;
+            font-family:Arial, Helvetica, sans-serif;
+            color:#fff;
+            transform:translateX(-50%);
+            display:none;
+        }
+        .answer {
+            position:absolute;
+            left:50%;
+            top:55%;
+            font-size:3em;
+            font-family:Arial, Helvetica, sans-serif;
+            color:#fff;
+            width:40%;
+            height:10%;
+            transform:translateX(-50%);
+            display:none;
+        }
+        .textInput {
+            position:absolute;
+            width:100%;
+            left:50%;
+            height:100%;
+            background:#000;
+            color:#fff;
+            font-size:2em;
+            transform:translateX(-50%);
+            display:none;
+        }
+        .textInput:focus {
+            outline:none;
+            overflow:hidden;
+        }
+        .testAnswer {
+            position:absolute;
+            top:130%;
+            left:50%;
+            width:50%;
+            height:66%;
+            transform:translateX(-50%);
+            background:#FFF;
+            color:#000;
+            font-size:0.75em;
+            display:none;
+        }
+        
+    </style>
+    <script>
+        const video = document.querySelector('video')
+        const button = document.querySelector('button')
+        const answer = document.querySelector('.answer')
+        const question = document.querySelector('.question')
+        const testAnswer = document.querySelector('.testAnswer')
+        const fileRoot = './content/data/'
+        video.src = fileRoot+'video1.mp4'
+        let videoDatas = []
+        let labels = ['people', 'bicycle', 'car', 'motorbike', 'aeroplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'sofa', 'pottedplant', 'bed', 'diningtable', 'toilet', 'tvmonitor', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+        videoDatas.push([[659, 133, 687, 190, 0.98757464, [[2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.9874852,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[869, 256, 889, 295, 0.85875684, [[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.85858727,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[467, 335, 495, 354, 0.771814, [[0.0,0.0,0.71682817,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[494, 337, 515, 351, 0.55791116, [[0.0,0.0,0.5421678,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[563, 338, 582, 349, 0.4922383, [[0.0,0.0,0.4812625,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[635, 343, 662, 363, 0.4910969, [[0.0,0.0,0.46575993,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[406, 345, 461, 382, 0.982733, [[0.0,0.0,0.9535342,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[686, 343, 751, 393, 0.96483904, [[0.0,0.0,0.91936547,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[790, 346, 875, 380, 0.77926654, [[0.0,0.0,0.7408419,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[38, 371, 182, 435, 0.99878997, [[0.0,0.0,0.9966859,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]],[1238, 363, 1278, 436, 0.8793155, [[0.0,0.0,0.8662147,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]]]])
+        function maxIndex(arr){
+            arr = arr[0]
+            //console.log(arr.filter(i => i > 0)[0])
+            return arr.indexOf(arr.filter(i => i > 0)[0]);
+        }
+        let possibles = [0,1,2,9]
+        let chosen = possibles[Math.floor(Math.random()*possibles.length)]
+        let counts = new Array(80).fill(0);
+        for(let i = 0; i<videoDatas[0].length; i++){
+            for(let j = 0; j<videoDatas[0][i][5][0].length; j++){
+                counts[j]+=Math.ceil(videoDatas[0][i][5][0][j])
+            }
+        }
+        let count = counts[chosen];
+        
+        button.onclick = function(){
+            video.style.display = 'inline-block';
+            video.play();
+            video.onended = function(){
+                video.style.display = 'none'
+                button.style.display = 'none'
+                question.style.display = 'inline-block';
+                answer.style.display = 'inline-block'
+                document.querySelector('textarea').style.display = 'inline-block';
+                document.querySelector('.testAnswer').style.display = 'inline-block';
+                question.innerHTML = 'How many '+labels[chosen]+'s were there in the image when the video ended?'
+                testAnswer.onclick = function(){
+                    if(document.querySelector('textArea').value == count){
+                        question.innerHTML = '✅'
+                    } else {
+                        question.innerHTML = '❌'
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

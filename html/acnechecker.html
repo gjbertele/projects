@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+</head>
+<body>
+    <canvas class="screen"></canvas>
+    <div class="button"></div>
+    <video></video>
+    <style>
+        body{
+            position:absolute;
+            left:0%;
+            top:0%;
+            width:100%;
+            height:100%;
+            margin:0;
+            overflow:hidden;
+            background:#000;
+        }
+        canvas {
+            position:absolute;
+            top:0%;
+        }
+        video {
+            position:absolute;
+            left:0%;
+            top:100%;
+        }
+        .button {
+            position:absolute;
+            left:50%;
+            bottom:2%;
+            transform:translateX(-50%);
+            width:40px;
+            height:40px;
+            background:#fff;
+            border-radius:50%;
+        }
+        .button::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: #fff 2px solid;
+            border-radius:50%;
+        }
+    </style>
+    <script>
+        let canvas = document.querySelector('.screen');
+        let button = document.querySelector('.button')
+        let ctx = canvas.getContext('2d', {alpha: false})
+        let video = document.querySelector('video')
+        let w = document.body.clientWidth;
+        let h = document.body.clientHeight;
+        let worker;
+        let rectangle = {left:w/10,top:h/10,width:document.body.clientWidth*8/10, height:document.body.clientHeight*8/10}
+        navigator.mediaDevices.getUserMedia({video:true}).then((stream) => {
+            video.srcObject = stream;
+            setTimeout(async function(){
+                worker = await Tesseract.createWorker('eng')
+                video.play()
+                let sf = document.body.clientHeight/video.clientHeight;
+                canvas.width = document.body.clientWidth;
+                canvas.height = document.body.clientHeight;
+                canvas.style.left = ((document.body.clientWidth- video.clientWidth*sf)/2)+ 'px'
+                setInterval(function(){
+                    ctx.drawImage(video,0,0)
+                },1000/25)
+                ctx.scale(sf,sf)
+                button.onclick = async function(){
+                    let data = await worker.recognize(canvas, {rectangle:rectangle});
+                    console.log(data)
+                }
+            },200)
+        })
+    </script>
+</body>
+</html>

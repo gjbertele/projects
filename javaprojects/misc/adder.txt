@@ -1,0 +1,6 @@
+a = N_n
+b = M_n
+c = 0
+
+digit = (~a)(~b)c + (~a)b(~c) + a(~b)(~c)
+c = (a+b)(c+ab)
