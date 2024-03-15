@@ -1,7 +1,6 @@
 package javaprojects.javarenderer;
 import java.util.Arrays;
 public class renderer {
-
     static camera Camera = new camera();
 
     static final int terminalWidth = 60;
