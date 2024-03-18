@@ -102,8 +102,8 @@ class model {
         this.biases[this.layerSizes.length - 1] = new Matrix(1,this.layerSizes[this.layerSizes.length - 1], true);
         for(let i = 0; i<this.layerSizes.length; i++){
             if(this.activations[i] == null){
-                this.network[i].activation = complexRelu
-                this.network[i].activationPrime = complexReluPrimeEval
+                this.network[i].activation = complexSigmoid
+                this.network[i].activationPrime = complexSigmoidPrimeEval
             } else {
                 this.network[i].activation = this.activations[i]
                 this.network[i].activationPrime = this.activationsPrime[i]
@@ -117,9 +117,10 @@ class model {
     }
     evaluate = function(inputs){
         if(!this.compiled) throw new SyntaxError('Must compile before evaluating')
-        let cLayer = [applyComplexFunctionToMatrix(addC(asMatrix([inputs]),this.biases[0]),this.network[0].activation)];
+        let appliedMat = applyComplexFunctionToMatrix(addMatC(asMatrix([inputs]),this.biases[0]), this.network[0].activation);
+        let cLayer = [appliedMat];
         for(let i = 1; i<this.network.length; i++){
-            cLayer[i] = applyComplexFunctionToMatrix(addC(matrixDotProductC(cLayer[i-1],this.network[i-1]),this.biases[i]),this.network[i].activation)
+            cLayer[i] = applyComplexFunctionToMatrix(addMatC(matrixDotProductC(cLayer[i-1],this.network[i-1]),this.biases[i]),this.network[i].activation)
         }
         return cLayer
     }
@@ -132,30 +133,36 @@ class model {
 
         //base case for delta
         for(let i = 0; i<outputs.length; i++){
-            deltas[deltas.length - 1].rows[i].column[0] = evaluated[evaluated.length - 1].rows[0].column[i] - outputs[i]
-            gradients[gradients.length - 1].rows[i].column[0] = deltas[deltas.length - 1].rows[i].column[0] * this.network[this.network.length-1].activationPrime(evaluated[evaluated.length - 1].rows[0].column[i]);
+            deltas[deltas.length - 1].rows[i].column[0] = subtractC(evaluated[evaluated.length - 1].rows[0].column[i],outputs[i])
+            gradients[gradients.length - 1].rows[i].column[0] = multC(deltas[deltas.length - 1].rows[i].column[0],this.network[this.network.length-1].activationPrime(evaluated[evaluated.length - 1].rows[0].column[i]));
         }
         for(let i = deltas.length - 2; i > -1; i--){
             //create activations of layer
             let activationsPrimeVector =  new Matrix(this.network[i].rows.length, 1, false, 0);
             for(let j = 0; j<this.network[i].rows.length; j++){
-                activationsPrimeVector.rows[j].column[0] = evaluated[i].rows[0].column[j]*(1-evaluated[i].rows[0].column[j]);
+                activationsPrimeVector.rows[j].column[0] = multC(evaluated[i].rows[0].column[j],subtractC(new complex(1,1),evaluated[i].rows[0].column[j]));
             }
 
-            let prod1 = matrixDotProductC((this.network[i]),deltas[i+1]); //this.network[i] * deltas[i+1]
-            let prod2 = hadamardProductC(prod1,activationsPrimeVector); //(this.network[i] * deltas[i+1]) O activationsVector
+            let prod1 = matrixDotProductC(this.network[i],deltas[i+1]); //this.network[i] * deltas[i+1]
+            /*console.log('deltas',deltas[i+1]);
+            console.log('network',this.network[i]);
+            console.log('prod1',prod1);
+            console.log('actPrime',activationsPrimeVector)
+            console.log('----')*/
+            let prod2 = hadamardC(prod1,activationsPrimeVector); //(this.network[i] * deltas[i+1]) O activationsVector
             //this.network[i] = transpose(W l+1)
             deltas[i] = prod2;
         }
 
 
         for(let i = 1; i<this.network.length; i++){
-            gradients[i-1] = transpose(matrixDotProductC(deltas[i],(evaluated[i-1]))); //transposed b/c this solves for input weights but need output weights
+            let prod3 = matrixDotProductC(deltas[i],evaluated[i-1]);
+            gradients[i-1] = transpose(prod3); //transposed b/c this solves for input weights but need output weights
             
         }
-        for(let i = 0; i<this.network.length; i++){
-            this.network[i] = addMatC(this.network[i],multMatC(gradients[i],-learningRate));
-            this.biases[i] = addMatC(this.biases[i],multMatC(transpose(deltas[i]),-learningRate));
+       for(let i = 0; i<this.network.length; i++){
+            this.network[i].rows = addMatC(this.network[i],multMatC(gradients[i],learningRate)).rows;
+            this.biases[i] = addMatC(this.biases[i],multMatC(transpose(deltas[i]),learningRate));
         }
         return gradients;
     }

@@ -40,12 +40,32 @@ function complexReluPrimeEval(C){
         b:+(C.b > 0)
     }
 }
+
+function expC(C){
+    return multC(new complex(Math.cos(C.b),Math.sin(C.b)),new complex(Math.exp(C.a),0))
+}
+function divC(A,B){
+    let top = multC(A,new complex(B.a,-B.b));
+    let norm = B.a**2 + B.b**2;
+    top.a/=norm;
+    top.b/=norm;
+    return top;
+}
+function complexSigmoid(C){
+    let exp = expC(C);
+    return divC(exp,addC(exp,new complex(1,0)));
+}
+
+function complexSigmoidPrimeEval(C){
+    return multC(C,subtractC(new complex(1,0),C));
+
+}
 function applyComplexFunctionToMatrix(mat, f){
     for(let i = 0; i<mat.rows.length; i++) for(let j = 0; j<mat.rows[i].column.length; j++){
         mat.rows[i].column[j] = f(mat.rows[i].column[j]);
     }
+    return mat;
 }
-
 function matrixDotProductC(mat1, mat2){
     let x, i, j; 
     let m1 = mat1.rows.length;
@@ -78,20 +98,20 @@ function hadamardC(A, B){
     return n;
 }
 function addMatC(m1, m2){
+    let m3 = new Matrix(m1.rows.length,m1.rows[0].column.length,false,new complex(0,0))
     for(let i = 0; i<m1.rows.length; i++){
         for(let j = 0; j<m1.rows[i].column.length; j++){
-            m1.rows[i].column[j] = addC(m1.rows[i].column[j],m2.rows[i].column[j]);
+            m3.rows[i].column[j] = addC(m1.rows[i].column[j],m2.rows[i].column[j]);
+        }
+    }
+    return m3;
+}
+function multMatC(m1, C1){
+    let m2 = new Matrix(m1.rows.length,m1.rows[0].column.length,false,new complex(0,0))
+    for(let i = 0; i<m1.rows.length; i++){
+        for(let j = 0; j<m1.rows[i].column.length; j++){
+            m2.rows[i].column[j] = multC(m1.rows[i].column[j],C1);
         }
     }
     return m1;
 }
-function multMatC(m1, m2){
-    for(let i = 0; i<m1.rows.length; i++){
-        for(let j = 0; j<m1.rows[i].column.length; j++){
-            m1.rows[i].column[j] = multC(m1.rows[i].column[j],m2.rows[i].column[j]);
-        }
-    }
-    return m1;
-}
-//addMatC
-//multMatC
