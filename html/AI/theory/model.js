@@ -144,11 +144,6 @@ class model {
             }
 
             let prod1 = matrixDotProductC(this.network[i],deltas[i+1]); //this.network[i] * deltas[i+1]
-            /*console.log('deltas',deltas[i+1]);
-            console.log('network',this.network[i]);
-            console.log('prod1',prod1);
-            console.log('actPrime',activationsPrimeVector)
-            console.log('----')*/
             let prod2 = hadamardC(prod1,activationsPrimeVector); //(this.network[i] * deltas[i+1]) O activationsVector
             //this.network[i] = transpose(W l+1)
             deltas[i] = prod2;
