@@ -98,3 +98,55 @@ function relu(x){
 function reluPrimeEval(x){
     return +(x > 0);
 }
+
+function normal(x){
+    return x;
+}
+function normalEval(x){
+    return 1;
+}
+
+function softMax(x){
+    return Math.exp(x);
+}
+
+function normalize(...arr){
+    let s = 0;
+    for(let i in arr) s+=i*i;
+    s=Math.sqrt(s);
+    for(let i = 0; i<arr.length; i++) arr[i]/=s;
+    return arr;
+}
+
+function maxNorm(...arr){
+    let max = Math.max(...arr);
+    for(let i = 0 ; i<arr.length; i++) arr[i] /= max;
+    return arr;
+}
+
+function clamp(x, a, b){
+    if(x < a) return a;
+    if(x > b) return b;
+    return x;
+}
+
+function clampMat(mat, a, b){
+    for(let i = 0; i<mat.rows.length; i++){
+        for(let j = 0; j<mat.rows[i].column.length; j++) mat.rows[i].column[j] = clamp(mat.rows[i].column[j],a,b)
+    }
+    return mat;
+}
+
+let sigmoidAct = {
+    reg:sigmoid,
+    prime:sigmoidPrimeEval
+};
+
+function matrixToString(mat){
+    let s = "{";
+    for(let i = 0; i<mat.rows.length; i++){
+        s+='{'+mat.rows[i].column.join(", ")+"}";
+        if(i != mat.rows.length - 1) s+=", ";
+    }
+    return s + "}"
+}

@@ -1,9 +1,6 @@
+let dataset3 = [{inputs:[0,0],outputs:[0,0]},{inputs:[1,1],outputs:[1,1]},{inputs:[1,0],outputs:[0.5,0.5]},{inputs:[0,1],outputs:[0.5,0.5]}]
+let dataset2 = [{inputs:[0.1, 0.2],outputs:[0.9, 0.1]}];
 let dataset = [];
-for(let x = 0; x<10; x++){
-    for(let y = 0; y<10; y++){
-        dataset.push({inputs:[x,y],outputs:[x*y]});
-    }
+for(let i = 0; i<100; i++){
+    dataset.push({inputs:[i/20],outputs:[Math.sqrt(i/20)]})
 }
-/*
-{"x":1000.762369876825,"y":191.0914186087535,"health":3.4470891042351384,"hunger":0,"network":{"network":[{"rows":[{"column":[-8.985953284038784,-9.742839392861796]},{"column":[-0.06105559609127506,-0.7372756757909302]},{"column":[-8.750322898515424,11.044315489732812]},{"column":[11.514168771585442,-5.498887561768359]}]},{"rows":[{"column":[0.3119549941090391,4.144646615678826,-0.12198755185222251,32.94396868865265]},{"column":[0.31517119461477244,4.055956981813797,30.649709553000626,-0.018487170873418782]}]},{"rows":[{"column":[1653.0576897932062]},{"column":[-600.3947511513334]},{"column":[33.74613874596296]},{"column":[14.293777222126664]}]}],"layerSizes":[4,2,4],"activations":[null,null,null],"activationsPrime":[null,null,null],"optimizer":{"learningRate":0.1,"decay":1},"compiled":true},"speed":13.23204102877309,"startingHealth":3.4470891042351384,"index":0,"id":0.30646868301955155}
-*/

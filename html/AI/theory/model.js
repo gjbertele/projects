@@ -148,18 +148,19 @@ class model {
             //this.network[i] = transpose(W l+1)
             deltas[i] = prod2;
         }
-
-
-        for(let i = 1; i<this.network.length; i++){
+        let bThis = this;
+        setTimeout(function(){
+        for(let i = 1; i<bThis.network.length; i++){
             let prod3 = matrixDotProductC(deltas[i],evaluated[i-1]);
             gradients[i-1] = transpose(prod3); //transposed b/c this solves for input weights but need output weights
             
         }
-       for(let i = 0; i<this.network.length; i++){
-            this.network[i].rows = addMatC(this.network[i],multMatC(gradients[i],learningRate)).rows;
-            this.biases[i] = addMatC(this.biases[i],multMatC(transpose(deltas[i]),learningRate));
+       for(let i = 0; i<bThis.network.length; i++){
+            bThis.network[i].rows = addMatC(bThis.network[i],multMatC(gradients[i],learningRate)).rows;
+            bThis.biases[i] = addMatC(bThis.biases[i],multMatC(transpose(deltas[i]),learningRate));
         }
         return gradients;
+        },10);
     }
     epoch = function(dataset, learningRate){
         for(let i = 0; i<dataset.length; i++){
@@ -167,7 +168,7 @@ class model {
         }
     }
     train = function(dataset, epochs){
-        let learningRate = this.optimizer.learningRate;
+        let learningRate = subtractC(new compelx(0,0),this.optimizer.learningRate);
         for(let i = 0; i<epochs; i++){
             this.epoch(dataset, learningRate);
             learningRate*=this.optimizer.decay;

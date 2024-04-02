@@ -446,7 +446,7 @@ class mathUtils {
                 jacobian[i] = temp.multiply(1/This.dx)
                 args[i] -= This.dx;
             }
-            return jacobian.transpose();
+            return jacobian;
         }
         Function.prototype.composite = function(func2){
             let ogFunc = this;

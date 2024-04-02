@@ -59,9 +59,9 @@ class model {
         return this;
     }
     network = [];
+    biases = [];
     layerSizes = [];
     activations = [];
-    biases = [];
     activationsPrime = [];
     optimizer = {
         decay: 0.9,
@@ -95,11 +95,11 @@ class model {
     compile = function(optimizer=null){
         if(this.compiled == true) throw new SyntaxError('Cannot compile more than once');
         for(let i = 0; i<this.layerSizes.length - 1; i++){
-            this.network[i] = new Matrix(this.layerSizes[i],this.layerSizes[i+1], true);
-            this.biases[i] = new Matrix(1,this.layerSizes[i], true);
+            this.network[i] = new Matrix(this.layerSizes[i],this.layerSizes[i+1], false, 1);
+            this.biases[i] = new Matrix(1,this.layerSizes[i], false, 1);
         }
-        this.network[this.layerSizes.length - 1] = new Matrix(this.layerSizes[this.layerSizes.length - 1], 1, true);
-        this.biases[this.layerSizes.length - 1] = new Matrix(1,this.layerSizes[this.layerSizes.length - 1], true);
+        this.network[this.layerSizes.length - 1] = new Matrix(this.layerSizes[this.layerSizes.length - 1], 1, false, 1);
+        this.biases[this.layerSizes.length - 1] = new Matrix(1,this.layerSizes[this.layerSizes.length - 1], false, 1);
         for(let i = 0; i<this.layerSizes.length; i++){
             if(this.activations[i] == null){
                 this.network[i].activation = relu;
