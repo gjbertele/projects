@@ -64,9 +64,9 @@ class model {
     biases = [];
     activationsPrime = [];
     optimizer = {
-        decay: 0.999,
+        decay: 0.999000,
         learningRate: 1e-2,
-        momentum: 0.8,
+        momentum: 0.5,
         momentumDecay: 1,
         momentumCap: 1,
         dropout: 0,
@@ -227,6 +227,7 @@ class model {
         if (logging == true) console.log('time', performance.now() - start)
     }
     optimize = function(input, epochs) {
+        epochs/=10;
         if (input == undefined) throw new Error("Dataset is undefined");
         if (this.compiled == false) throw new Error("Must be compiled before optimizing");
         if (input.length == 0) return;
@@ -261,7 +262,7 @@ class model {
             this.optimizer.biasClamp = [-SD, SD];
             this.optimizer.bias = true;
         }
-        this.optimizer.learningRate = largestError * 10 / epochs;
+        this.optimizer.learningRate = largestError / epochs;
         this.optimizer.decay = (1e-100 / this.optimizer.learningRate) ** (1 / epochs);
         this.optimizer.clipDecay = this.optimizer.decay * (1 - this.optimizer.learningRate);
         this.optimizer.momentumDecay = 1 / this.optimizer.clipDecay;
