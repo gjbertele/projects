@@ -1,6 +1,11 @@
 var activations = ['x']
 var dW = 0.01;
-var activationsprime = [1]
+var activationsprime = [1];
+let mults = 0;
+let multiplies = 0;
+let adds = 0;
+let transposes = 0;
+
 function sigmoid(x){
     return 1/(1+Math.E**(-x))
 }
@@ -22,7 +27,6 @@ function matrixDotProduct(mat1,mat2){
     let x, i, j; 
     let m1 = mat1.rows.length;
     let m2 = mat1.rows[0].column.length;
-    let n1 = mat2.rows.length;
     let n2 = mat2.rows[0].column.length;
     let res = new Array(m1); 
     for (i = 0; i < m1; i++)  

@@ -22,7 +22,7 @@ function render(){
         let closest = pts.sort((a,b) => dist(a,{x,y}) - dist(b,{x,y})).slice(0,nearestNeighbours);
         let s = 0;
         for(let j = 0; j<closest.length; j++) s+=closest[j].class/dist(closest[j],{x,y});
-        if(s >= 0){
+        if(s > 0){
             for(let k = 0; k<renderStep**2; k++){
                 let dx = k % renderStep;
                 let dy = (k - dx)/renderStep;
@@ -31,7 +31,7 @@ function render(){
                 imgd[nIndex+1] = 64;
                 imgd[nIndex+2] = 80;
             }
-        } else {
+        } else if(s < 0) {
             for(let k = 0; k<renderStep**2; k++){
                 let dx = k % renderStep;
                 let dy = (k - dx)/renderStep;
@@ -56,7 +56,7 @@ render();
 function dist(a,b){
     return (a.x - b.x)**2 + (a.y - b.y)**2;
 }
-input.onchange = function(){
+input.oninput = function(){
     nearestNeighbours = input.value;
     render();
 }
@@ -65,9 +65,11 @@ document.querySelector('button').onclick = function(){
     let ty = Math.random()*700+50;
     pts.push({x:tx,y:ty,class:classGenerate(tx,ty)});
     render();
+    document.querySelector('input').max++;
 }
 
 function classGenerate(x,y){
-    if(800-y < 100000/x) return 1;
-    return -1;
+    //if(800-y < 100000/x) return 1;
+    //return -1;
+    return Math.round(Math.random())*2 - 1
 }

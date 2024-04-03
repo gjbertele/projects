@@ -4,3 +4,4 @@ let dataset = [];
 for(let i = 0; i<100; i++){
     dataset.push({inputs:[i/20],outputs:[Math.sqrt(i/20)]})
 }
+let dataset4 = [{inputs:[0],outputs:[1]},{inputs:[1],outputs:[2]},{inputs:[2],outputs:[4]}];
