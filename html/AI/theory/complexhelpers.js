@@ -115,3 +115,62 @@ function multMatC(m1, C1){
     }
     return m1;
 }
+
+///
+
+
+function normal(C){
+    return C;
+}
+function normalEval(C){
+    return new complex(1,1);
+}
+function sqrtC(C){
+    let mag = Math.sqrt(C.a**2 + C.b**2);
+    let ang = Math.acos(C.a/mag);
+    let na = Math.sqrt(mag)*Math.cos(ang/2);
+    let nb = Math.sqrt(mag)*Math.sin(ang/2);
+    return new complex(na, nb);
+}
+function normalize(...arr){
+    let s = new complex(0,0);
+    for(let i in arr) s = addC(s, multC(arr[i],arr[i]));
+    s=sqrtC(s);
+    for(let i = 0; i<arr.length; i++) arr[i] = divC(arr[i],s);
+    return arr;
+}
+
+function compareC(z1, z2){
+    return z1.a**2 + z1.b **2 > z1.a**2 + z2.b**2;
+}
+
+function clampC(x, a, b){
+    let mag = Math.sqrt(x.a**2 + x.b**2);
+    let ang = Math.acos(x.a/mag);
+    if(mag < a) mag = a;
+    if(mag > b) mag = b;
+    let na = mag*Math.cos(ang);
+    let nb = mag*Math.sin(ang);
+    return new complex(na, nb);
+}
+
+function clampMatC(mat, a, b){
+    for(let i = 0; i<mat.rows.length; i++){
+        for(let j = 0; j<mat.rows[i].column.length; j++) mat.rows[i].column[j] = clampC(mat.rows[i].column[j],a,b)
+    }
+    return mat;
+}
+
+let complexSigmoidAct = {
+    reg:complexSigmoid,
+    prime:complexSigmoidPrimeEval
+};
+
+function matrixToString(mat){
+    let s = "{";
+    for(let i = 0; i<mat.rows.length; i++){
+        s+='{'+mat.rows[i].column.join(", ")+"}";
+        if(i != mat.rows.length - 1) s+=", ";
+    }
+    return s + "}"
+}

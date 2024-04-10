@@ -5,3 +5,4 @@ for(let i = 0; i<100; i++){
     dataset.push({inputs:[i/20],outputs:[Math.sqrt(i/20)]})
 }
 let dataset4 = [{inputs:[0],outputs:[1]},{inputs:[1],outputs:[2]},{inputs:[2],outputs:[4]}];
+let dataset5 = [{inputs:[new complex(0,0),new complex(0,0)],outputs:[new complex(0,0),new complex(0,0)]},{inputs:[new complex(1,0),new complex(0,0)],outputs:[new complex(0.5, 0),new complex(0.5, 0)]},{inputs:[new complex(0,0),new complex(1,0)],outputs:[new complex(0.5, 0),new complex(0.5,0)]},{inputs:[new complex(1,0),new complex(1,0)],outputs:[new complex(1,0),new complex(1,0)]}]

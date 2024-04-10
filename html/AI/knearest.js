@@ -60,12 +60,19 @@ input.oninput = function(){
     nearestNeighbours = input.value;
     render();
 }
-document.querySelector('button').onclick = function(){
+document.querySelector('.a').onclick = function(){
     let tx = Math.random()*700+50;
     let ty = Math.random()*700+50;
     pts.push({x:tx,y:ty,class:classGenerate(tx,ty)});
     render();
     document.querySelector('input').max++;
+}
+document.querySelector('.b').onclick = function(){
+    if(pts.length > 0){
+        pts.shift();
+        document.querySelector('input').max--;
+        render();
+    }
 }
 
 function classGenerate(x,y){
