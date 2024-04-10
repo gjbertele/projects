@@ -6,10 +6,11 @@ class equation {
     precision = 15;
     gradientTemplate = [];
     optimizer = {
-        learningRate:1e-10,
-        momentumRate:0.2,
+        learningRate:1e-5,
+        momentumRate:0.9,
         logging:true,
-        scrambling:true
+        scrambling:true,
+        scrambleThreshold:1e5
     }
     unit;
     varUnit;
@@ -53,24 +54,21 @@ class equation {
         let lastError = Infinity;
         for(let i = 0; i<epochs; i++){
             let {error, grad} = this.errorGrad(min, max);
+            if(this.optimizer.logging == true && i % 1000 == 0) console.log(error, grad, i)
             if(Math.abs(error) > this.optimizer.scrambleThreshold){
                 this.scramble();
-                i--;
                 continue;
             }
             if(this.optimizer.scrambling == true){
-                if(Math.abs(error) > Math.abs(lastError) + this.optimizer.learningRate){
-                    if(Math.abs(error) > 0.01){
+                if(Math.abs(error) > Math.abs(lastError) + 1e-5){
+                    if(Math.abs(error) > 0.1){
                         this.scramble();
-                        i--;
                         continue;
-                    } else {
-                        console.warn('Stopped early - increasing error at low values',i,error)
-                        break;
+                    } else if(Math.abs(error - lastError) > 0.05){
+                        console.warn('Stopping early - error increasing too fast at good epoch')
                     }
                 }
             }
-            if(this.optimizer.logging == true && i % 1000 == 0) console.log(error, grad, i)
             for(let i = 0; i<this.baseVariables.length; i++){
                 if(this.baseVariables[i].modify == false) continue;
                 for(let j = 0; j<this.baseVariables[i].coefficients.length; j++){
