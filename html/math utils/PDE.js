@@ -1,132 +1,177 @@
-let standardPrecision = 15;
 class equation {
     terms = [];
     baseVariables = [];
-    cachedGradient = [];
-    precision = 15;
-    gradientTemplate = [];
-    optimizer = {
-        learningRate:1e-10,
-        momentumRate:0,
-        logging:true,
-        scrambling:false,
-        scrambleThreshold:1e5
-    }
     unit;
-    varUnits;
-    units = []
-    //NEED TO FIX ERROR FUNCTION
-    constructor(variables, defaultTerms = []){ 
-        let diffVarCount = 0;
-        for(let i = 0; i<variables.length; i++) diffVarCount = Math.max(diffVarCount, variables[i].inputID);
-        diffVarCount++;
-        this.unit = new variable(0, 0, this.precision); 
-        this.varUnits = [];
-        for(let i = 0; i<diffVarCount; i++){
-            let n = new variable(1, i, this.precision);
-            n.coefficients[1] = 1;
-            n.modify = false;
-            this.varUnits.push(n);
+    varUnits = [];
+    variableIDs = [];
+    varsInTermOf = [];
+    gradTemplate = [];
+    optimizer = {
+        learningRate:1e-25,
+        momentum:0,
+        scramble:false,
+        scrambleThreshold:1e15
+    }
+    constructor(bvs){
+        this.baseVariables.length = bvs.length;
+        for(let i = 0; i<bvs.length; i++){
+            bvs[i].derivative = (new Array(this.varUnits.length)).fill(0);
+            bvs[i].subterms = this.generateSubterms(bvs[i].varOf, 7);
+            bvs[i].equation = this;
+            bvs[i].baseVariables = this.baseVariables;
+            bvs[i].varId = i+1;
+            this.varsInTermOf.push(...bvs[i].varOf);
         }
-        this.unit.coefficients[0] = 1;
-        this.unit.modify = false;
-        this.units = [this.unit, ...this.varUnits];
-        this.baseVariables = [this.unit, ...this.varUnits];
-        this.baseVariables.push(...variables);
-        for(let j = 0; j<defaultTerms.length; j++) this.terms[j] = defaultTerms[j];
-        for(let i = 0; i<this.baseVariables.length; i++) this.gradientTemplate[i] = (new Array(this.baseVariables[i].coefficients.length)).fill(0);
+        this.baseVariables = bvs;
+        this.varsInTermOf = this.varsInTermOf.filter((i,v) => v == this.varsInTermOf.indexOf(i));
+
+        for(let i = 0; i<this.baseVariables.length; i++) this.gradTemplate[i] = (new Array(this.baseVariables[i].coefficients.length)).fill(0);
+
+        let unitVar = new variable([0],this, [0], 0);
+        this.unit = unitVar;
+
+        for(let i = 0; i<this.varsInTermOf; i++){
+            let uv = new variable(i,this,(new Array(this.varsInTermOf.length)).fill(0),i+2+bvs.length);
+            this.varUnits.push(uv);
+        }
+        return this;
+    }
+    eval(values){
+        let k = 0;
+        for(let i = 0; i<this.terms.length; i++) k+=this.terms[i].eval(values);
+        return k;
     }
     push(t){
         this.terms.push(t);
-        this.cachedGradient = [];
     }
-    eval(values){ 
-        let x = 0;
-        for(let i = 0; i<this.terms.length; i++){
-            let ev = this.terms[i].eval(values);
-            x+=ev;
-        } 
-        return x;
-    }
-    evaluateGradient(values){
-        let total = new Array(this.baseVariables.length);
-        for(let i = 0; i<total.length; i++) total[i] = (new Array(this.precision)).fill(0);
-        for(let i = 0; i<this.terms.length; i++){
-            let evaled = this.terms[i].evaluateGradient(values);
-            total = addGradients(total, evaled);
-        }
-        return total;
-    }
-    solve(min, max, epochs){ 
-        let t = performance.now();
-        let momentum = new Array(this.baseVariables.length);
-        for(let i = 0; i<momentum.length; i++) momentum[i] = (new Array(this.precision)).fill(0);
-        let lastError = Infinity;
-        let eoffset = 1;
-        for(let i = 0; i<min.length; i++){
-            eoffset *= Math.abs(min[i] - max[i]) + 1
-        }
-        for(let i = 0; i<epochs; i++){
-            let {error, grad} = this.errorGrad(min, max);
-            error /= eoffset;
-            if(this.optimizer.logging == true && i % 1000 == 0) console.log(error, grad, i)
-            if(Math.abs(error) > this.optimizer.scrambleThreshold){
-                this.scramble();
-                continue;
+    generateSubterms(vars, max){
+        let output = [];
+        let terms = this.permute(vars.length,max);
+        for(let i = 0; i<terms.length; i++){
+            let exponents = (new Array(this.baseVariables.length)).fill(0);
+            for(let j = 0; j<vars.length; j++){
+                exponents[vars[j]] = terms[i][j];
             }
-            if(this.optimizer.scrambling == true){
-                if(Math.abs(error) > Math.abs(lastError) + 1e-5){
-                    if(Math.abs(error) > 0.01){
-                        this.scramble();
-                        continue;
-                    } else if(Math.abs(error - lastError) > 0.05){
-                        console.warn('Stopping early - error increasing too fast at good epoch')
-                        break;
+            output.push(exponents)
+        }
+        return output;
+    }
+    permute(count, max, current = []){
+        let permutations = [];
+        if(count == 1){
+            for(let i = 0; i<max; i++) permutations.push([...current, i]);
+        } else {
+            for(let i = 0; i<max; i++) permutations.push(...this.permute(count-1,max,[...current, i]));
+        }
+        return permutations;
+    }
+    solve(a,b,epochs){
+        let volume = 1;
+        for(let i = 0; i<a.length; i++) volume*=a[i] - b[i];
+        volume**=2;
+        let momentum = this.gradTemplate.slice(0);
+        for(let i = 0; i<epochs; i++){
+            let eg = this.errorGrad(a, b);
+            let error = eg.v;
+            console.log('Error: ',error)
+            if(error/volume**2 > this.optimizer.scrambleThreshold && this.optimizer.scramble == true){
+                for(let j = 0; j<this.baseVariables.length; j++){
+                    for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
+                        this.baseVariables[j].coefficients[k] = Math.random()*2 - 1;
                     }
                 }
+                for(let j = 0; j<this.terms.length; j++){
+                    this.terms[j].update(this.baseVariables);
+                }
+                continue;
             }
-            for(let i = 0; i<this.baseVariables.length; i++){
-                if(this.baseVariables[i].modify == false) continue;
-                for(let j = 0; j<this.baseVariables[i].coefficients.length; j++){
-                    let diff = -error*(grad[i][j]+momentum[i][j]*this.optimizer.momentumRate)*this.optimizer.learningRate;
-                    this.baseVariables[i].coefficients[j] += diff;
+            let grad = eg.totalGrad;
+            for(let j = 0; j<this.baseVariables.length; j++){
+                for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
+                    this.baseVariables[j].coefficients[k] += -error*(grad[j][k]+this.optimizer.momentum*momentum[j][k])*this.optimizer.learningRate/volume;
                 }
             }
-            for(let i = 0; i<this.terms.length; i++){
-                this.terms[i].update(this.baseVariables);
+            for(let j = 0; j<this.terms.length; j++){
+                this.terms[j].update(this.baseVariables);
             }
             momentum = grad;
-            lastError = error;
         }
-       return {error:lastError,time:performance.now() - t,results:this.baseVariables};
     }
-    errorGrad(min, max, current = []){
-        let error = 0;
-        let grad = this.gradientTemplate.slice();
-        if(min.length == 1){
-            for(let i = min[0]; i<=max[0]; i+=0.25){
-                error += this.eval([...current, i]);
-                grad = addGradients(grad, this.evaluateGradient([...current, i]));
+    evaluateGradient(values){
+        let k = this.gradTemplate.slice();
+        for(let i = 0; i<this.terms.length; i++){
+            k = addGradients(this.terms[i].evaluateGradient(values),k);
+        }
+        return k;
+    }
+    errorGrad(min, max, current = [], index = 0){
+        if(min.length - index == 1){
+            let totalGrad = this.gradTemplate.slice();
+            let v = 0;
+            for(let i = min[index]; i<=max[index]; i++){
+                v += this.eval([...current, i]);
+                totalGrad = addGradients(this.evaluateGradient([...current, i]), totalGrad);
             }
+            return {v, totalGrad};
         } else {
-            for(let i = min[0]; i<=max[0]; i+=0.25){
-                let eg = this.errorGrad(min.slice().splice(1),max.slice().splice(1),[...current,i])
-                error += eg.error;
-                grad = addGradients(grad, eg.grad);
+            let v = 0;
+            let totalGrad = this.gradTemplate.slice();
+            for(let i = min[index]; i<=max[index]; i++){
+                let eg = this.errorGrad(min, max, [...current, i], index + 1);
+                v+=eg.v;
+                totalGrad = addGradients(eg.totalGrad, totalGrad);
             }
+            return {v, totalGrad};
         }
-        return {error, grad};
     }
-    scramble(){
-        for(let j = 0; j<this.baseVariables.length; j++){
-            if(this.baseVariables[j].modify == false) continue;
-            for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
-                this.baseVariables[j].coefficients[k] = Math.random()*2 - 1;
+}
+
+class variable {
+    subterms = [];
+    derivative = [];
+    coefficients = [];
+    varOf = [];
+    varId;
+    equation;
+    baseVariables;
+    modify;
+    constructor(vars, eq = 'na', nth = [], which = -1){
+        this.varOf = vars;
+        this.derivative = nth;
+        this.varId = which;
+        this.coefficients = (new Array(7**vars.length)).fill(0);
+        this.modify = true;
+        if(eq !== 'na'){
+            this.subterms = eq.generateSubterms(vars, 7);
+            this.equation = eq;
+            this.baseVariables = eq.baseVariables;
+            if(which != -1) this.coefficients = eq.baseVariables[which].derive(nth);
+        }
+        return this;
+    }
+    derive(partials){
+        let coeffs = (new Array(this.coefficients.length)).fill(0)
+        main: for(let i = 0; i<this.subterms.length; i++){
+            let newTerms = this.subterms[i].slice();
+            let gradProd = 1;
+            for(let j = 0; j<partials.length; j++){
+                gradProd *= product(newTerms[j]-partials[j]+1,newTerms[j]);
+                newTerms[j] = newTerms[j] - partials[j];
+                if(newTerms[j] < 0) continue main;
             }
+            let ni = subtermToIndex(this.varOf,newTerms,7);
+            coeffs[ni] += this.coefficients[i]*gradProd;
         }
-        for(let j = 0; j<this.terms.length; j++){
-            this.terms[j].update(this.baseVariables);
+        return coeffs;
+    }
+    eval(values){
+        let v = 0;
+        for(let i = 0; i<this.coefficients.length; i++){
+            let exp = 1;
+            for(let j = 0; j<this.baseVariables.length; j++) exp*=values[j]**this.subterms[i][j];
+            v+=exp*this.coefficients[i];
         }
+        return v;
     }
 }
 
@@ -134,143 +179,114 @@ class term {
     baseVariables = [];
     variables = [];
     pushLog = [];
-    units = []
+    varUnits = [];
+    unit;
     coefficient = 1;
     cachedGradient = [];
-    constructor(varis, coeff, unis, defaultVaris = []){
-        this.baseVariables = varis;
-        this.units = unis;
-        this.coefficient = coeff;
-        this.baseVariables.push(...this.units)
-        for(let i = 0; i<defaultVaris.length; i++) this.variables[i] = defaultVaris[i];
+    equation;
+    constructor(eq){
+        this.equation = eq;
+        this.varUnits = eq.varUnits;
+        this.unit = eq.unit;
+        this.baseVariables = eq.baseVariables;
         return this;
     }
-    push(nth,which){
-        this.variables.push(which.derive(nth));
-        this.pushLog.push([which,nth]);
+    push(which, nth){
+        this.pushLog.push([which, nth]);
+        let tvariable = this.baseVariables[which];
+        this.variables.push(new variable(tvariable.varOf, this.equation, nth, which));
     }
-    update(newBaseVars){
-        this.baseVariables = newBaseVars;
+    update(bvs){
+        this.baseVariables = bvs;
         this.variables = [];
         for(let i = 0; i<this.pushLog.length; i++){
             let entry = this.pushLog[i];
-            this.variables.push(this.baseVariables[entry[0].id].derive(entry[1]));
+            let tv = bvs[entry[0]];
+            this.variables.push(new variable(tv.varOf, this.equation, entry[1], entry[0]));
         }
     }
-    gradient(){
-        let coeffPartials = new Array(this.baseVariables.length); 
-        this.baseVariables.sort((a,b) => a.id - b.id);
-        for(let i = 0; i<this.baseVariables.length; i++){
-            coeffPartials[i] = new Array(this.baseVariables[i].coefficients.length);
-            for(let j = 0; j<coeffPartials[i].length; j++) coeffPartials[i][j] = [];
-            if(this.baseVariables[i].modify == false) continue;
-            for(let j = 0; j<this.variables.length; j++){
-                if(this.variables[j].id != this.baseVariables[i].id) continue;
-                let nth = this.variables[j].derivative;
-                let otherVars = [];
-                for(let k = 0; k<this.variables.length; k++) if(k!=j) otherVars.push(this.variables[k]);
-                let otherTerms = new term(this.baseVariables,this.coefficient,[],otherVars)
-                for(let k = 0; k<coeffPartials[i].length - nth; k++){
-                    coeffPartials[i][k+nth].push([this.variables[j].coefficients[k],k,otherTerms]);
-                }
-            }
-        }
-        if(this.cachedGradient.length == 0) this.cachedGradient = coeffPartials;
-        return coeffPartials;
-    }
-    eval(values){
-        let v = 1;
-        for(let i = 0; i<this.variables.length; i++){
-            v*=this.variables[i].eval(values[this.variables[i].inputID]);
-        }
-        return v*this.coefficient;
-    }
-    evaluateGradient(values){ 
+    evaluateGradient(values){
         if(this.cachedGradient.length == 0) this.gradient();
-        let output = []
-        for(let i = 0; i<this.cachedGradient.length; i++){
+        let output = new Array(this.baseVariables.length);
+        for(let i = 0; i<output.length; i++){
             output[i] = [];
-            for(let j = 0; j<this.cachedGradient[i].length; j++){
+            for(let j = 0; j<this.baseVariables[i].coefficients.length; j++){
+                let arr = this.cachedGradient[i][j];
                 output[i][j] = 0;
-                for(let k = 0; k<this.cachedGradient[i][j].length; k++){
-                    let entry = this.cachedGradient[i][j][k];
-                    output[i][j] += entry[0]*values[this.baseVariables[i].inputID]**entry[1]*entry[2].eval(values);
+                for(let k = 0; k<arr.length; k++){
+                    let entry = arr[k];
+                    let expprod = 1;
+                    for(let l = 0; l<entry[1].length; l++) expprod*=values[l]**entry[1][l];
+                    for(let l = 0; l<entry[2].length; l++) expprod*=entry[2][l].eval(values);
+                    output[i][j] += this.coefficient*entry[0]*expprod;
                 }
             }
         }
         return output;
     }
-}
-
-class variable {
-    coefficients = [];
-    derivative = 0;
-    id;
-    modify = true;
-    inputID = 0;
-    constructor(iden, inid = 0, precision = standardPrecision){
-        this.id = iden;
-        this.coefficients = new Array(precision);
-        this.coefficients.fill(0);
-        this.inputID = inid;
-        return this;
+    eval(values){
+        let k = this.coefficient;
+        for(let i = 0; i<this.variables.length; i++) k*=this.variables[i].eval(values);
+        return k;
     }
-    firstDerivative(){
-        let n = new variable(this.id, this.inputID,this.coefficients.length);
-        for(let i = 0; i<n.coefficients.length - 1; i++){
-            n.coefficients[i] = (i+1)*this.coefficients[i+1];
+    gradient(){
+        let coeffGradients = new Array(this.baseVariables.length);
+        for(let i = 0; i<coeffGradients.length; i++){
+            coeffGradients[i] = new Array(this.baseVariables[i].coefficients.length);
+            for(let j = 0; j<coeffGradients[i].length; j++){
+                coeffGradients[i][j] = [];
+            }
         }
-        n.derivative++;
-        return n;
-    }
-    derive(nth){
-        let x = new variable(this.id, this.inputID, this.coefficients.length);
-        for(let i = 0; i<x.coefficients.length; i++) x.coefficients[i] = this.coefficients[i];
-        for(let j = 0; j<nth; j++) x = x.firstDerivative();
-        return x;
-    }
-    eval(x){
-        let t = 0;
-        for(let i = 0; i<this.coefficients.length; i++) t+=this.coefficients[i]*(x**i);
-        return t;
-    }
-    coeffGrad(){
-        let x = new variable(this.id, this.inputID, this.coefficients.length);
-        for(let i = 0; i<standardPrecision - this.derivative; i++){
-            x.coefficients[i+this.derivative] += this.coefficients[i+this.derivative]*product(i+1,i+this.derivative); 
+        for(let i = 0; i<this.variables.length; i++){
+            let vi = this.variables[i];
+            let otherTerms = [];
+            for(let j = 0; j<this.variables.length; j++) if(j != i) otherTerms.push(this.variables[j]);
+            outer: for(let j = 0; j<vi.coefficients.length; j++){
+                let upd = vi.subterms[j].slice();
+                let gradProd = 1;
+                for(let k = 0; k<vi.derivative.length; k++){
+                    gradProd*=product(upd[k]+1,upd[k]+vi.derivative[k]);
+                    upd[k] += vi.derivative[k];
+                    if(upd[k] > 6) continue outer;
+                }
+                let ni = subtermToIndex(vi.varOf,upd,7);
+                coeffGradients[vi.varId][ni].push([gradProd,vi.subterms[j],otherTerms])
+            }
         }
-        return x;
-    }
-    clone(){
-        let x = new variable(this.id, this.inputID, this.precision);
-        x.derivative = this.derivative;
-        x.modify = this.modify;
-        x.coefficients = this.coefficients;
-        return x;
+        this.cachedGradient = coeffGradients;
+        return coeffGradients;
     }
 }
 
 function product(a,b){
-    let t = 1;
-    for(let i = a; i<=b; i++) t*=i;
-    return t;
+    let v = 1;
+    for(let i = a; i<=b; i++) v*=i;
+    return v;
 }
 
-function addGradients(p1, p2){
+function addArray(m1, m2){
     let n = [];
-    for(let i = 0; i<p1.length; i++){
-        n[i] = [];
-        for(let j = 0; j<p1[0].length; j++){
-            n[i][j] = p1[i][j] + p2[i][j];
+    for(let i = 0; i<Math.max(m1.length,m2.length); i++) n[i] = (m1[i] ? m1[i] : 0) + (m2[i] ? m2[i] : 0);
+    return n;
+ }
+ function addGradients(g1, g2){
+    //console.log(g1,g2);
+    let output = [];
+    for(let i = 0; i<g1.length; i++){
+        output[i] = [];
+        for(let j = 0; j<g1[i].length; j++){
+            output[i][j] = g1[i][j] + g2[i][j];
         }
     }
-    return n;
-}
-
-
-//include basic function applied to each term/variable w/ descriptor of how it changes derivative/gradient -> just apply that function to the gradient?
-//nested functions??
-//F(G(x,y)) = H(x,y)
-//but then no connection to others
-//-> linkedfunctions variable?
-//difference equations
+    return output;
+ }
+ function subtermToIndex(varof,subterm,max){
+    let index = 0;
+    let exp = 0;
+    for(let i = 0; i<subterm.length; i++){
+        if(!varof.includes(i)) continue;
+        index+=subterm[i]*max**exp;
+        exp++;
+    }
+    return index;
+ }

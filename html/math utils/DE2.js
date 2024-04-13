@@ -204,13 +204,6 @@ class variable {
         for(let i = 0; i<this.coefficients.length; i++) t+=this.coefficients[i]*(x**i);
         return t;
     }
-    coeffGrad(){
-        let x = new variable(this.id, this.coefficients.length);
-        for(let i = 0; i<standardPrecision - this.derivative; i++){
-            x.coefficients[i+this.derivative] += this.coefficients[i+this.derivative]*product(i+1,i+this.derivative); 
-        }
-        return x;
-    }
     clone(){
         let x = new variable(this.id, this.precision);
         x.derivative = this.derivative;
