@@ -7,10 +7,11 @@ class equation {
     varsInTermOf = [];
     gradTemplate = [];
     optimizer = {
-        learningRate:1e-25,
-        momentum:0,
+        learningRate:1e-5,
+        momentum:0.9,
         scramble:false,
-        scrambleThreshold:1e15
+        scrambleThreshold:1e3,
+        prestop: false
     }
     constructor(bvs){
         this.baseVariables.length = bvs.length;
@@ -25,15 +26,26 @@ class equation {
         this.baseVariables = bvs;
         this.varsInTermOf = this.varsInTermOf.filter((i,v) => v == this.varsInTermOf.indexOf(i));
 
-        for(let i = 0; i<this.baseVariables.length; i++) this.gradTemplate[i] = (new Array(this.baseVariables[i].coefficients.length)).fill(0);
-
-        let unitVar = new variable([0],this, [0], 0);
+        let unitVar = new variable([0],this,(new Array(this.varsInTermOf.length)).fill(0));
+        unitVar.varId = 0;
+        unitVar.coefficients.fill(0);
+        unitVar.coefficients[0] = 1;
+        unitVar.modify = false;
         this.unit = unitVar;
+        this.baseVariables.push(unitVar);
 
-        for(let i = 0; i<this.varsInTermOf; i++){
-            let uv = new variable(i,this,(new Array(this.varsInTermOf.length)).fill(0),i+2+bvs.length);
+        for(let i = 0; i<this.varsInTermOf.length; i++){
+            let uv = new variable([this.varsInTermOf[i]],this,(new Array(this.varsInTermOf.length)).fill(0));
+            uv.varId = this.baseVariables.length;
+            uv.coefficients.fill(0);
+            uv.coefficients[1] = 1;
+            uv.modify = false;
             this.varUnits.push(uv);
+            this.baseVariables.push(uv);
         }
+        this.baseVariables.sort((a,b) => a.varId - b.varId);
+
+        for(let i = 0; i<this.baseVariables.length; i++) this.gradTemplate[i] = (new Array(this.baseVariables[i].coefficients.length)).fill(0);
         return this;
     }
     eval(values){
@@ -69,16 +81,20 @@ class equation {
         let volume = 1;
         for(let i = 0; i<a.length; i++) volume*=a[i] - b[i];
         volume**=2;
+        let lerror = 0;
         let momentum = this.gradTemplate.slice(0);
         for(let i = 0; i<epochs; i++){
             let eg = this.errorGrad(a, b);
             let error = eg.v;
-            console.log('Error: ',error)
+            if(this.optimizer.prestop == true && error/(1+this.optimizer.momentum) > lerror && error*lerror > 0){
+                console.warn('Increasing error at epoch '+i);
+                break;
+            } 
+            lerror = error;
+            if(i % 100 == 0) console.log("Error: "+error+" Epoch: "+ (i+1) +"/"+epochs);
             if(error/volume**2 > this.optimizer.scrambleThreshold && this.optimizer.scramble == true){
                 for(let j = 0; j<this.baseVariables.length; j++){
-                    for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
-                        this.baseVariables[j].coefficients[k] = Math.random()*2 - 1;
-                    }
+                    j.scramble(0.5);
                 }
                 for(let j = 0; j<this.terms.length; j++){
                     this.terms[j].update(this.baseVariables);
@@ -87,6 +103,7 @@ class equation {
             }
             let grad = eg.totalGrad;
             for(let j = 0; j<this.baseVariables.length; j++){
+                if(this.baseVariables[j].modify == false) continue;
                 for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
                     this.baseVariables[j].coefficients[k] += -error*(grad[j][k]+this.optimizer.momentum*momentum[j][k])*this.optimizer.learningRate/volume;
                 }
@@ -173,6 +190,9 @@ class variable {
         }
         return v;
     }
+    scramble(radius = 1){
+        for(let i = 0; i<this.coefficients.length; i++) this.coefficients[i] = radius*(Math.random()*2 - 1);
+    }
 }
 
 class term {
@@ -239,6 +259,7 @@ class term {
         }
         for(let i = 0; i<this.variables.length; i++){
             let vi = this.variables[i];
+            //if(this.baseVariables[vi.varId].modify == false) continue;
             let otherTerms = [];
             for(let j = 0; j<this.variables.length; j++) if(j != i) otherTerms.push(this.variables[j]);
             outer: for(let j = 0; j<vi.coefficients.length; j++){
@@ -270,7 +291,6 @@ function addArray(m1, m2){
     return n;
  }
  function addGradients(g1, g2){
-    //console.log(g1,g2);
     let output = [];
     for(let i = 0; i<g1.length; i++){
         output[i] = [];
@@ -290,3 +310,8 @@ function addArray(m1, m2){
     }
     return index;
  }
+
+
+ //do a model w backward passes that backward passes for every point in the space
+ //equations parsing
+ //better optimizer
