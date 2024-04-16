@@ -326,6 +326,9 @@ class mathUtils {
         BigInt.prototype.mod = function(x){
             return This.bigMod(this, x);
         }
+        Math.factor = function(x){
+            return This.#fastBigFactorDynamic(BigInt(x));
+        }
         Array.prototype.gcdBigInt = function(){
             return This.#euclideanGCDBigInt(...this);
         }

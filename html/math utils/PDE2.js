@@ -106,7 +106,6 @@ class equation {
                 if(this.baseVariables[j].modify == false) continue;
                 for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
                     let d = -error*(grad[j][k]+this.optimizer.momentum*momentum[j][k])*this.optimizer.learningRate/volume;
-                    //if(d != 0) console.log(i,d)
                     this.baseVariables[j].coefficients[k] += -error*(grad[j][k]+this.optimizer.momentum*momentum[j][k])*this.optimizer.learningRate/volume;
                 }
             }
@@ -154,6 +153,14 @@ class variable {
     equation;
     baseVariables;
     modify;
+    functionApplied = {
+        reg:function(x){
+            return x;
+        },
+        prime:function(x){
+            return 1;
+        }
+    }
     constructor(vars, eq = 'na', nth = [], which = -1){
         this.varOf = vars;
         this.derivative = nth;
@@ -213,10 +220,12 @@ class term {
         this.baseVariables = eq.baseVariables;
         return this;
     }
-    push(which, nth){
-        this.pushLog.push([which, nth]);
+    push(which, nth, funcapp = templateFunctions['default']){
+        this.pushLog.push([which, nth, funcapp]);
         let tvariable = this.baseVariables[which];
-        this.variables.push(new variable(tvariable.varOf, this.equation, nth, which));
+        let newvar = new variable(tvariable.varOf, this.equation, nth, which);
+        newvar.functionApplied = funcapp;
+        this.variables.push(newvar);
     }
     update(bvs){
         this.baseVariables = bvs;
@@ -224,7 +233,9 @@ class term {
         for(let i = 0; i<this.pushLog.length; i++){
             let entry = this.pushLog[i];
             let tv = bvs[entry[0]];
-            this.variables.push(new variable(tv.varOf, this.equation, entry[1], entry[0]));
+            let newvar = new variable(tv.varOf, this.equation, entry[1], entry[0]);
+            newvar.functionApplied = entry[2];
+            this.variables.push(newvar);
         }
     }
     evaluateGradient(values){
@@ -241,7 +252,7 @@ class term {
                     let expprod = 1;
                     for(let l = 0; l<entry[1].length; l++) expprod*=values[l]**entry[1][l];
                     for(let l = 0; l<entry[2].length; l++) expprod*=entry[2][l].eval(values);
-                    output[i][j] += this.coefficient*entry[0]*expprod;
+                    output[i][j] += this.coefficient*entry[0]*expprod*entry[3].functionApplied.prime(entry[3].eval(values));
                 }
             }
         }
@@ -249,7 +260,7 @@ class term {
     }
     eval(values){
         let k = this.coefficient;
-        for(let i = 0; i<this.variables.length; i++) k*=this.variables[i].eval(values);
+        for(let i = 0; i<this.variables.length; i++) k*=this.variables[i].functionApplied.reg(this.variables[i].eval(values));
         return k;
     }
     gradient(){
@@ -274,7 +285,7 @@ class term {
                     if(upd[k] > 6) continue outer;
                 }
                 let ni = subtermToIndex(vi.varOf,upd,7);
-                coeffGradients[vi.varId][ni].push([gradProd,vi.subterms[j],otherTerms])
+                coeffGradients[vi.varId][ni].push([gradProd,vi.subterms[j],otherTerms,vi])
             }
         }
         this.cachedGradient = coeffGradients;
@@ -314,7 +325,26 @@ function addArray(m1, m2){
     return index;
  }
 
-
+let templateFunctions = {
+    ln:{
+        reg:Math.log,
+        prime:function(x){
+            return 1/x;
+        }
+    },
+    exp:{
+        reg:Math.exp,
+        prime:Math.exp
+    },
+    default:{
+        reg:function(x){
+            return x;
+        },
+        prime:function(x){
+            return 1;
+        }
+    }
+}
  //do a model w backward passes that backward passes for every point in the space
  //equations parsing
  //better optimizer
