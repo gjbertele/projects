@@ -135,6 +135,7 @@ class mathUtils {
         return arr.filter(i => i != -1).slice(2);
     }
     #fastBigFactorDynamic = function(x){ //O(sqrt(largest factor))
+        if(x == 0) return {};
         let dyn = this.#universalPreProd;
         let pre = this.#universalPre;
         let poss = this.#possMap;

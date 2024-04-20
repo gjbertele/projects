@@ -1,0 +1,41 @@
+body {
+    position:fixed;
+    width:100%;
+    height:100%;
+    margin:0;
+    top:0;
+    left:0;
+}
+.textinput {
+    position:absolute;
+    font-family:Arial, Helvetica, sans-serif;
+    left:5%;
+    top:5%;
+    width:40%;
+    height:3%;
+    font-size:1em;
+    border-radius:1em;
+    color:#000;
+    padding-left:0.5em;
+    border-style:solid;
+    border-color:rgb(71,229,189);
+    outline:none;
+    transition: all 0.3s linear;
+}
+.textinput:focus{
+    border-style:solid;
+    border-color:rgb(87,103,223);
+}
+.textOutput{
+    position:absolute;
+    left:5%;
+    top:10%;
+    font-family:Arial, Helvetica, sans-serif;
+}
+canvas {
+    position:absolute;
+    left:5%;
+    top:15%;
+    border: 2px solid rgb(71,229,189);
+
+}

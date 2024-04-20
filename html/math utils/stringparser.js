@@ -1,4 +1,21 @@
-let mUtils = new mathUtils();
+const canvas = document.querySelector('.plotcanvas');
+const textbox = document.querySelector('.textinput');
+const output = document.querySelector('.textOutput');
+const ctx = canvas.getContext('2d');
+const mUtils = new mathUtils();
+const step = 0.03;
+let colorScheme = ['#47E5BC','#81E4DA','#AECFDF','#9F9FAD','#93748A'];
+let rArr = [];
+let gArr = [];
+let bArr = [];
+let fovInv;
+for(let i = 0; i<colorScheme.length; i++){
+    let [r,g,b] = hexToRgb(colorScheme[i]);
+    rArr.push(r);
+    gArr.push(g);
+    bArr.push(b);
+}
+
 
 function parseEquation(string){
     let parts = [];
@@ -11,9 +28,15 @@ function parseEquation(string){
         }
         if(isNumber(str[i])){
             let v = i;
-            while(i < str.length && isNumber(str[i])) i++;
-            parts.push({type:'Number',values:parseInt(string.substring(v,i))});
-            i--;
+            while(i < str.length && isNumber(str[i])){
+                i++;
+            }
+            if(str[i] == 'i'){
+                parts.push({type:'Complex',values:[0,parseFloat(string.substring(v,i))]})
+            } else {
+                parts.push({type:'Number',values:parseFloat(string.substring(v,i))});
+                i--;
+            }
         } else if(str[i] == '('){
             let v = i+1;
             i++;
@@ -43,7 +66,8 @@ function parseEquation(string){
                     if(str[i] == ')') depth++;
                     if(depth == 0) break;
                     if(str[i] == ',' && depth == -1){
-                        functionValues.push(parseEquation(string.substring(v, i))[0]);
+                        let eq = parseEquation(string.substring(v, i))[0];
+                        functionValues.push(eq);
                         v = i + 1;
                     }
                     i++;
@@ -51,7 +75,13 @@ function parseEquation(string){
                 functionValues.push(parseEquation(string.substring(v, i))[0]);
                 parts.push({type:'Function',values:functionValues});
             } else {
-                parts.push({type:'Variable',values:string.substring(v,i + 1).replaceAll(' ','')});
+                let vname = string.substring(v,i + 1).replaceAll(' ','');
+                if(vname == 'i'){
+                    parts.push({type:'Complex',values:[0,1]})
+                } else {
+                    parts.push({type:'Variable',values:vname});
+                }
+               
                 //if(i == str.length - 1) break;
                 //i--;
             }
@@ -110,7 +140,16 @@ function parseEquation(string){
             i++;
             continue;
         }
-        if(parts[i].type == '+' || parts[i].type == '-' || parts[i].type == '%'){
+        if(parts[i].type == '-'){
+            if(i == 0){
+                parts[i] = {type:parts[i].type,values:[{type:"Number",values:0},parts[i+1]],finished:true};
+            } else {
+                parts[i] = {type:parts[i].type,values:[parts[i-1],parts[i+1]],finished:true};
+                parts[i-1] = '_';
+            }
+            parts[i+1] = '_';
+            parts = parts.filter(i => i != '_');
+        } else if(parts[i].type == '+' || parts[i].type == '%'){
             parts[i] = {type:parts[i].type,values:[parts[i-1],parts[i+1]],finished:true};
             parts[i-1] = '_';
             parts[i+1] = '_';
@@ -130,31 +169,94 @@ function evaluateEquation(ntree, variables = {}){
     let tree = structuredClone(ntree)
     if(tree.type == 'Variable' && variables[tree.values] != undefined) return {type:"Number",values:variables[tree.values]};
     if(tree.type == 'Parenthesis' && tree.values.length == 1) return evaluateEquation(tree.values[0], variables);
+    
     if(isOperator(tree.type)){
         let v = [ evaluateEquation(tree.values[0], variables),evaluateEquation(tree.values[1], variables)];
         if(v[0].type == 'Number' && v[1].type == 'Number'){
-            v[0] = v[0].values;
-            v[1] = v[1].values;
             switch (tree.type) {
                 case '*':
-                    return { type:'Number',values:v[0]*v[1]};
+                    return { type:'Number',values:v[0].values*v[1].values};
                 case '+':
-                    return { type:'Number',values:v[0]+v[1]};
+                    return { type:'Number',values:v[0].values+v[1].values};
                 case '-':
-                    return { type:'Number',values:v[0]-v[1]};
+                    return { type:'Number',values:v[0].values-v[1].values};
                 case '/':
-                    return { type:'Number',values:v[0]/v[1]};
+                    return { type:'Number',values:v[0].values/v[1].values};
                 case '^':
-                    return { type:'Number',values:v[0]**v[1]};
+                    return { type:'Number',values:v[0].values**v[1].values};
                 case '%':
-                    return { type:'Number',values:v[0]%v[1]};
+                    return { type:'Number',values:v[0].values%v[1].values};
             }   
+        } else if(v[0].type == 'Complex' && v[1].type == 'Number'){
+            switch (tree.type) {
+            case '*':
+                return { type:'Complex',values:[v[0].values[0]*v[1].values,v[0].values[1]*v[1].values]};
+            case '+':
+                return { type:'Complex',values:[v[0].values[0]+v[1].values,v[0].values[1]]};
+            case '-':
+                return { type:'Complex',values:[v[0].values[0]-v[1].values,v[0].values[1]]};
+            case '/':
+                return { type:'Complex',values:[v[0].values[0]/v[1].values,v[0].values[1]/v[1].values]};
+            case '^':
+                let x = v[0].values;
+                let abs = Math.sqrt(x[0]**2 + x[1]**2)**v[1].values;
+                let angle = v[1].values*Math.atan2(x[1],x[0]);
+                let nx = abs*Math.cos(angle);
+                let ny = abs*Math.sin(angle);
+                return {type:'Complex',values:[nx,ny]};
+            case '%':
+                return tree;
+            }
+        } else if(v[1].type == 'Complex' && v[0].type == 'Number'){
+            switch (tree.type) {
+            case '*':
+                return { type:'Complex',values:[v[1].values[0]*v[0].values,v[1].values[1]*v[0].values]};
+            case '+':
+                return { type:'Complex',values:[v[1].values[0]+v[0].values,v[1].values[1]]};
+            case '-':
+                return { type:'Complex',values:[v[1].values[0]-v[0].values,v[1].values[1]]};
+            case '/':
+                let div = v[1].values[0]**2 + v[1].values[1]**2;
+                return { type:'Complex',values:[v[0].values*v[1].values[0]/div,v[0].values*v[1].values[1]/div]}
+            case '^':
+                let x = powC(v[0].values,0,v[1].values[0],v[1].values[1]);
+                return { type:'Complex',values:x};
+            case '%':
+                return tree;
+            }
+        } else if(v[0].type == 'Complex' && v[1].type == 'Complex'){
+            switch (tree.type) {
+            case '*':
+                let nx = v[0].values[0]*v[1].values[0] - v[0].values[1]*v[1].values[1];
+                let ny = v[0].values[0]*v[1].values[1] + v[0].values[1]*v[1].values[0];
+                return { type:'Complex',values:[nx,ny]};
+            case '+':
+                return { type:'Complex',values:[v[0].values[0]+v[1].values[0],v[0].values[1]+v[1].values[1]]};
+            case '-':
+                return { type:'Complex',values:[v[0].values[0]-v[1].values[0],v[0].values[1]-v[1].values[1]]};
+                
+            case '/':
+                let div = v[1].values[0]**2 + v[1].values[1]**2;
+                let newx = v[0].values[0]*v[1].values[0] + v[0].values[1]*v[1].values[1];
+                let newy = -v[0].values[0]*v[1].values[1] + v[0].values[1]*v[1].values[0];
+                return { type:'Complex', values:[newx/div,newy/div]};
+                
+            case '^':
+                let x = powC(v[0].values[0],v[0].values[1],v[1].values[0],v[1].values[1]);
+                return { type:"Complex",values:x};
+
+            case '%':
+                return tree;
+            }
         }
+        tree.values[0] = v[0];
+        tree.values[1] = v[1];
     }
     if(tree.type == 'Function'){
-        let defaultMathFunctions = ['sin','cos','acos','asin','tan','atan','log']
+        let defaultMathFunctions = ['sin','cos','acos','asin','tan','atan','log','sqrt']
+        for(let i = 1; i<tree.values.length; i++) tree.values[i] = evaluateEquation(tree.values[i], variables)
         if(defaultMathFunctions.includes(tree.values[0])){
-            let x = evaluateEquation(tree.values[1], variables);
+            let x = tree.values[1];
             if(x.type == 'Number'){
                 return {type:'Number',values:Math[tree.values[0]](x.values)};
             } else {
@@ -163,7 +265,7 @@ function evaluateEquation(ntree, variables = {}){
             }
         }
         if(tree.values[0] == 'Factor'){
-            let evaled = evaluateEquation(tree.values[1],variables);
+            let evaled = tree.values[1];
             if(evaled.type != 'Number') return tree;
             let j = Math.factor(Math.round(evaled.values));
             let newList = [];
@@ -177,8 +279,8 @@ function evaluateEquation(ntree, variables = {}){
         
         if(tree.values[0] == 'Integrate'){
             let v = 0;
-            let lb = evaluateEquation(tree.values[2], variables);
-            let ub = evaluateEquation(tree.values[3], variables);
+            let lb = tree.values[2];
+            let ub = tree.values[3];
             if(lb.type != 'Number' || lb.type != 'Number'){
                 tree.values[2] = lb.values;
                 tree.values[3] = ub.values;
@@ -204,138 +306,191 @@ function evaluateEquation(ntree, variables = {}){
                 return tree;
             }
         }
+        if(tree.values[0] == 'Plot'){
+            let func = tree.values[1];
+            let xmin = tree.values[2];
+            let xmax = tree.values[3];
+            let ymin = tree.values[4];
+            let ymax = tree.values[5];
+            let pts = [];
+            console.log(3)
+            if(xmin.type == 'Number' && xmin.type == ymin.type && ymin.type == xmax.type && xmax.type == ymax.type){
+                canvas.style.display = 'inline-block';
+                ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+                let newvars = structuredClone(variables);
+                let dx = xmax.values-xmin.values;
+                let dy = ymax.values - ymin.values;
+                let ratio = dx/dy;
+                let nw = 0;
+                let nh = 0;
+                if(ratio < 1){
+                    nw = document.body.clientHeight/2;
+                    nh = nw*ratio;
+                } else {
+                    nh = document.body.clientHeight/2;
+                    nw = nh/ratio;
+                }
+                canvas.width = nw;
+                canvas.height = nh;
+                for(let x = 0; x<=nw; x+=3){
+                    newvars['x'] = (x/nw)*dx + xmin.values;
+                    for(let y = 0; y<=nh; y+=3){
+                        newvars['y'] = (y/nh)*dy + ymin.values;
+                        let evaled = evaluateEquation(func,newvars);
+                        if(evaled.type != 'Number') return tree;
+                        if(Math.abs(evaled.values) < 0.05) pts.push([x,y]);
+                    }
+                }
+                ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+                ctx.fillStyle = colorScheme[0];
+                for(let i = 0; i<pts.length; i++){
+                    let cp = pts[i];
+                    ctx.fillRect(cp[0],nh - cp[1],3,3);
+                }
+                let xAxis = - xmin.values*nw/(xmax.values - xmin.values);
+                if(xAxis < nw && xAxis > 0){
+                    //ctx.fillRect(xAxis, 0, )
+                }
+            } else {
+                return tree;
+            }
+        } else if(tree.values[0] == 'ContourPlot'){
+            let func = tree.values[1];
+            let xmin = tree.values[2];
+            let xmax = tree.values[3];
+            let ymin = tree.values[4];
+            let ymax = tree.values[5];
+
+            let pts = [];
+            if(xmin.type == 'Number' && xmin.type == ymin.type && ymin.type == xmax.type && xmax.type == ymax.type){
+                canvas.style.display = 'inline-block';
+                let newvars = structuredClone(variables);
+                let minv = 2**63 - 1;
+                let maxv = -minv;
+                let dy = (ymax.values - ymin.values);
+                let dx = (xmax.values-xmin.values);
+                let ratio = dx/dy;
+                let nw = 0;
+                let nh = 0;
+                if(ratio < 1){
+                    nw = document.body.clientHeight/2;
+                    nh = nw*ratio;
+                } else {
+                    nh = document.body.clientHeight/2;
+                    nw = nh/ratio;
+                }
+                canvas.width = parseInt(nw);
+                canvas.height = parseInt(nh);
+
+
+                for(let x = 0; x<=nw; x+=3){
+                    newvars['x'] = (x/nw)*dx + xmin.values;
+                    for(let y = 0; y<=nh; y+=3){
+                        newvars['y'] = (y/nh)*dy + ymin.values;
+                        let evaled = evaluateEquation(func,newvars);
+                        if(evaled.type != 'Number') return tree;
+                        if(!isNaN(evaled.values)){
+                            pts.push([x,y,evaled.values]); //change step to be according to stepW or set resolution instead
+                            if(evaled.values > maxv ) maxv = evaled.values;
+                            if(evaled.values < minv) minv = evaled.values;
+                        }
+                    }
+                }
+                ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+   
+                for(let i = 0; i<pts.length; i++){
+                    let x = pts[i][0];
+                    let y = pts[i][1];
+                    let cr = fade(pts[i][2],minv,maxv,rArr);
+                    let cg = fade(pts[i][2],minv,maxv,gArr);
+                    let cb = fade(pts[i][2],minv,maxv,bArr);
+                    ctx.fillStyle = 'rgb('+cr+','+cg+','+cb+')';
+                    ctx.fillRect(x, y,3,3)
+                }
+                ctx.fillStyle = '#000'
+                let xAxis = -xmin.values*nw/dx;
+                if(xAxis > 0 && xAxis < nw){
+                    ctx.fillRect(xAxis-1,0,3,nh);
+                }
+                let yAxis = -ymin.values*nh/dy;
+                if(yAxis > 0 && yAxis < nh){
+                    ctx.fillRect(0,yAxis-1,nw,3);
+                }
+                ctx.strokeStyle = '#000';
+                ctx.textAlign = 'left'
+                ctx.fillText('('+xmin.values+','+ymin.values+')',5,nh-5);
+                ctx.fillText('('+xmin.values+','+ymax.values+')',5,10);
+                ctx.textAlign = 'right'
+                ctx.fillText('('+xmax.values+','+ymin.values+')',nw - 5,nh-5);
+                ctx.fillText('('+xmax.values+','+ymax.values+')',nw - 5,10);
+                return tree;
+            } else {
+                return tree;
+            }
+        } else if(tree.values[0] == 'Plot3D'){
+            let func = tree.values[1];
+            let xmin = tree.values[2];
+            let xmax = tree.values[3];
+            let ymin = tree.values[4];
+            let ymax = tree.values[5];
+            let pts = [];
+            if(xmin.type == 'Number' && xmin.type == ymin.type && ymin.type == xmax.type && xmax.type == ymax.type){
+                canvas.style.display = 'inline-block';
+                let newvars = structuredClone(variables);
+                let minv = 2**63 - 1;
+                let maxv = -minv;
+                let dy = (ymax.values - ymin.values);
+                let dx = (xmax.values - xmin.values);
+                let nw = document.body.clientWidth/2;
+                let nh = document.body.clientHeight/2;
+                canvas.width = nw;
+                canvas.height = nh;
+                fovInv = 1/(nw*0.9);
+                console.log(fovInv)
+
+                for(let x = 0; x<=nw; x+=5){
+                    newvars['x'] = (x/nw)*dx + xmin.values;
+                    for(let y = 0; y<=nh; y+=5){
+                        newvars['y'] = (y/nh)*dy + ymin.values;
+                        let evaled = evaluateEquation(func,newvars);
+                        if(evaled.type != 'Number') return tree;
+                        if(!isNaN(evaled.values)){
+                            pts.push([x,y,evaled.values]); //change step to be according to stepW or set resolution instead
+                            if(evaled.values > maxv ) maxv = evaled.values;
+                            if(evaled.values < minv) minv = evaled.values;
+                        }
+                    }
+                }
+                maxv++;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
+                pts.sort((a,b) => a[0]**2 + a[1]**2 + a[2]**2 - b[0]**2 - b[1]**2 - b[2]**2);
+                //recenter + clear all offsets
+                for(let i = 0; i<pts.length; i++){
+                    let A = pts[i];
+                    let npx = A[0]
+                    let npz = A[1] 
+                    
+                    let pt = project3D(npx,A[2],npz, fovInv, nw, nh);
+                    console.log(npx,A[2],npz)
+                    let cr = fade(pts[i][2],minv,maxv,rArr);
+                    let cg = fade(pts[i][2],minv,maxv,gArr);
+                    let cb = fade(pts[i][2],minv,maxv,bArr);
+                    
+                    //if(pt.x > 0 && pt.x < canvas.clientWidth && pt.y > 0 && pt.y < canvas.clientHeight){
+                        ctx.fillStyle = 'rgb('+cr+','+cg+','+cb+')';
+                        ctx.fillRect(pt.x-2,canvas.clientHeight-pt.y-2,3,3)
+                   // }
+                    
+                }
+                return tree;
+            } else {
+                return tree;
+            }
+        } else {
+            canvas.style.display = 'none'
+        }
     }
     return tree;
 }
 
-function solveDE(tree){
-    let terms = findAddition(tree);
-    let d = findFunctions(tree);
-    let functions = d.functions;
-    for(let i = 0; i<functions.length; i++){
-        while(functions[i].values[0].startsWith('d')){
-            functions[i].values[0] = functions[i].values[0].substring(1);
-        }
-    }
-    for(let i = 0; i<functions.length; i++){
-        if(functions[i] == '_') continue;
-        for(let j = i + 1; j<functions.length; j++){
-            if(functions[j].values[0] == functions[i].values[0]) functions[j] = '_';
-        }
-    }
-    functions = functions.filter((i,v) => i != '_')
-    let variablesOf = d.varsOf;
-    variablesOf = variablesOf.filter((i,v) => v == variablesOf.indexOf(i));
-    let baseVariables = [];
-    let functionNames = functions.map(i => i = i.values[0]);
-    for(let i = 0; i<functions.length; i++){
-        let varsof = functions[i].values.slice().splice(1);
-        for(let j = 0; j<varsof.length; j++){
-            varsof[j] = variablesOf.indexOf(varsof[j].values[0]);
-        }
-        let n = new variable(varsof);
-        n.varId = i+1;
-        n.scramble();
-        baseVariables.push(n);
-    }
-    let eq = new equation(baseVariables);
-    for(let i = 0; i<terms.length; i++){
-        let ti = terms[i];
-        if(ti.type == '/'){
-            let func = ti.values[0].values[0];
-            let by = ti.values[1].values.split('d').splice(1).map(i => i = variablesOf.indexOf(i));
-            let count = (new Array(variablesOf.length)).fill(0);
-            for(let j = 0; j<by.length; j++) count[by[j]]++;
-            let t = new term(eq);
-            t.push(functionNames.indexOf(func) + 1,count)
-            eq.push(t);
-        } else if(ti.type == '*'){
-            let data = processMultiplication(ti, variablesOf);
-            let variableList = data.terms;
-            let t = new term(eq);
-            for(let j = 0; j<variableList.length; j++){
-                t.push(functionNames.indexOf(variableList[j][0]) + 1,variableList[j][1]);
-            }
-            eq.push(t);
-        }
-    }
-}
-
-function processMultiplication(tree, variablesOf){
-    let terms = [];
-    let coefficient = 1;
-    if(typeof tree.values == 'string') return [];
-    if(tree.type == 'Number'){
-        coefficient = tree.values;
-    } else if(tree.type == 'Function'){
-        let func = tree.values[0];
-        let count = (new Array(variablesOf.length)).fill(0);
-        terms.push([func, count]);
-    } else if(tree.type == '/'){
-        let func = tree.values[0].values[0];
-        let by = tree.values[1].values.split('d').splice(1).map(i => i = variablesOf.indexOf(i));
-        let count = (new Array(variablesOf.length)).fill(0);
-        for(let j = 0; j<by.length; j++) count[by[j]]++;
-        terms.push([func, count]);
-    } else {
-        let a = processMultiplication(tree.values[0], variablesOf);
-        let b = processMultiplication(tree.values[1], variablesOf);
-        coefficient*=a.coefficient*b.coefficient;
-        terms.push(...a.terms);
-        terms.push(...b.terms);
-    }
-    return {terms,coefficient};
-}
-
-function findAddition(tree){
-    if(tree.type == 'Number') return [tree];
-    let additions = [];
-    if(tree.type != '+' && tree.type != 'Parenthesis') return [tree];
-    if(tree.type == 'Parenthesis'){
-        return findAddition(tree.values[0]);
-    }
-    additions.push(...findAddition(tree.values[1]));
-    additions.push(...findAddition(tree.values[0]));
-    return additions;
-}
-function findFunctions(tree){
-    let varsOf = [];
-    let functions = [];
-    if(tree.type == 'Function'){
-        functions.push(tree)
-        varsOf.push(...tree.values.slice(1).map(i => i = i.values));
-    } else if(typeof tree.values != 'string' && tree.values.length != undefined){
-        for(let i = 0; i<tree.values.length; i++){
-            let d = findFunctions(tree.values[i]);
-            varsOf.push(...d.varsOf);
-            functions.push(...d.functions);
-        }
-    }
-    return {varsOf,functions};
-}
-//need solveexpr w/ regular regression and solveeq
-
-function isNumber(x){
-    if(!isNaN(parseInt(x)) || x == '.') return true;
-    return false;
-}
-function isOperator(x){
-    if(x == '*' || x == '+' || x == '-' || x == '/' || x == '^' || x == '%') return true;
-    return false;
-}
-
-/*
-let A = new variable([0,1]);
-let B = new variable([0]);
-A.scramble();
-B.scramble();
-let x = new equation([A,B]);
-let term2 = new term(x);
-term2.push(3,[0,0]);
-term2.coefficient = -1;
-let term3 = new term(x);
-term3.push(2,[0,0],templateFunctions['ln']);
-term3.coefficient = 1;
-
-x.push(term2);
-x.push(term3);*/

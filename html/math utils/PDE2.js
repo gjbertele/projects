@@ -122,12 +122,14 @@ class equation {
         }
         return k;
     }
+    //eval returning nan sometimes
     errorGrad(min, max, current = [], index = 0){
         if(min.length - index == 1){
             let totalGrad = this.gradTemplate.slice();
             let v = 0;
             for(let i = min[index]; i<=max[index]; i+=0.25){
-                v += this.eval([...current, i]);
+                let j = this.eval([...current, i]);
+                if(!isNaN(j) && Math.abs(j) < Infinity) v+=j;
                 totalGrad = addGradients(this.evaluateGradient([...current, i]), totalGrad);
             }
             return {v, totalGrad};
@@ -200,7 +202,7 @@ class variable {
         return v;
     }
     scramble(radius = 1){
-        for(let i = 0; i<this.coefficients.length; i++) this.coefficients[i] = radius*(Math.random()*2 - 1);
+        for(let i = 0; i<this.coefficients.length; i++) this.coefficients[i] = radius*Math.random();
     }
 }
 
