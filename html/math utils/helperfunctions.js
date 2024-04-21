@@ -1,3 +1,8 @@
+const textbox = document.querySelector('.textinput');
+const output = document.querySelector('.textOutput');
+const mUtils = new mathUtils();
+let canvas = document.querySelector('canvas');
+let ctx = canvas.getContext('2d');
 function buildDESolver(tree){
     let terms = findAddition(tree);
     let d = findFunctions(tree);
@@ -147,6 +152,7 @@ function equationToString(eq){
 }
 document.body.onkeydown = function(e){
     if(e.key == 'Enter'){
+        canvas.style.display = 'none'
         let query = textbox.value.split("where");
         let definitions = {
             e:2.718,
@@ -161,7 +167,6 @@ document.body.onkeydown = function(e){
         }
         let parsed = parseEq(query[0]);
         let evaled = evaluateEquation(parsed, definitions);
-        console.log(evaled)
         output.innerHTML = equationToString(evaled)+`<br>`;
         if(evaled.type == 'Number'){
             let factored = Math.factor(BigInt(Math.round(evaled.values + 0)));
@@ -186,6 +191,7 @@ document.body.onkeydown = function(e){
         }
     }
 }
+//[-210, -300, -260, 0.8953539062730909, -2.4582962514340134, 0]
 
 let lookuptableSqrt = [];
 let lookuptableLogInt = [];
@@ -236,7 +242,7 @@ let rotMat = [
     [cos(yRot)*sin(zRot),sin(xRot)*sin(yRot)*sin(zRot)+cos(xRot)*cos(zRot),cos(xRot)*sin(yRot)*sin(zRot)-sin(xRot)*cos(zRot)],
     [-sin(yRot),sin(xRot)*cos(yRot),cos(xRot)*cos(yRot)]
 ]
-console.log(rotMat)
+
 function matrixByVector(mat,vec){
     let output = [];
     for(let i = 0; i<mat.length; i++){
@@ -246,22 +252,4 @@ function matrixByVector(mat,vec){
         }
     }
     return output;
-}
-
-function project3D(x,y,z, fovInv, w, h){
-    let ix = x - w/2
-    let iy = y
-    let iz = z - h/2;
-    let vec = [ix, iy, iz];
-    let [rotatedX, rotatedY, rotatedZ] = matrixByVector(rotMat,vec);
-    rotatedX += w/2;
-    rotatedZ += h/2;
-    var size = rotatedZ*fovInv + 1
-    var xp = (rotatedX / size);
-    var yp = (rotatedY / size);
-    let objectReturn = {
-        x: xp,
-        y: yp 
-    }
-    return objectReturn
 }

@@ -37,5 +37,5 @@ canvas {
     left:5%;
     top:15%;
     border: 2px solid rgb(71,229,189);
-
+    display:none;
 }
