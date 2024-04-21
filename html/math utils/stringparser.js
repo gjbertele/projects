@@ -342,7 +342,7 @@ function evaluateEquation(ntree, variables = {}) {
         tree.values[1] = v[1];
     }
     if (tree.type == 'Function') {
-        let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs']
+        let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs', 'floor', 'ceil', 'round']
         for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluateEquation(tree.values[i], variables)
         if (defaultMathFunctions.includes(tree.values[0])) {
             let x = tree.values[1];
@@ -545,6 +545,8 @@ function evaluateEquation(ntree, variables = {}) {
                     newvars['y'] = ymin.values + (y + worldHeight/2)*(ymax.values - ymin.values)/(worldHeight);
                     let j = evaluateEquation(func, newvars);
                     if(j.type != 'Number') return 0;
+                    if(isNaN(j.values)) return 0;
+                    console.log(j.values)
                     return -j.values*terrainDetail;
                 }
                 generatePictureFromEquation(eqf, newvars, nw, nh)

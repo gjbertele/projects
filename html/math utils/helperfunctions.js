@@ -3,6 +3,7 @@ const output = document.querySelector('.textOutput');
 const mUtils = new mathUtils();
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
+let helpString;
 function buildDESolver(tree){
     let terms = findAddition(tree);
     let d = findFunctions(tree);
@@ -150,10 +151,15 @@ function equationToString(eq){
         return '(' + equationToString(eq.values[0]) + ')';
     }
 }
+
 document.body.onkeydown = function(e){
     if(e.key == 'Enter'){
         canvas.style.display = 'none'
         let query = textbox.value.split("where");
+        if(query[0].toLowerCase() == 'help'){
+            output.innerHTML = helpString;
+            return;
+        }
         let definitions = {
             e:2.718,
             pi:3.14159265358979323846264
@@ -253,3 +259,29 @@ function matrixByVector(mat,vec){
     }
     return output;
 }
+
+
+//integrate bigint handling into numbers
+//complex contour plot
+//Re(x) + Im(x) functions
+//generate shape of 3d inequalities with convex hull algorithm -> Plot4D or 4th dimension is color on plot3D
+//support for parametric functions -> Parametric(t,fx,fy,fz) handler
+//optimize numericalintegrate
+//automatic differentiator
+//apply expansion laws in EquationToString 
+
+
+helpString = `Type in an integer to see its factorization<br>
+<br>
+Functions:<br>
+Trig:<br>
+sin, cos, tan, atan, acos, atan<br>
+Other:<br>
+log (natural log), sqrt, abs, floor, ceil, round<br>
+Custom:<br>
+Integrate(f(x),xmin,xmax)<br>
+Numerically integrates f(x) from x=xmin to x=xmax<br>
+e.g. Integrate(x^2, 0, 2) = 2.66...<br>
+Plot(f(x,y), xmin, xmax, ymin, ymax)<br>
+
+`
