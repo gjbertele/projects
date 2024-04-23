@@ -136,9 +136,10 @@ function fade(current, min, max, array){
 }
 function equationToString(eq){
     if(eq.type == 'Number') return eq.values;
+    if(eq.type == 'List') return eq.values.map(i => i = i.values).join(', ')
     if(isOperator(eq.type)) return equationToString(eq.values[0]) + ' ' + eq.type + ' ' + equationToString(eq.values[1]);
     if(eq.type == 'Variable') return eq.values[0];
-    if(eq.type == 'Complex') return eq.values[0] + ' + i'+eq.values[1];
+    if(eq.type == 'Complex') return eq.values[0] + ' + '+eq.values[1]+'i';
     if(eq.type == 'Function'){
         let s = eq.values[0]+'(';
         for(let i = 1; i<eq.values.length; i++){
@@ -152,59 +153,11 @@ function equationToString(eq){
     }
 }
 
-document.body.onkeydown = function(e){
-    if(e.key == 'Enter'){
-        canvas.style.display = 'none'
-        let query = textbox.value.split("where");
-        if(query[0].toLowerCase() == 'help'){
-            output.innerHTML = helpString;
-            return;
-        }
-        let definitions = {
-            e:2.718,
-            pi:3.14159265358979323846264
-        }
-        if(query.length > 1){
-            let j = query[1].replaceAll(' ','').split("and");
-            for(let k = 0; k<j.length; k++){
-                let n = j[k].split('=');
-                definitions[n[0]] = parseFloat(n[1]);
-            }
-        }
-        let parsed = parseEq(query[0]);
-        let evaled = evaluateEquation(parsed, definitions);
-        output.innerHTML = equationToString(evaled)+`<br>`;
-        if(evaled.type == 'Number'){
-            let factored = Math.factor(BigInt(Math.round(evaled.values + 0)));
-            let fs = 'Factoring of '+Math.round(evaled.values + 0)+': ';
-            for(let i in factored){
-                if(factored[i] != 1){
-                    fs+=i+'^'+parseInt(factored[i])+' ';
-                } else {
-                    fs+=i+' ';
-                }
-            }
-            output.innerHTML+=fs+`<br>`;
-            let closedForms = [];
-            let x = evaled.values + 0;
-            for(let i = 2; i<5; i++){
-                let k = x**i;
-                if(Math.abs(Math.round(k) - k) <= 0.05){
-                    closedForms.push([1/i,Math.round(k)]);
-                }
-            }
-            //IMPLEMENT CLOSED FORMS
-        }
-    }
-}
+
+
 //[-210, -300, -260, 0.8953539062730909, -2.4582962514340134, 0]
 
-let lookuptableSqrt = [];
-let lookuptableLogInt = [];
-for(let i = 1; i<100; i++){
-    lookuptableSqrt[i] = Math.sqrt(i);
-    lookuptableLogInt[i] = Math.log(i+1);
-}
+
 /*
 let A = new variable([0,1]);
 let B = new variable([0]);
@@ -231,6 +184,12 @@ function expC(a,b){
 }
 function lnC(a,b){
     return [Math.log(a**2 + b**2)/2, Math.atan2(b,a)];
+}
+function divC(a,b,c,d){
+    let div = c ** 2 + d ** 2;
+    let newx = a * c + b * d;
+    let newy = -a * d + b * c;
+    return [newx / div, newy / div];
 }
 
 function powC(a,b,c,d){
@@ -260,7 +219,56 @@ function matrixByVector(mat,vec){
     return output;
 }
 
-
+function complexSin(a,b){
+    let ex = expC(-b,a);
+    let enx = expC(b,-a);
+    return divC(ex[0] - enx[0],ex[1] - enx[1], 0, 2);
+}
+function complexCos(a,b){
+    let ex = expC(-b,a);
+    let enx = expC(b,-a);
+    return divC(ex[0] + enx[0],ex[1] + enx[1], 2, 0);
+}
+function complexASin(a,b){
+    let square = complexMult(a,b,a,b);
+    let lncradical = lnC(1-square[0],-square[1]);
+    let sqrt = expC(lncradical[0]/2,lncradical[1]/2);
+    let bigln = lnC(sqrt[0]-b,sqrt[1]+a);
+    return [bigln[1],-bigln[0]];
+}
+function complexACos(a,b){
+    let square = complexMult(a,b,a,b);
+    let lnradical = lnC(square[0] - 1, square[1]);
+    let sqrt = expC(lnradical[0]/2, lnradical[1]/2);
+    let bigln = lnC(sqrt[0]+a,sqrt[1]+b);
+    return [bigln[1],-bigln[0]]
+}
+function complexTan(a,b){
+    return divC(...complexSin(a,b),...complexCos(a,b))
+}
+function complexATan(a,b){
+    let square = complexMult(a,b,a,b);
+    let div = divC(square[0],square[1],square[0]+1,square[1]);
+    let lnradical = lnC(div[0],div[1]);
+    let sqrt = expC(lnradical[0]/2,lnradical[1]/2);
+    return complexASin(sqrt[0],sqrt[1]);
+}
+function complexFloor(a,b){
+    return [Math.floor(a),Math.floor(b)];
+}
+function complexRound(a,b){
+    return [Math.round(a), Math.round(b)];
+}
+function complexCeil(a,b){
+    return [Math.ceil(a),Math.ceil(b)];
+}
+function complexAbs(a,b){
+    return a**2 + b**2;
+}
+function complexSqrt(a,b){
+    let logged = lnC(a,b);
+    return expC(logged[0]/2,logged[1]/2);
+}
 //integrate bigint handling into numbers
 //complex contour plot
 //Re(x) + Im(x) functions
@@ -269,6 +277,8 @@ function matrixByVector(mat,vec){
 //optimize numericalintegrate
 //automatic differentiator
 //apply expansion laws in EquationToString 
+//complex functions for basic math defaults
+//sum function
 
 
 helpString = `Type in an integer to see its factorization<br>
@@ -283,5 +293,13 @@ Integrate(f(x),xmin,xmax)<br>
 Numerically integrates f(x) from x=xmin to x=xmax<br>
 e.g. Integrate(x^2, 0, 2) = 2.66...<br>
 Plot(f(x,y), xmin, xmax, ymin, ymax)<br>
+Plots all points (x,y) s.t. xmin<=x<=xmax, ymin<=y<=ymax, f(x,y) ~= 0<br>
+e.g. Plot(x - y, -5, 5, -3, 3) plots y = x from x = -5 to 5 and y = -3 to 3<br>
+ContourPlot(f(x,y), xmin, xmax, ymin, ymax)<br>
+Plots a contour of f(x,y) for all (x,y) s.t. xmin<=x<=xmax, ymin<=y<=ymax, f(x,y) ~= 0<br>
+e.g. ContourPlot(x/y, -5, 5, -3, 3)<br>
+Plot3D(f(x,y), xmin, xmax, ymin, ymax)<br>
+Generates a 3D graph of f(x,y) over all points (x,y) s.t. xmin<=x<=xmax, ymin<=y<=ymax, f(x,y) ~= 0<br>
+e.g. Plot3D(sin(x)^2 + cos(y)^2, -1, 1, -1, 2)
 
 `

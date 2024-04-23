@@ -118,7 +118,7 @@ class equation {
     evaluateGradient(values){
         let k = this.gradTemplate.slice();
         for(let i = 0; i<this.terms.length; i++){
-            k = addGradients(this.terms[i].evaluateGradient(values),k);
+            k = evaluator.PDEHelpers.addGradients(this.terms[i].evaluateGradient(values),k);
         }
         return k;
     }
@@ -130,7 +130,7 @@ class equation {
             for(let i = min[index]; i<=max[index]; i+=0.25){
                 let j = this.eval([...current, i]);
                 if(!isNaN(j) && Math.abs(j) < Infinity) v+=j;
-                totalGrad = addGradients(this.evaluateGradient([...current, i]), totalGrad);
+                totalGrad = evaluator.PDEHelpers.addGradients(this.evaluateGradient([...current, i]), totalGrad);
             }
             return {v, totalGrad};
         } else {
@@ -139,7 +139,7 @@ class equation {
             for(let i = min[index]; i<=max[index]; i+=0.25){
                 let eg = this.errorGrad(min, max, [...current, i], index + 1);
                 v+=eg.v;
-                totalGrad = addGradients(eg.totalGrad, totalGrad);
+                totalGrad = evaluator.PDEHelpers.addGradients(eg.totalGrad, totalGrad);
             }
             return {v, totalGrad};
         }
@@ -183,11 +183,11 @@ class variable {
             let newTerms = this.subterms[i].slice();
             let gradProd = 1;
             for(let j = 0; j<partials.length; j++){
-                gradProd *= product(newTerms[j]-partials[j]+1,newTerms[j]);
+                gradProd *= evaluator.PDEHelpers.product(newTerms[j]-partials[j]+1,newTerms[j]);
                 newTerms[j] = newTerms[j] - partials[j];
                 if(newTerms[j] < 0) continue main;
             }
-            let ni = subtermToIndex(this.varOf,newTerms,7);
+            let ni = evaluator.PDEHelpers.subtermToIndex(this.varOf,newTerms,7);
             coeffs[ni] += this.coefficients[i]*gradProd;
         }
         return coeffs;
@@ -222,7 +222,7 @@ class term {
         this.baseVariables = eq.baseVariables;
         return this;
     }
-    push(which, nth, funcapp = templateFunctions['default']){
+    push(which, nth, funcapp = evaluator.PDEHelpers.templateFunctions['default']){
         this.pushLog.push([which, nth, funcapp]);
         let tvariable = this.baseVariables[which];
         let newvar = new variable(tvariable.varOf, this.equation, nth, which);
@@ -282,11 +282,11 @@ class term {
                 let upd = vi.subterms[j].slice();
                 let gradProd = 1;
                 for(let k = 0; k<vi.derivative.length; k++){
-                    gradProd*=product(upd[k]+1,upd[k]+vi.derivative[k]);
+                    gradProd*=evaluator.PDEHelpers.product(upd[k]+1,upd[k]+vi.derivative[k]);
                     upd[k] += vi.derivative[k];
                     if(upd[k] > 6) continue outer;
                 }
-                let ni = subtermToIndex(vi.varOf,upd,7);
+                let ni = evaluator.PDEHelpers.subtermToIndex(vi.varOf,upd,7);
                 coeffGradients[vi.varId][ni].push([gradProd,vi.subterms[j],otherTerms,vi])
             }
         }
@@ -294,19 +294,14 @@ class term {
         return coeffGradients;
     }
 }
-
-function product(a,b){
+evaluator.PDEHelpers = {};
+evaluator.PDEHelpers.product = (a,b) => {
     let v = 1;
     for(let i = a; i<=b; i++) v*=i;
     return v;
 }
 
-function addArray(m1, m2){
-    let n = [];
-    for(let i = 0; i<Math.max(m1.length,m2.length); i++) n[i] = (m1[i] ? m1[i] : 0) + (m2[i] ? m2[i] : 0);
-    return n;
- }
- function addGradients(g1, g2){
+ evaluator.PDEHelpers.addGradients = function(g1, g2){
     let output = [];
     for(let i = 0; i<g1.length; i++){
         output[i] = [];
@@ -316,7 +311,7 @@ function addArray(m1, m2){
     }
     return output;
  }
- function subtermToIndex(varof,subterm,max){
+ evaluator.PDEHelpers.subtermToIndex = function(varof,subterm,max){
     let index = 0;
     let exp = 0;
     for(let i = 0; i<subterm.length; i++){
@@ -327,7 +322,7 @@ function addArray(m1, m2){
     return index;
  }
 
-let templateFunctions = {
+ evaluator.PDEHelpers.templateFunctions = {
     ln:{
         reg:Math.log,
         prime:function(x){
