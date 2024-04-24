@@ -35,7 +35,7 @@ document.body.onkeydown = function(e) {
             output.innerHTML += fs + `<br>`;
             let closedForms = evaluator.closedForms(evaled.values + 0);
             
-            if (closedForms.length != 0 && x % 1 != 0) {
+            if (closedForms.length != 0 && evaled.values % 1 != 0) {
                 output.innerHTML += 'Possible Closed Forms:<br>';
                 for (let i = 0; i < closedForms.length; i++) {
                     let entry = closedForms[i];
