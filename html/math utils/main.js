@@ -39,10 +39,12 @@ document.body.onkeydown = function(e) {
                 output.innerHTML += 'Possible Closed Forms:<br>';
                 for (let i = 0; i < closedForms.length; i++) {
                     let entry = closedForms[i];
-                    if (entry[0] == 0) {
+                    if (entry[0] == 0 && evaled.values.toString().split('.')[1].length > 1 ) {
                         output.innerHTML += entry[2] + '^(1/' + entry[1] + ')<br>';
                     } else if (entry[0] == 1) {
-                        output.innerHTML += entry[2] + '/' + entry[1];
+                        let sta = entry[2] + '/' + entry[1] + ' = '+(entry[3]+entry[2]/entry[1]);
+                        if(entry[3] != 0) sta = entry[3] + ' + ' + sta;
+                        output.innerHTML+=sta+'<br>'
                     }
                 }
             }
