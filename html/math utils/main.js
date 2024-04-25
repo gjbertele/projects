@@ -21,7 +21,7 @@ document.body.onkeydown = function(e) {
         }
         let parsed = parseEq(query[0]);
         let evaled = evaluator.evaluateEquation(parsed, definitions);
-        output.innerHTML = equationToString(evaled) + `<br>`;
+        output.innerHTML = evaluator.equationToString(evaled) + `<br>`;
         if (evaled.type == 'Number') {
             let factored = Math.factor(BigInt(Math.round(evaled.values + 0)));
             let fs = 'Factoring of ' + Math.round(evaled.values + 0) + ': ';

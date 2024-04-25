@@ -78,7 +78,7 @@ evaluator.operation = function(tree, canvas, ctx, variables){
                 }
             case '^':
                 if(v[0].values == 0 || v[1].values == 1) return v[0];
-                let x = powC(v[0].values, 0, v[1].values[0], v[1].values[1]);
+                let x = evaluator.complexTools.powC(v[0].values, 0, v[1].values[0], v[1].values[1]);
                 return {
                     type: 'Complex', values: x
                 };
@@ -111,7 +111,7 @@ evaluator.operation = function(tree, canvas, ctx, variables){
                 };
 
             case '^':
-                let x = powC(v[0].values[0], v[0].values[1], v[1].values[0], v[1].values[1]);
+                let x = evaluator.complexTools.powC(v[0].values[0], v[0].values[1], v[1].values[0], v[1].values[1]);
                 return {
                     type: "Complex", values: x
                 };

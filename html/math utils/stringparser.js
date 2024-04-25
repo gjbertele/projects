@@ -211,7 +211,7 @@ function parseEq(str) {
 }
 
 evaluator.evaluateEquation = function(ntree, variables = {}) {
-    let tree = structuredClone(ntree)
+    let tree = evaluator.simplify(structuredClone(ntree))
     if (tree.type == 'Variable' && variables[tree.values] != undefined) return {
         type: "Number",
         values: variables[tree.values]
@@ -229,7 +229,7 @@ evaluator.evaluateEquation = function(ntree, variables = {}) {
         }
     } else if (tree.type == 'Function') {
         let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs', 'floor', 'ceil', 'round']
-        let complexFunctions = [complexSin, complexCos, complexACos, complexASin, complexTan, complexATan, lnC, complexSqrt, complexAbs, complexFloor, complexCeil, complexRound]
+        let complexFunctions = [evaluator.complexTools.complexSin, evaluator.complexTools.complexCos, evaluator.complexTools.complexACos, evaluator.complexTools.complexASin, evaluator.complexTools.complexTan, evaluator.complexTools.complexATan, evaluator.complexTools.lnC, evaluator.complexTools.complexSqrt, evaluator.complexTools.complexAbs, evaluator.complexTools.complexFloor, evaluator.complexTools.complexCeil, evaluator.complexTools.complexRound]
         for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables)
         if (defaultMathFunctions.includes(tree.values[0])) {
             let x = tree.values[1];
@@ -257,8 +257,16 @@ evaluator.evaluateEquation = function(ntree, variables = {}) {
             return evaluator.contourPlot(tree, canvas, ctx, variables)
         } else if (tree.values[0] == 'Plot3D') {
             return evaluator.plot3D(tree, canvas, ctx, variables);
-        } else if(tree.values[0] == 'SolveDE'){
-            return 
+        } else if(tree.values[0] == 'Gamma'){
+            return evaluator.gamma(tree);
+        } else if(tree.values[0] == 'Simplify'){
+            return evaluator.simplify(ntree.values[1],variables);
+        } else if(tree.values[0] == 'Zeta'){
+            return evaluator.zeta(tree.values[1],variables);
+        } else if(tree.values[0] == 'Re'){
+            return evaluator.complexTools.re(tree,variables);
+        } else if(tree.values[0] == 'Im'){
+            return evaluator.complexTools.im(tree,variables);
         } else {
             canvas.style.display = 'none'
         }

@@ -134,22 +134,26 @@ function fade(current, min, max, array){
     let n = (progress - cb)/(next - cb);
     return (1-n)*array[currentBetween] + n*array[currentBetween+1]
 }
-function equationToString(eq){
+evaluator.equationToString = function(eq){
     if(eq.type == 'Number') return eq.values;
     if(eq.type == 'List') return eq.values.map(i => i = i.values).join(', ')
-    if(isOperator(eq.type)) return equationToString(eq.values[0]) + ' ' + eq.type + ' ' + equationToString(eq.values[1]);
+    if(isOperator(eq.type)) return evaluator.equationToString(eq.values[0]) + ' ' + eq.type + ' ' + evaluator.equationToString(eq.values[1]);
     if(eq.type == 'Variable') return eq.values[0];
-    if(eq.type == 'Complex') return eq.values[0] + ' + '+eq.values[1]+'i';
+    if(eq.type == 'Complex'){
+        if(eq.values[0] == 0) return eq.values[1]+'i';
+        if(eq.values[1] == 0) return eq.values[0].toString();
+        return eq.values[0] + ' + '+eq.values[1]+'i';
+    }
     if(eq.type == 'Function'){
         let s = eq.values[0]+'(';
         for(let i = 1; i<eq.values.length; i++){
-            s+=equationToString(eq.values[i]);
+            s+=evaluator.equationToString(eq.values[i]);
             if(i != eq.values.length - 1) s+=', ';
         }
         return s+')';
     }
     if(eq.type == 'Parenthesis'){
-        return '(' + equationToString(eq.values[0]) + ')';
+        return '(' + evaluator.equationToString(eq.values[0]) + ')';
     }
 }
 
@@ -174,28 +178,30 @@ term3.coefficient = 1;
 x.push(term2);
 x.push(term3);*/
 
+evaluator.complexTools = {};
 
-function complexMult(a,b,c,d){
+evaluator.complexTools.complexMult = function(a,b,c,d){
     return [a*c-b*d,b*c+a*d];
 }
 
-function expC(a,b){
-    return complexMult(Math.cos(b),Math.sin(b),Math.exp(a),0)
+evaluator.complexTools.expC = function(a,b){
+    return evaluator.complexTools.complexMult(Math.cos(b),Math.sin(b),Math.exp(a),0)
 }
-function lnC(a,b){
+evaluator.complexTools.lnC = function(a,b){
     return [Math.log(a**2 + b**2)/2, Math.atan2(b,a)];
 }
-function divC(a,b,c,d){
+evaluator.complexTools.divC = function(a,b,c,d){
     let div = c ** 2 + d ** 2;
     let newx = a * c + b * d;
     let newy = -a * d + b * c;
     return [newx / div, newy / div];
 }
-
-function powC(a,b,c,d){
-    let ln = lnC(a,b);
-    let mult = complexMult(ln[0],ln[1],c,d);
-    return expC(mult[0],mult[1]);
+evaluator.complexTools.powC = function(a,b,c,d){
+    if(c == 0 && d == 0) return [1,0];
+    if(a == 0 && b == 0) return [0,0];
+    let ln = evaluator.complexTools.lnC(a,b);
+    let mult = evaluator.complexTools.complexMult(ln[0],ln[1],c,d);
+    return evaluator.complexTools.expC(mult[0],mult[1]);
 }
 let xRot = Math.PI/8;
 let yRot = -Math.PI/16;
@@ -208,7 +214,7 @@ let rotMat = [
     [-sin(yRot),sin(xRot)*cos(yRot),cos(xRot)*cos(yRot)]
 ]
 
-function matrixByVector(mat,vec){
+evaluator.complexTools.matrixByVector = function(mat,vec){
     let output = [];
     for(let i = 0; i<mat.length; i++){
         output[i] = 0;
@@ -219,55 +225,65 @@ function matrixByVector(mat,vec){
     return output;
 }
 
-function complexSin(a,b){
-    let ex = expC(-b,a);
-    let enx = expC(b,-a);
-    return divC(ex[0] - enx[0],ex[1] - enx[1], 0, 2);
+evaluator.complexTools.complexSin = function(a,b){
+    let ex = evaluator.complexTools.expC(-b,a);
+    let enx = evaluator.complexTools.expC(b,-a);
+    return evaluator.complexTools.divC(ex[0] - enx[0],ex[1] - enx[1], 0, 2);
 }
-function complexCos(a,b){
-    let ex = expC(-b,a);
-    let enx = expC(b,-a);
-    return divC(ex[0] + enx[0],ex[1] + enx[1], 2, 0);
+evaluator.complexTools.complexCos = function(a,b){
+    let ex = evaluator.complexTools.expC(-b,a);
+    let enx = evaluator.complexTools.expC(b,-a);
+    return evaluator.complexTools.divC(ex[0] + enx[0],ex[1] + enx[1], 2, 0);
 }
-function complexASin(a,b){
-    let square = complexMult(a,b,a,b);
-    let lncradical = lnC(1-square[0],-square[1]);
-    let sqrt = expC(lncradical[0]/2,lncradical[1]/2);
-    let bigln = lnC(sqrt[0]-b,sqrt[1]+a);
+evaluator.complexTools.complexASin = function(a,b){
+    let square = evaluator.complexTools.complexMult(a,b,a,b);
+    let lncradical = evaluator.complexTools.lnC(1-square[0],-square[1]);
+    let sqrt = evaluator.complexTools.expC(lncradical[0]/2,lncradical[1]/2);
+    let bigln = evaluator.complexTools.lnC(sqrt[0]-b,sqrt[1]+a);
     return [bigln[1],-bigln[0]];
 }
-function complexACos(a,b){
-    let square = complexMult(a,b,a,b);
-    let lnradical = lnC(square[0] - 1, square[1]);
-    let sqrt = expC(lnradical[0]/2, lnradical[1]/2);
-    let bigln = lnC(sqrt[0]+a,sqrt[1]+b);
+evaluator.complexTools.complexACos = function(a,b){
+    let square = evaluator.complexTools.complexMult(a,b,a,b);
+    let lnradical = evaluator.complexTools.lnC(square[0] - 1, square[1]);
+    let sqrt = evaluator.complexTools.expC(lnradical[0]/2, lnradical[1]/2);
+    let bigln = evaluator.complexTools.lnC(sqrt[0]+a,sqrt[1]+b);
     return [bigln[1],-bigln[0]]
 }
-function complexTan(a,b){
-    return divC(...complexSin(a,b),...complexCos(a,b))
+evaluator.complexTools.complexTan = function(a,b){
+    return evaluator.complexTools.divC(...evaluator.complexTools.complexSin(a,b),...evaluator.complexTools.complexCos(a,b))
 }
-function complexATan(a,b){
-    let square = complexMult(a,b,a,b);
-    let div = divC(square[0],square[1],square[0]+1,square[1]);
-    let lnradical = lnC(div[0],div[1]);
-    let sqrt = expC(lnradical[0]/2,lnradical[1]/2);
-    return complexASin(sqrt[0],sqrt[1]);
+evaluator.complexTools.complexATan = function(a,b){
+    let square = evaluator.complexTools.complexMult(a,b,a,b);
+    let div = evaluator.complexTools.divC(square[0],square[1],square[0]+1,square[1]);
+    let lnradical = evaluator.complexTools.lnC(div[0],div[1]);
+    let sqrt = evaluator.complexTools.expC(lnradical[0]/2,lnradical[1]/2);
+    return evaluator.complexTools.complexASin(sqrt[0],sqrt[1]);
 }
-function complexFloor(a,b){
+evaluator.complexTools.complexFloor = function(a,b){
     return [Math.floor(a),Math.floor(b)];
 }
-function complexRound(a,b){
+evaluator.complexTools.complexRound = function(a,b){
     return [Math.round(a), Math.round(b)];
 }
-function complexCeil(a,b){
+evaluator.complexTools.complexCeil = function(a,b){
     return [Math.ceil(a),Math.ceil(b)];
 }
-function complexAbs(a,b){
+evaluator.complexTools.complexAbs = function(a,b){
     return a**2 + b**2;
 }
-function complexSqrt(a,b){
+evaluator.complexTools.complexSqrt = function(a,b){
     let logged = lnC(a,b);
     return expC(logged[0]/2,logged[1]/2);
+}
+evaluator.complexTools.re = function(tree){
+    if(tree.values[1].type == 'Number') return tree.values[1];
+    if(tree.values[1].type == 'Complex') return {type:'Number',values:tree.values[1].values[0]};
+    return tree;
+}
+evaluator.complexTools.im = function(tree){
+    if(tree.values[1].type == 'Number') return {type:'Complex',values:[0,0]};
+    if(tree.values[1].type == 'Complex') return {type:'Complex',values:[0,tree.values[1].values[1]]};
+    return tree;
 }
 //integrate bigint handling into numbers
 //complex contour plot
