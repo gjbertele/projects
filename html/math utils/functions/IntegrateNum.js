@@ -3,6 +3,8 @@ evaluator.integrateNum = function(tree, canvas, ctx, variables) {
     let vIm = 0;
     let lb = tree.values[2];
     let ub = tree.values[3];
+    if(typeof lb == 'number') lb = {type:'Number',values:lb};
+    if(typeof ub == 'number') ub = {type:'Number',values:ub};
     if (lb.type != 'Number' || lb.type != 'Number') {
         tree.values[2] = lb.values;
         tree.values[3] = ub.values;

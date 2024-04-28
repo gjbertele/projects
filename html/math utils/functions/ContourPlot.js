@@ -1,4 +1,4 @@
-function contourPlot(tree, canvas, ctx, variables) {
+evaluator.contourPlot = function(tree, canvas, ctx, variables) {
     let func = tree.values[1];
     let xmin = tree.values[2];
     let xmax = tree.values[3];
@@ -30,7 +30,7 @@ function contourPlot(tree, canvas, ctx, variables) {
             newvars['x'] = (x / nw) * dx + xmin.values;
             for (let y = 0; y <= nh; y += 3) {
                 newvars['y'] = (y / nh) * dy + ymin.values;
-                let evaled = evaluateEquation(func, newvars);
+                let evaled = evaluator.evaluateEquation(func, newvars);
                 if (evaled.type != 'Number') return tree;
                 if (!isNaN(evaled.values)) {
                     pts.push([x, y, evaled.values]);
@@ -50,7 +50,7 @@ function contourPlot(tree, canvas, ctx, variables) {
             ctx.fillStyle = 'rgb(' + cr + ',' + cg + ',' + cb + ')';
             ctx.fillRect(x, y, 3, 3)
         }
-        ctx.fillStyle = '#000'
+        ctx.fillStyle = '#FFF'
         let xAxis = -xmin.values * nw / dx;
         if (xAxis > 0 && xAxis < nw) {
             ctx.fillRect(xAxis - 1, 0, 3, nh);

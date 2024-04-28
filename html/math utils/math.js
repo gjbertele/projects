@@ -218,6 +218,8 @@ class mathUtils {
             let m = Math.min(a,b);
             a = a+b - 2*m;
             b = m;
+            if(a<=1 || b<=1) return 1;
+
         }
         return a;
     }

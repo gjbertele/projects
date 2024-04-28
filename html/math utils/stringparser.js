@@ -133,7 +133,21 @@ function parseEquation(string) {
         }
         i++;
     }
-    let operationsOrder = ['^','*','/','+','%'];
+    i = 0;
+    while(i < parts.length){
+        if(parts[i].finished == true){
+            i++;
+            continue;
+        }
+        if(parts[i].type == '-' &&(i == 0 || isOperator(parts[i-1].type))){
+            parts[i] = {type:'*',values:[{type:'Number',values:-1},parts[i+1]],finished:true};
+            parts[i+1] = '_';
+            parts = parts.filter(i => i != '_');
+        }
+        i++;
+
+    }
+    let operationsOrder = ['^','*','/','%','-','+'];
     for(let k = 0; k<operationsOrder.length; k++){
         let index = 0; 
         while (index < parts.length) {
@@ -155,6 +169,7 @@ function parseEquation(string) {
             index++;
         }
     }
+    parts = parts.filter(j => j != '_');
     i = 0;
     while (i < parts.length) {
         if (parts[i].finished == true) {
@@ -173,35 +188,8 @@ function parseEquation(string) {
         }
         i++;
     }
-    i = 0;
-    while (i < parts.length) {
-        if (parts[i].finished == true) {
-            i++;
-            continue;
-        }
-        if (parts[i].type == '-') {
-            if (i == 0) {
-                parts[i] = {
-                    type: parts[i].type,
-                    values: [{
-                        type: "Number",
-                        values: 0
-                    }, parts[i + 1]],
-                    finished: true
-                };
-            } else {
-                parts[i] = {
-                    type: parts[i].type,
-                    values: [parts[i - 1], parts[i + 1]],
-                    finished: true
-                };
-                parts[i - 1] = '_';
-            }
-            parts[i + 1] = '_';
-            parts = parts.filter(i => i != '_');
-        }
-        i++;
-    }
+    parts = parts.filter(j => j != '_');
+
     return parts;
 
 }
@@ -267,6 +255,10 @@ evaluator.evaluateEquation = function(ntree, variables = {}) {
             return evaluator.complexTools.re(tree,variables);
         } else if(tree.values[0] == 'Im'){
             return evaluator.complexTools.im(tree,variables);
+        } else if(tree.values[0] == 'PolyFactor'){
+            return evaluator.polyFactor(tree.values[1]);;
+        } else if(tree.values[0] == 'Plot5D'){
+            return evaluator.plot5D(tree,canvas,ctx,variables);
         } else {
             canvas.style.display = 'none'
         }

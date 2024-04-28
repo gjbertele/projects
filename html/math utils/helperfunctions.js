@@ -136,8 +136,12 @@ function fade(current, min, max, array){
 }
 evaluator.equationToString = function(eq){
     if(eq.type == 'Number') return eq.values;
+    if(eq.type == '*' && eq.values[1].type == 'Number' && eq.values[1].values == 1) return evaluator.equationToString(eq.values[0]);
+    if(eq.type == '*' && eq.values[0].type == 'Number' && eq.values[0].values == 1) return evaluator.equationToString(eq.values[1]);
+    if(eq.type == '*' && eq.values[1].type == 'Number' && eq.values[1].values == -1) return '-'+evaluator.equationToString(eq.values[0]);
+    if(eq.type == '*' && eq.values[0].type == 'Number' && eq.values[0].values == -1) return '-'+evaluator.equationToString(eq.values[1]);
     if(eq.type == 'List') return eq.values.map(i => i = i.values).join(', ')
-    if(isOperator(eq.type)) return evaluator.equationToString(eq.values[0]) + ' ' + eq.type + ' ' + evaluator.equationToString(eq.values[1]);
+    if(isOperator(eq.type)) return (evaluator.equationToString(eq.values[0]) + ' ' + eq.type + ' ' + evaluator.equationToString(eq.values[1])).replaceAll('+ -','- ');
     if(eq.type == 'Variable') return eq.values[0];
     if(eq.type == 'Complex'){
         if(eq.values[0] == 0) return eq.values[1]+'i';
@@ -285,16 +289,139 @@ evaluator.complexTools.im = function(tree){
     if(tree.values[1].type == 'Complex') return {type:'Complex',values:[0,tree.values[1].values[1]]};
     return tree;
 }
-//integrate bigint handling into numbers
+evaluator.polyTreeToTerms = function(tree){
+    if(tree.type == 'Number') return [tree.values];
+    if(tree.type == 'Variable') return [0,1]
+    if(tree.type == '^'){
+        let k = (new Array(tree.values[1].values + 1)).fill(0);
+        k[k.length - 1] = 1;
+        return k;
+    }
+    if(tree.type == '+' || tree.type == '-'){
+        let t1 = tree.values[0];
+        let t2 = tree.values[1];
+        t1 = evaluator.polyTreeToTerms(t1);
+        t2 = evaluator.polyTreeToTerms(t2);
+
+        if(tree.type == '-'){
+            if(tree.values[1].type == '*' || tree.values[1].type == '^' || tree.values[1].type == 'Variable' || tree.values[1].type == 'Number'){
+                for(let i = 0; i<t2.length-1; i++) t2[i] *= -1;
+                t2[t2.length - 1] *= -1;
+            } 
+        }
+        return evaluator.polyHandler.polyAdd(t1,t2);
+        
+    }
+    if(tree.type == '*'){
+        let A = tree.values[0];
+        let B = tree.values[1]
+        if(tree.values[1].type == 'Number'){
+            A = B;
+            B = tree.values[0];
+        }
+        if(A.type == 'Number' && B.type == 'Variable' || B.type == '^'){
+            let k = evaluator.polyTreeToTerms(B);
+            for(let i = 0; i<k.length; i++) k[i]*=A.values;
+            return k;
+        }
+        A = evaluator.polyTreeToTerms(A);
+        B = evaluator.polyTreeToTerms(B);
+        return evaluator.polyHandler.polyMultiply(A,B);
+    }
+}
+evaluator.polyHandler = {};
+evaluator.polyHandler.polyMultiply = function(p1,p2){
+    let output = (new Array(p1.length+p2.length)).fill(0);
+    for(let i = 0; i<p1.length; i++){
+        for(let j = 0; j<p2.length; j++){
+            output[(i+j)] += p1[i]*p2[j];
+        }
+    }
+    return output;
+}
+evaluator.polyHandler.polyAdd = function(p1,p2){
+    let output = p2.slice();
+    for(let i = 0; i<p1.length; i++){
+        if(output.length <= i) output[i] = 0;
+        output[i] += p1[i];
+    }
+    return output;
+}
+evaluator.polyHandler.polyEval = function(pol,x){
+    let v = 0;
+    for(let i = 0; i<pol.length; i++) v+=pol[i]*(x**i);
+    return v;
+}
+evaluator.polyHandler.recurseRoot = function(terms,p1,p2){
+    let ep1 = evaluator.polyHandler.polyEval(terms, p1);
+    for(let i = 0; i<5000; i++){
+        let k = evaluator.polyHandler.polyEval(terms, (p1+p2)/2);
+        if(k >= 0){
+            if(ep1 >= 0){
+                p1 = (p1+p2)/2;
+            } else {
+                p2 = (p1+p2)/2;
+            }
+        } else {
+            if(ep1 >= 0){
+                p2 = (p1+p2)/2;
+            } else {
+                p1 = (p1+p2)/2;
+            }
+        }
+    }
+    return p2;
+}
+evaluator.polyHandler.polyDivide = function(p1, p2){
+    let output = (new Array(100)).fill(0);
+    let p2Operating = p2.slice();
+    for(let i = 0; i<20; i++){
+        output[i] += p1[i]/p2[0];
+        let subterm = evaluator.polyHandler.polyMultiply([-output[i]],p2Operating);
+        p1 = evaluator.polyHandler.polyAdd(p1,subterm);
+        p2Operating = [0,...p2Operating];
+    }
+    return output;
+}
+evaluator.convexHull = function(points){
+    if(points.length == 0) return;
+    let starting = points.sort((a,b) => a.x - b.x)[0];
+    let currentPoint = structuredClone(starting);
+    let i = 0;
+    let endpoint;
+    let pts = [];
+    while(endpoint != starting){
+        pts[i] = currentPoint;
+        endpoint = points[0];
+        for(let j = 0; j<points.length; j++){
+            if(evaluator.compt(endpoint,currentPoint) || evaluator.isLeft(currentPoint,endpoint,points[j])){
+                endpoint = points[j];
+            }
+        }
+        currentPoint = endpoint;
+        i++;
+    }
+    return pts;
+    
+}
+evaluator.compt = function(a,b){
+    return a.x == b.x && a.y == b.y;
+}
+evaluator.distance = function(p1,p2){
+    return (p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2;
+}
+evaluator.isLeft = function(a,b,c){
+    return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x) > 0;
+} 
+
 //complex contour plot
-//Re(x) + Im(x) functions
-//generate shape of 3d inequalities with convex hull algorithm -> Plot4D or 4th dimension is color on plot3D
 //support for parametric functions -> Parametric(t,fx,fy,fz) handler
-//optimize numericalintegrate
 //automatic differentiator
-//apply expansion laws in EquationToString 
-//complex functions for basic math defaults
 //sum function
+//classify equation function
+//test for multiple different exponents & fractional multiplier constants
+//numerical differentiation for the rootfinder algorithm to find complex roots too
+//automatic closed forms for everything
 
 
 helpString = `Type in an integer to see its factorization<br>

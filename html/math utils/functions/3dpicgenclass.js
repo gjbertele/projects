@@ -65,15 +65,20 @@ pictureGen.worldDraw = (ctx) => {
     pictureGen.lookArraysUpdate()
 
     terrainFaces.sort((a, b) => pictureGen.cDist(b[0]) - pictureGen.cDist(a[0])).forEach(function(i, v) {
-        let ptsProjected = [pictureGen.projectTo3D(i[0].x, i[0].y, i[0].z), pictureGen.projectTo3D(i[1].x, i[1].y, i[1].z), pictureGen.projectTo3D(i[2].x, i[2].y, i[2].z), pictureGen.projectTo3D(i[3].x, i[3].y, i[3].z)]
+        let ptsProjected = i.slice(0,-1).map(k => k = pictureGen.projectTo3D(k.x,k.y,k.z));//[pictureGen.projectTo3D(i[0].x, i[0].y, i[0].z), pictureGen.projectTo3D(i[1].x, i[1].y, i[1].z), pictureGen.projectTo3D(i[2].x, i[2].y, i[2].z), pictureGen.projectTo3D(i[3].x, i[3].y, i[3].z)]
         let ptsarrx = ptsProjected.map(i => i = i.x)
         let ptsarry = ptsProjected.map(i => i = i.y)
+        console.log(ptsProjected)
         if (!(Math.max(...ptsarrx) > pictureGen.w + 800 || Math.min(...ptsarrx) < -800 || Math.max(...ptsarry) > pictureGen.h + 800 || Math.min(...ptsarry) < -800 || i[0].y < pictureGen.cameraPos.y)) {
             ctx.beginPath()
             ptsProjected.forEach(function(j, v) {
                 ctx.lineTo(j.x, j.y)
             })
-            ctx.fillStyle = i[4];
+            if(i[i.length - 1].x == undefined){
+                ctx.fillStyle = i[i.length - 1];
+            } else {
+                ctx.fillStyle = '#FFF'
+            }
             ctx.fill();
             //ctx.stroke()
         }
@@ -95,9 +100,7 @@ pictureGen.regenerateFaces = function(eqFunc) {
         heightmap[v] = {
             x: tx * 50,
             y: 0,
-            z: ty * 50,
-            index: v,
-            connections: []
+            z: ty * 50
         }
         heightmap[v].y = eqFunc(tx - 50 / 2, ty - 50 / 2)
     }
@@ -140,6 +143,35 @@ evaluator.generatePictureFromEquation = function(eqFunc, parameters, width, heig
         let tb = fade(k, 0, 1000, bArr) >> 0;
         terrainFaces[i][4] = 'rgb('+tr+','+tg+','+tb+')';
     }
+    console.log(terrainFaces)
     pictureGen.worldDraw(ctx);
     return maxvs;
+}
+
+evaluator.generatePictureFromFaces = function(faces, width, height, canvas, ctx){
+    pictureGen.w = width;
+    pictureGen.h = height;
+    canvas.width = pictureGen.w;
+    canvas.height = pictureGen.h;
+    pictureGen.fov = pictureGen.w*0.9;
+    pictureGen.fovInvConst = 1/pictureGen.fov;
+    terrainFaces = faces;
+    pictureGen.worldDraw(ctx);
+    return;
+}
+
+evaluator.generatePictureFromPoints = function(points, width, height, canvas, ctx, bounds){
+    pictureGen.w = width;
+    pictureGen.h = height;
+    canvas.width = pictureGen.w;
+    canvas.height = pictureGen.h;
+    pictureGen.fov = pictureGen.w*0.9;
+    pictureGen.fovInvConst = 1/pictureGen.fov;
+    points = points.sort((a,b) => pictureGen.cDist(b) - pictureGen.cDist(a));
+    for(let i = 0; i<points.length; i++){
+        let drawn = pictureGen.projectTo3D((points[i].x - bounds[0])/(bounds[1] - bounds[0])*2000 + 300,(points[i].y - bounds[2])/(bounds[3] - bounds[2])*2000 - 500,(points[i].z - bounds[4])/(bounds[5] - bounds[4])*2000);
+        ctx.fillStyle = points[i].value;
+        ctx.fillRect(drawn.x - 2, drawn.y - 2, 4, 4);
+    }
+    return;
 }

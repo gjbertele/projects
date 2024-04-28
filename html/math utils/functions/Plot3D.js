@@ -22,11 +22,11 @@ evaluator.plot3D = function(tree, canvas, ctx, variables) {
         }
         evaluator.generatePictureFromEquation(eqf, newvars, nw, nh, canvas, ctx)
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = '#FFF';
         let vs = [eqf(0, 0), eqf(25, 25), eqf(25, -25), eqf(-25, 25)]
         let corner2 = pictureGen.projectTo3D(0, 0, 0 );
-        let corner3 = pictureGen.projectTo3D(2500, 0, 0);
-        let corner4 = pictureGen.projectTo3D(0, 0, 2500);
+        let corner3 = pictureGen.projectTo3D(2000, 0, 0);
+        let corner4 = pictureGen.projectTo3D(0, 0, 2000);
         ctx.fillText(`(${xmin.values},${-vs[3]/50},${ymax.values})`, corner4.x, corner4.y);
         ctx.textAlign = 'right';
         ctx.fillText(`(${xmax.values},${-vs[2]/50},${ymin.values})`, corner3.x, corner3.y);
