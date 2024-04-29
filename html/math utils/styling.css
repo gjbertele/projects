@@ -25,9 +25,52 @@ body {
     outline:none;
     transition: all 0.3s linear;
 }
+.DEInput {
+    position:absolute;
+    font-family:Arial, Helvetica, sans-serif;
+    left:35%;
+    top:10%;
+    width:26%;
+    height:2.8%;
+    font-size:0.9em;
+    border-radius:1em;
+    color:#FFF;
+    background:#150c25;
+    padding-left:0.5em;
+    border-style:solid;
+    border-color:#522e92;
+    outline:none;
+    transition: all 0.3s linear;
+    display:none;
+}
+.DEEvaluate {
+    position:absolute;
+    font-family:Arial, Helvetica, sans-serif;
+    left:62%;
+    top:10%;
+    width:fit-content;
+    height:3.5%;
+    font-size:0.7em;
+    text-align:center;
+    border-radius:1em;
+    color:#FFF;
+    font-weight:bold;
+    background:#32175f;
+    padding-left:0.5em;
+    border-style:solid;
+    border-color:#522e92;
+    outline:none;
+    transition: all 0.2s ease-in-out;
+    cursor:pointer;
+    display:none;
+}
 .textinput:focus{
     border-style:solid;
     border-color:#673ab7;
+}
+.DEEvaluate:active{
+    background:#150c25;
+
 }
 .textOutput{
     position:absolute;

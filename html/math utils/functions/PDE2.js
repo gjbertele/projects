@@ -7,10 +7,10 @@ class equation {
     varsInTermOf = [];
     gradTemplate = [];
     optimizer = {
-        learningRate:1e-7,
-        momentum:0.5,
+        learningRate:1e-1,
+        momentum:0.9,
         scramble:false,
-        scrambleThreshold:1e3,
+        scrambleThreshold:0.001,
         prestop: false
     }
     constructor(bvs){
@@ -101,7 +101,7 @@ class equation {
                 continue;
             }
             let grad = eg.totalGrad;
-            if(i % 100 == 0) console.log("Error: "+error+" Epoch: "+ (i+1) +"/"+epochs+" Gradient:",grad);
+            if(i % 1 == 0) console.log("Error: "+error+" Epoch: "+ (i+1) +"/"+epochs+" Gradient:",grad);
             for(let j = 0; j<this.baseVariables.length; j++){
                 if(this.baseVariables[j].modify == false) continue;
                 for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){

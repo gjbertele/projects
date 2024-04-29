@@ -198,15 +198,15 @@ function parseEq(str) {
     return parseEquation(str)[0];
 }
 
-evaluator.evaluateEquation = function(ntree, variables = {}) {
+evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [], varMap = []) {
     let tree = evaluator.simplify(structuredClone(ntree))
     if (tree.type == 'Variable' && variables[tree.values] != undefined) return {
         type: "Number",
         values: variables[tree.values]
     };
-    if (tree.type == 'Parenthesis' && tree.values.length == 1) return evaluator.evaluateEquation(tree.values[0], variables);
+    if (tree.type == 'Parenthesis' && tree.values.length == 1) return evaluator.evaluateEquation(tree.values[0], variables, functionPatch);
     if (isOperator(tree.type)) {
-        return evaluator.operation(tree, canvas, ctx, variables);
+        return evaluator.operation(tree, canvas, ctx, variables, functionPatch);
         
     } else if(tree.type == '!'){
         let evaled = tree.values[0];
@@ -218,8 +218,19 @@ evaluator.evaluateEquation = function(ntree, variables = {}) {
     } else if (tree.type == 'Function') {
         let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs', 'floor', 'ceil', 'round']
         let complexFunctions = [evaluator.complexTools.complexSin, evaluator.complexTools.complexCos, evaluator.complexTools.complexACos, evaluator.complexTools.complexASin, evaluator.complexTools.complexTan, evaluator.complexTools.complexATan, evaluator.complexTools.lnC, evaluator.complexTools.complexSqrt, evaluator.complexTools.complexAbs, evaluator.complexTools.complexFloor, evaluator.complexTools.complexCeil, evaluator.complexTools.complexRound]
-        for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables)
-        if (defaultMathFunctions.includes(tree.values[0])) {
+        for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables, functionPatch);
+        if(functionPatch[tree.values[0]] != undefined){
+            let args = tree.values.slice(1).map(i => i = i.values);
+            let outputArgs = (new Array(varMap.length)).fill(0);
+            for(let i = 0; i<args.length; i++){
+                outputArgs[functionPatch[tree.values[0]].varOf[i]] = args[i]; 
+            }
+            console.log(outputArgs)
+            return {
+                type:'Number',
+                values: functionPatch[tree.values[0]].eval(outputArgs)
+            }
+        } else if (defaultMathFunctions.includes(tree.values[0])) {
             let x = tree.values[1];
             if (x.type == 'Number') {
                 return {

@@ -1,5 +1,5 @@
-evaluator.operation = function(tree, canvas, ctx, variables){
-    let v = [evaluator.evaluateEquation(tree.values[0], variables), evaluator.evaluateEquation(tree.values[1], variables)];
+evaluator.operation = function(tree, canvas, ctx, variables, functionPatch){
+    let v = [evaluator.evaluateEquation(tree.values[0], variables, functionPatch), evaluator.evaluateEquation(tree.values[1], variables, functionPatch)];
     if (v[0].type == 'Number' && v[1].type == 'Number') {
         switch (tree.type) {
             case '*':

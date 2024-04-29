@@ -1,12 +1,14 @@
 const textbox = document.querySelector('.textinput');
+const deInput = document.querySelector('.DEInput');
+const deEvaluate = document.querySelector('.DEEvaluate');
 const output = document.querySelector('.textOutput');
 const mUtils = new mathUtils();
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
 let helpString;
-function buildDESolver(tree){
-    let terms = findAddition(tree);
-    let d = findFunctions(tree);
+evaluator.buildDESolver = function(tree){
+    let terms = evaluator.findAddition(tree);
+    let d = evaluator.findFunctions(tree);
     let functions = d.functions;
     for(let i = 0; i<functions.length; i++){
         while(functions[i].values[0].startsWith('d')){
@@ -20,8 +22,8 @@ function buildDESolver(tree){
         }
     }
     functions = functions.filter((i,v) => i != '_')
-    let variablesOf = d.varsOf;
-    variablesOf = variablesOf.filter((i,v) => v == variablesOf.indexOf(i));
+    let originalVariablesOf = d.varsOf.slice();
+    let variablesOf = originalVariablesOf.filter((i,v) => v == originalVariablesOf.indexOf(i));
     let baseVariables = [];
     let functionNames = functions.map(i => i = i.values[0]);
     for(let i = 0; i<functions.length; i++){
@@ -50,18 +52,33 @@ function buildDESolver(tree){
             let variableList = data.terms;
             let t = new term(eq);
             for(let j = 0; j<variableList.length; j++){
-                t.push(functionNames.indexOf(variableList[j][0]) + 1,variableList[j][1]);
+                let c = variableList[j];
+                if(c[2] == 0){
+                    t.push(functionNames.indexOf(variableList[j][0]) + 1,variableList[j][1]);
+                } else {
+                    t.push(functionNames.length + variablesOf.indexOf(variableList[j][0]) + 1,(new Array(variablesOf.length)).fill(0));
+                }
             }
+            t.coefficient *= data.coefficient;
+            eq.push(t);
+        } else if(ti.type == 'Variable'){
+            let vn = ti.values[0];
+            let t = new term(eq);
+            t.push(variablesOf.indexOf(vn)+1+functionNames.length,(new Array(variablesOf.length)).fill(0));
+            eq.push(t);
+        } else if(ti.type == 'Function'){
+            let func = ti.values[0];
+            let t = new term(eq);
+            t.push(functionNames.indexOf(func),(new Array(variablesOf.length)).fill(0));
             eq.push(t);
         }
     }
-    return eq;
+    return {eq,functionNames,terms,originalVariablesOf};
 }
 
 function processMultiplication(tree, variablesOf){
     let terms = [];
     let coefficient = 1;
-    if(typeof tree.values == 'string') return [];
     if(tree.type == 'Number'){
         coefficient = tree.values;
     } else if(tree.type == 'Function'){
@@ -74,6 +91,14 @@ function processMultiplication(tree, variablesOf){
         let count = (new Array(variablesOf.length)).fill(0);
         for(let j = 0; j<by.length; j++) count[by[j]]++;
         terms.push([func, count]);
+    } else if(tree[0] != undefined && tree[0].type == 'Variable') {
+        let func = tree[0].values;
+        let count = (new Array(variablesOf.length)).fill(0);
+        if(func.startsWith('d') == false) terms.push([func, count,0])
+    } else if(tree.type == 'Variable'){
+        let func = tree.values;
+        let count = (new Array(variablesOf.length)).fill(0);
+        if(func.startsWith('d') == false) terms.push([func, count,1])
     } else {
         let a = processMultiplication(tree.values[0], variablesOf);
         let b = processMultiplication(tree.values[1], variablesOf);
@@ -84,18 +109,18 @@ function processMultiplication(tree, variablesOf){
     return {terms,coefficient};
 }
 
-function findAddition(tree){
+evaluator.findAddition = function(tree){
     if(tree.type == 'Number') return [tree];
     let additions = [];
     if(tree.type != '+' && tree.type != 'Parenthesis') return [tree];
     if(tree.type == 'Parenthesis'){
-        return findAddition(tree.values[0]);
+        return evaluator.findAddition(tree.values[0]);
     }
-    additions.push(...findAddition(tree.values[1]));
-    additions.push(...findAddition(tree.values[0]));
+    additions.push(...evaluator.findAddition(tree.values[1]));
+    additions.push(...evaluator.findAddition(tree.values[0]));
     return additions;
 }
-function findFunctions(tree){
+evaluator.findFunctions = function(tree){
     let varsOf = [];
     let functions = [];
     if(tree.type == 'Function'){
@@ -103,10 +128,12 @@ function findFunctions(tree){
         varsOf.push(...tree.values.slice(1).map(i => i = i.values));
     } else if(typeof tree.values != 'string' && tree.values.length != undefined){
         for(let i = 0; i<tree.values.length; i++){
-            let d = findFunctions(tree.values[i]);
+            let d = evaluator.findFunctions(tree.values[i]);
             varsOf.push(...d.varsOf);
             functions.push(...d.functions);
         }
+    } else if(tree.type == 'Variable'){
+        varsOf.push(tree.values);
     }
     return {varsOf,functions};
 }

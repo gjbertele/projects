@@ -1,6 +1,5 @@
 evaluator.polyFactor = function(tree){
     let terms = evaluator.polyTreeToTerms(tree);
-    console.log(terms)
     let leadingCoeff = terms[terms.length - 1];
     while(leadingCoeff == 0){
         terms.length--;
