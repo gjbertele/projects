@@ -317,6 +317,7 @@ evaluator.complexTools.im = function(tree){
     return tree;
 }
 evaluator.polyTreeToTerms = function(tree){
+    if(tree.type == 'Parenthesis') return evaluator.polyTreeToTerms(tree.values[0])
     if(tree.type == 'Number') return [tree.values];
     if(tree.type == 'Variable') return [0,1]
     if(tree.type == '^'){
@@ -381,7 +382,7 @@ evaluator.polyHandler.polyEval = function(pol,x){
 }
 evaluator.polyHandler.recurseRoot = function(terms,p1,p2){
     let ep1 = evaluator.polyHandler.polyEval(terms, p1);
-    for(let i = 0; i<5000; i++){
+    for(let i = 0; i<30000; i++){
         let k = evaluator.polyHandler.polyEval(terms, (p1+p2)/2);
         if(k >= 0){
             if(ep1 >= 0){
@@ -397,9 +398,16 @@ evaluator.polyHandler.recurseRoot = function(terms,p1,p2){
             }
         }
     }
+    if(Math.abs(p2 - Math.round(p2)) < 1e-5) p2 = Math.round(p2); 
     return p2;
 }
 evaluator.polyHandler.polyDivide = function(p1, p2){
+    for(let i = 0; i<p1.length; i++){
+        if(Math.abs(1 - Math.round(p1[i])/p1[i]) < 0.01 || Math.abs(p1[i]) < 1e-5) p1[i] = Math.round(p1[i]);
+    }
+    for(let i = 0; i<p2.length; i++){
+        if(Math.abs(1 - Math.round(p2[i])/p2[i]) < 0.01 || Math.abs(p2[i]) < 1e-5) p2[i] = Math.round(p2[i]);
+    }
     let output = (new Array(100)).fill(0);
     let p2Operating = p2.slice();
     for(let i = 0; i<20; i++){
@@ -407,6 +415,10 @@ evaluator.polyHandler.polyDivide = function(p1, p2){
         let subterm = evaluator.polyHandler.polyMultiply([-output[i]],p2Operating);
         p1 = evaluator.polyHandler.polyAdd(p1,subterm);
         p2Operating = [0,...p2Operating];
+    }
+    
+    for(let i = 0; i<output.length; i++){
+        if(Math.abs(output[i]) < 1e-5) output[i] = Math.round(output[i]);
     }
     return output;
 }

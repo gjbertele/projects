@@ -267,7 +267,7 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
         } else if(tree.values[0] == 'Im'){
             return evaluator.complexTools.im(tree,variables);
         } else if(tree.values[0] == 'PolyFactor'){
-            return evaluator.polyFactor(tree.values[1]);;
+            return evaluator.polyFactor(tree.values[1])[0];
         } else if(tree.values[0] == 'Plot5D'){
             return evaluator.plot5D(tree,canvas,ctx,variables);
         } else {
