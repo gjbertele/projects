@@ -112,7 +112,7 @@ function processMultiplication(tree, variablesOf){
 evaluator.findAddition = function(tree){
     if(tree.type == 'Number') return [tree];
     let additions = [];
-    if(tree.type != '+' && tree.type != 'Parenthesis') return [tree];
+    if(tree.type != '+' && tree.type != 'Parenthesis' && tree.type != '-') return [tree];
     if(tree.type == 'Parenthesis'){
         return evaluator.findAddition(tree.values[0]);
     }
@@ -192,7 +192,7 @@ evaluator.equationToString = function(eq){
 
 //[-210, -300, -260, 0.8953539062730909, -2.4582962514340134, 0]
 
-
+ 
 /*
 let A = new variable([0,1]);
 let B = new variable([0]);

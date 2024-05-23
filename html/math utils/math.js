@@ -17,8 +17,8 @@ class mathUtils {
         while(x % 5n == 0n) x/=5n;
         while(x % 3n == 0n) x/=3n;
         while(x % 2n == 0n) x/=2n;
-        let factors = x.factor(1); 
-        let factorPeriods = factors.map(i => i = this.#findPeriodPrimeBigIntFast(i)); 
+        let factors = this.pollardRho(x);
+        let factorPeriods = factors.map(i => i = this.findPeriodPrimeBigIntFast(i)); 
         if(factorPeriods.length == 1) return factorPeriods[0];
         return this.lcmArray(...factorPeriods)
     }
@@ -97,18 +97,59 @@ class mathUtils {
         n.push(...arr)
         return n;
     }
-    #findPeriodPrimeBigIntFast = function(x){
-        let possibles = (x - 1n).divisors().BigIntSort();
-        let k = 10n;
-        let p = 0n;
-        for(let i = 0n; i<possibles.length; i++){
-           while(p < possibles[i]){
-                k = k % x;
-                k*=10n;
-                p++;
-            }
-            if(k == 10n) return possibles[i];
+    fastDivisorsPeriod = function(x){
+        let primes;
+        if(x > 10n**5n){
+            primes = this.pollardRho(x);
+            primes = primes.filter((i,v) => primes.indexOf(i) == v);
+        } else {
+            primes = Object.keys(x.factor()).map(i => i = BigInt(i));
         }
+        let currentProduct = 1n;
+        let divisorsList = [];
+        let divisors = (new Array(primes.length+1)).fill(0n);
+        while(divisors[primes.length] == 0){
+            let index = 0;
+            while(index < primes.length && currentProduct*primes[index] >= x){
+                currentProduct = currentProduct/(primes[index]**divisors[index]);
+                divisors[index] = 0n;
+                index++;
+            }
+            if(index == primes.length || currentProduct*primes[index] > x){
+                break;
+                
+            }
+            divisors[index]++;
+            currentProduct *= primes[index];
+            if(x % currentProduct == 0n) divisorsList.push(currentProduct)
+        }
+        
+        return divisorsList.filter((i,v) => divisorsList.indexOf(i) == v); 
+    }
+    findPeriodPrimeBigIntFast = function(x){
+        if(x == 1n) return 0;
+        let possibles = this.fastDivisorsPeriod(x - 1n).map(i => i = BigInt(i)).BigIntSort();
+        let k = this.expMod(10n,possibles[0],x);
+        if(k == 1n) return possibles[0];
+        for(let i = 1; i<possibles.length; i++){
+            k = (k*this.expMod(10n,possibles[i]-possibles[i-1],x))%x;
+            if(k == 1n) return possibles[i];
+        }
+        k = (k*this.expMod(10n,x-1n-possibles[possibles.length - 1],x))%x;
+        if(k == 1n) return x-1n;
+        return;
+    }
+    expMod = function(a,b,mod){
+        let p = 1n;
+        let subp = a;
+        for(let i = 0n; i<this.#logBig(b,2n)+1n;i++){
+            let j = (1n << i);
+            if((b & j) != 0n){
+                p = (p * subp) % mod;
+            }
+            subp = (subp*subp)%mod;
+        }
+        return p;
     }
     //primes on interval function
     #generateMap = function(inp){
@@ -223,14 +264,12 @@ class mathUtils {
         }
         return a;
     }
-    BigIntAbs = function(x){
-        let s = n >>> 31;
-        n ^= n >> 31;
-
-        let c = (n & s) << 1;
-        for(let i = 0; i<30; i++) c = ((n ^= s) & (s = c)) << 1;
-        n ^= s;
-
+    BigIntMin = function(a,b){
+        if(a < b) return a;
+        return b;
+    }
+    BigIntAbs = function(n){
+        if(n < 0) return -1n*n;
         return n;
     }
     #euclideanGCDFastBigInt = function(a,b){
@@ -238,6 +277,18 @@ class mathUtils {
             let o = this.BigIntAbs(a-b);;
             b = this.BigIntMin(a,b);
             a = o;
+        }
+        return a;
+    }
+    #euclideanGCDFasterBigInt = function(a,b){
+        while(a != b){
+            if(a == 0) return b;
+            if(b == 0) return a;
+            if(a > b){
+                a = a % b;
+            } else {
+                b = b % a;
+            }
         }
         return a;
     }
@@ -262,6 +313,173 @@ class mathUtils {
         if(x/Math.sqrt(x) % 1 == 0) divisors.push(Math.sqrt(x));
         return divisors;
     }
+
+    generateSmoothNumbers = function(min, max, primes, numCount){
+        let numbers = [];
+        let currentNum = 1n;
+        let currentFactors = (new Array(primes.length)).fill(0)
+        while(numbers.length < numCount){
+            let index = Math.floor(Math.random()*primes.length);
+            let randomPrime = primes[index];
+            if(currentFactors[index] > 0 && currentNum > max){
+                currentNum /= randomPrime;
+                currentFactors[index]--;
+            } else if(currentNum < max){
+                currentNum *= randomPrime;
+                currentFactors[index]++;
+            }
+            if(currentNum > min && currentNum < max && !numbers.includes(currentNum)) numbers.push([currentNum,currentFactors.slice()]);
+        }
+        return numbers;
+    }
+    #pollardRhoSeparate = function(x){
+        let a = 2n;
+        let b = 2n;
+        let g = 1n;
+        while(g == 1n){
+            a = (a*a + 1n) % x;
+            b = (b*b + 1n) % x;
+            b = (b*b + 1n) % x;
+            g = this.#euclideanGCDFasterBigInt(this.BigIntAbs(a-b),x);
+        }
+        return g;
+    }
+    pollardRho = function(x){
+        if((x & (x - 1n)) == 0n) return (new Array(x.toString(2).length)).fill(2n);
+        let factors = [];
+        while(x != 1n){
+            let pr = this.#pollardRhoSeparate(x);
+            x/=pr;
+            if(pr == 1n) break;
+            if(this.primalityTest(pr)){
+                factors.push(pr);
+            } else {
+                factors.push(...this.pollardRho(pr));
+            }
+            if(x == 1n) break;
+            if(this.primalityTest(x)){
+                factors.push(x);
+                break;
+            }
+        }
+        return factors;
+    }
+    primalityTest = function(x){
+        if(x > 2n && x % 2n == 0) return false;
+        if(x > 3n && x % 3n == 0) return false;
+        let a = this.randomBigIntBig(this.#logBig(x,10n));
+        while(this.#euclideanGCDFasterBigInt(a,x) != 1n) a = this.randomBigIntBig(this.#logBig(x,10n));
+        let p = 1n;
+        let subp = a;
+        for(let i = 0n; i<this.#logBig(x,2n)+1n;i++){
+            let j = (1n << i);
+            if(((x-1n) & j) != 0n){
+                p = (p * subp) % x;
+            }
+            subp = (subp*subp)%x;
+        }
+        return p == 1;
+    }
+    convertToBinaryFactors = function(x, primes){
+        let factors = 0n;
+        for(let j = 0; j<primes.length; j++){
+            while(x % primes[j] == 0n){
+                x /= primes[j];
+                factors = factors ^ (1n << BigInt(j));
+            }
+        }
+        if(x == 1n) return factors;
+        return -1n;
+    }
+    quadraticSieveBinary = function(x){
+        let residues = [];
+        let xrt = sqrtBigInt(x);
+        let xrtLog = this.#logBig(xrt,10n);
+        let primes = firstPrimes.slice(0,75);
+        for(let i = 0; i<primes.length; i++){
+            let rem = primes[i]*primes[i] % x;
+            let rt = sqrtBigInt(rem);
+            if(rt*rt == rem) continue;
+            primes[i] = '_';
+        }
+        primes = primes.filter(i => i != '_');
+        for(let i = 0; i<100; i++){
+            let k = 0;
+            let res = 0;
+            let factors = 0;
+            while(true){
+                k = xrt+this.#randomBigInt(xrtLog);
+                if(k*k < x) continue;
+                res = (k*k) % x;
+                factors = this.convertToBinaryFactors(res, primes);
+                if(factors != -1n) break;
+            }
+            residues.push([k,factors])
+        }
+        let output = this.findEvenSums(residues,-1,0n,[]);
+        let prod1 = 1n;
+        let prod2 = 1n;
+        for(let i = 0; i<output.length; i++){
+            prod1 *= output[i]*output[i] % x;
+            prod2 *= output[i];
+        }
+        let prod3 = sqrtBigInt(prod1);
+        let f1 = prod2 + prod3;
+        let f2 = prod2 - prod3;
+        return [this.#euclideanGCDFasterBigInt(f1,x),this.#euclideanGCDFasterBigInt(f2,x)];
+    }
+    findEvenSums = function(set, index, csum, path){
+        if(csum == 0n && path.length > 0) return path;
+        if(index == set.length) return -1;
+        if(path.length == 5) return -1;
+        let a = this.findEvenSums(set, index+1,csum,path);
+        if((index > -1 && set.includes(set[index][0])) || (a != undefined && a != -1 && a.length > 0)){
+            return a;
+        }
+        if(index > -1 && !path.includes(set[index][0])){
+            let b = this.findEvenSums(set, index+1,csum^set[index][1],[...path,set[index][0]]);
+            if(b != undefined && b != -1 && b.length > 0){
+                return b;
+            }
+        }
+        return -1;
+    }
+    quadraticSieve = function(x){
+        let residues = [];
+        let prod = [];
+        while(prod == undefined || prod.length == 0){
+            for(let i = 0; i<10; i++){
+                let k = Math.round(Math.sqrt(x)*(Math.random()*2+1));
+                if(!residues.includes([k,(k*k)%x])) residues.push([k,(k*k)%x]);
+            }
+            prod = this.findSquareProducts(residues, 1, -1, []);
+        }
+        let p1 = 1;
+        let p2 = 1;
+        let p3 = 1;
+        for(let i = 0; i<prod.length; i++){
+            p1*=(prod[i]**2 % x);
+            p2*=prod[i];
+        }
+        p3 = Math.sqrt(p1);
+        let f1 = p2 + p3;
+        let f2 = p2 - p3;
+        f1 = this.#euclideanGCDFasterBigInt(BigInt(f1),BigInt(x));
+        f2 = this.#euclideanGCDFasterBigInt(BigInt(f2),BigInt(x));
+        return [f1,f2];
+    }
+    findSquareProducts = function(set, product, index, path){
+        if(Math.sqrt(product) % 1 == 0 && path.length >= 1 && product > 1) return path;
+        if(index == set.length) return;
+        if(index > - 1 && path.includes(set[index][0])) return this.findSquareProducts(set,product,index+1,path);
+        let a = this.findSquareProducts(set, product, index+1,path);
+        if(a != undefined && a.length > 0) return a;
+        if(index >= 0){
+            let b = this.findSquareProducts(set, product*set[index][1], index+1,[...path,set[index][0]]);
+            if(b != undefined) return b;
+        }
+        return;
+    }
     rev = function(x) {
         x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1);
         x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2);
@@ -270,6 +488,33 @@ class mathUtils {
         x = (x >>> 16) | (x << 16);
     
         return x >>> 0;
+    }
+    primeSieve = function(x){
+        let primeProduct = 2n;
+        let k = 3n;
+        let primes = [];
+        while(k <= x){
+            let gcd = this.#euclideanGCDFasterBigInt(k,primeProduct);
+            if(gcd == 1n){
+                primeProduct *= k;
+                primes.push(k);
+            }
+            k+=2n;
+        }
+        return primes;
+    }
+    eratosthenes = function(x){
+        let k = (new Array(x)).fill(0);
+        let i = 1;
+        let primes = []
+        while(i < x){
+            i++;
+            if(k[i] == 1) continue;
+            for(let j = 2*i; j<x; j+=i) k[j] = 1;
+            i++;
+            primes.push(i-1);
+        }
+        return primes;
     }
     #allDivisorsBigInt = function(x){
         let divisors = [];
@@ -292,6 +537,20 @@ class mathUtils {
             length-=20;
         }
         while(length > 0){
+            n*=10n;
+            n+=BigInt(Math.floor(Math.random()*10));
+            length--;
+        }
+        return n;
+    }
+    randomBigIntBig = function(length = 20n){
+        let n = 0n;
+        while(length > 19n){
+            n*=10n**20n;
+            n+=BigInt(Math.floor(Math.random()*(10**20)))
+            length-=20n;
+        }
+        while(length > 0n){
             n*=10n;
             n+=BigInt(Math.floor(Math.random()*10));
             length--;

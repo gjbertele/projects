@@ -101,7 +101,7 @@ class equation {
                 continue;
             }
             let grad = eg.totalGrad;
-            if(i % 1 == 0) console.log("Error: "+error+" Epoch: "+ (i+1) +"/"+epochs+" Gradient:",grad);
+            if(i % 1000 == 0) console.log("Error: "+error+" Epoch: "+ (i+1) +"/"+epochs+" Gradient:",grad);
             for(let j = 0; j<this.baseVariables.length; j++){
                 if(this.baseVariables[j].modify == false) continue;
                 for(let k = 0; k<this.baseVariables[j].coefficients.length; k++){
