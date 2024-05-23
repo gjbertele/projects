@@ -139,6 +139,128 @@ class mathUtils {
         if(k == 1n) return x-1n;
         return;
     }
+    gaussianEliminator = function(mat){
+        mat = mat.sort((a,b) => this.#gaussianFirstNumIndex(a)-this.#gaussianFirstNumIndex(b));
+        for(let i = 0; i<mat.length - 1; i++){
+            let sk = this.#gaussianFirstNumIndex(mat[i]);
+            if(sk == mat[i].length) continue;
+            for(let j = i+1; j<mat.length; j++){
+                let diff = mat[j][sk]/mat[i][sk];
+                mat[j] = this.#gaussianAddRow(mat[j],this.#gaussianMultiplyRow(mat[i],-diff));
+            }
+            mat = mat.sort((a,b) => this.#gaussianFirstNumIndex(a)-this.#gaussianFirstNumIndex(b));
+        }
+        for(let i = 0; i<mat.length; i++){
+            let ind = this.#gaussianFirstNumIndex(mat[i]);
+            if(ind != mat[i].length){
+                let converted = 1/mat[i][ind];
+                mat[i] = this.#gaussianMultiplyRow(mat[i],converted);
+            }
+        }
+        for(let i = mat.length - 1; i > 0; i--){
+            let ind = this.#gaussianFirstNumIndex(mat[i]);
+            if(ind == mat[i].length) continue;
+            for(let j = i-1; j>-1; j--){
+                let diff = mat[j][ind]/mat[i][ind];
+                mat[j] = this.#gaussianAddRow(mat[j],this.#gaussianMultiplyRow(mat[i],-diff));
+            }
+        }
+        return mat;
+    }
+    gaussianEliminatorMod = function(mat,mod){
+        for(let i = 0; i<mat.length; i++){
+            mat[i] = this.#gaussianMultiplyRowMod(mat[i],1,mod);
+        }
+        mat = mat.sort((a,b) => this.#gaussianFirstNumIndex(a)-this.#gaussianFirstNumIndex(b));
+        for(let i = 0; i<mat.length - 1; i++){
+            let sk = this.#gaussianFirstNumIndex(mat[i]);
+            if(sk == mat[i].length) continue;
+            for(let j = i+1; j<mat.length; j++){
+                let diff = -mat[j][sk]/mat[i][sk];
+                mat[j] = this.#gaussianAddRowMod(mat[j],this.#gaussianMultiplyRowMod(mat[i],diff,mod),mod);
+            }
+            mat = mat.sort((a,b) => this.#gaussianFirstNumIndex(a)-this.#gaussianFirstNumIndex(b));
+        }
+        for(let i = 0; i<mat.length; i++){
+            mat[i] = this.#gaussianMultiplyRowMod(mat[i],1,mod);
+        }
+        for(let i = 0; i<mat.length; i++){
+            let ind = this.#gaussianFirstNumIndex(mat[i]);
+            if(ind != mat[i].length){
+                let converted = mat[i][ind];
+                let k = 1;
+                if(mat[i][ind] % mod == 0) return;
+                while((converted*k + mod) % mod != 1){
+                    k++;
+                }
+                converted = k;
+                mat[i] = this.#gaussianMultiplyRowMod(mat[i],converted,mod);
+            }
+        }
+        for(let i = mat.length - 1; i > 0; i--){
+            let ind = this.#gaussianFirstNumIndex(mat[i]);
+            if(ind == mat[i].length) continue;
+            for(let j = i-1; j>-1; j--){
+                let diff = (mat[j][ind]/mat[i][ind] + mod) % mod;
+                mat[j] = this.#gaussianAddRowMod(mat[j],this.#gaussianMultiplyRowMod(mat[i],-diff,mod),mod);
+            }
+        }
+        return mat;
+    }
+    regTranspose = function(mat){
+        let output = [];
+        for(let i = 0; i<mat[0].length; i++){
+            output[i] = [];
+            for(let j = 0; j<mat.length; j++){
+                output[i][j] = mat[j][i];
+            }
+        }
+        return output;
+    }
+    quadsieveTranspose = function(mat){
+        let output = [];
+        for(let i = 0; i<mat[0].length; i++){
+            output[i] = [];
+            for(let j = 0; j<mat.length; j++){
+                output[i][j] = mat[j][i];
+            }
+            output[i].push(0);
+        }
+        return output;
+    }
+    #gaussianFirstNumIndex = function(row){
+        let i = 0;
+        while(i<row.length&&row[i]==0) i++;
+        return i;
+    }
+    #gaussianMultiplyRow = function(mat,c){
+        let n = [];
+        for(let i = 0; i<mat.length; i++){
+            n[i] = mat[i]*c;
+        }
+        return n;
+    }
+    #gaussianAddRow = function(mat,mat2){
+        let n = [];
+        for(let i = 0; i<mat.length; i++){
+            n[i] = mat[i] + mat2[i];
+        }
+        return n;
+    }
+    #gaussianAddRowMod = function(mat,mat2,mod){
+        let n = [];
+        for(let i = 0; i<mat.length; i++){
+            n[i] = (mat[i] + mat2[i] + mod) % mod;
+        }
+        return n;
+    }
+    #gaussianMultiplyRowMod = function(mat,c,mod){
+        let n = [];
+        for(let i = 0; i<mat.length; i++){
+            n[i] = (mat[i]*c + mod) % mod;
+        }
+        return n;
+    }
     expMod = function(a,b,mod){
         let p = 1n;
         let subp = a;
@@ -428,6 +550,90 @@ class mathUtils {
         let f2 = prod2 - prod3;
         return [this.#euclideanGCDFasterBigInt(f1,x),this.#euclideanGCDFasterBigInt(f2,x)];
     }
+
+    quadraticSieveGaussian = function(x){
+        let residues = [];
+        let lnx = Number(this.#logBig(x,10n))*Math.log(10);
+        let L = Math.exp(Math.sqrt(lnx*Math.log(lnx)/2));
+        let primes = firstPrimes.slice(0,L);
+        let rt = sqrtBigInt(x);
+        let l = this.#logBig(rt,10n);
+        let sk = [];
+        for(let i = 0; i<primes.length; i++){
+            let rem = primes[i]*primes[i] % x;
+            let rt = sqrtBigInt(rem);
+            if(rt*rt == rem) continue;
+            primes[i] = '_';
+        }
+        primes = primes.filter(i => i != '_');
+        
+        for(let i = 0; i<primes.length/2; i++){
+            let k = rt+this.#randomBigInt(l);
+            if(sk.includes(k)){ i--; continue; };
+            let j = (k*k)%x;
+            if(j == 0n){
+                return this.#euclideanGCDFasterBigInt(k,x);
+            }
+            let fac = this.convertToBinaryFactors(j,primes);
+            if(fac == -1n){
+                i--;
+                continue;
+            }
+            let m = [k,this.convertBinaryToArray(fac,BigInt(primes.length))];
+            residues.push(m);
+            sk.push(k);
+        }
+        while(residues.length < primes.length){
+            let rand = residues[Math.floor(Math.random()*residues.length)][0];
+            let rp = primes[Math.floor(primes.length*(1-Math.random()**10))];
+            if(rp == undefined) continue;
+            let n = rand*rp;
+            if(sk.includes(n)) continue;
+            let j = (n*n) % x;
+            if(j == 0n) return this.#euclideanGCDFasterBigInt(n,x);
+            let m = [n,this.convertBinaryToArray(this.convertToBinaryFactors(j,primes),primes.length)];
+            residues.push(m);
+            sk.push(n);
+        }
+        let bigmat = residues.map(i => i = i[1]);
+        let converted = this.quadsieveTranspose(bigmat);
+        let solved = this.gaussianEliminatorMod(converted,2);
+        
+        let combinedmap =( new Array(residues.length)).fill(0);
+        for(let i = 0; i<solved.length; i++){
+            if(this.countHigh(solved[i]) == 0){
+                for(let j = 0; j<solved[i].length; j++){
+                    if(solved[i][j] == 1) combinedmap[j] = 1;
+                }
+            }
+        }
+        let p1 = 1n;
+        let p2 = 1n;
+        for(let i = 0; i<combinedmap.length; i++){
+            if(combinedmap[i] == 1){
+                p1*=residues[i][0];
+                p2*=(residues[i][0]**2n)%x;
+            }
+        }
+        let rt2 = sqrtBigInt(p2);
+        let r1 = p1+rt2;
+        return this.#euclideanGCDFasterBigInt(r1,x);
+    }
+    countHigh = function(row){
+        let i = 0;
+        for(let j = 0; j<row.length; j++) i+=row[j];
+        return i % 2;
+    }
+    convertBinaryToArray(fac, s){
+        let l = [];
+        for(let i = 0n; i<s; i = i+1n){
+            l[Number(i)] = Number(fac & 1n);
+            fac = fac >> 1n;
+        }
+        return l;
+    }
+
+
     findEvenSums = function(set, index, csum, path){
         if(csum == 0n && path.length > 0) return path;
         if(index == set.length) return -1;
