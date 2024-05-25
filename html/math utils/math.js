@@ -454,29 +454,53 @@ class mathUtils {
         }
         return numbers;
     }
+    #pollardPolynomial = function(x){
+        return x*x+1n;
+    } 
+    //make faster quad sieve w list of [bign,bign]]
     #pollardRhoSeparate = function(x){
         let a = 2n;
         let b = 2n;
         let g = 1n;
         while(g == 1n){
-            a = (a*a + 1n) % x;
-            b = (b*b + 1n) % x;
-            b = (b*b + 1n) % x;
+            a = this.#pollardPolynomial(a) % x;
+            b = this.#pollardPolynomial(b) % x;
+            b = this.#pollardPolynomial(b) % x;
             g = this.#euclideanGCDFasterBigInt(this.BigIntAbs(a-b),x);
         }
         return g;
     }
     pollardRho = function(x){
+        console.log(x)
+        if(x <= 5n) return [x];
+        if(this.primalityTest(x)) return x;
         if((x & (x - 1n)) == 0n) return (new Array(x.toString(2).length)).fill(2n);
         let factors = [];
+        while(x % 2n == 0){
+            x/=2n;
+            factors.push(2n);
+        }
         while(x != 1n){
+            console.log('s',x)
             let pr = this.#pollardRhoSeparate(x);
-            x/=pr;
             if(pr == 1n) break;
+            let data = [];
+            if(pr == x){
+                if(this.#logBig(x,10n)<10n){
+                    factors.push(...Object.keys(x.factor()).map(i => i = BigInt(i)));
+                } else {
+                    factors.push(x);
+                }
+                break;
+            }
             if(this.primalityTest(pr)){
-                factors.push(pr);
+                data = [pr];
             } else {
-                factors.push(...this.pollardRho(pr));
+                data = this.pollardRho(pr);
+            }
+            while(x % pr == 0){
+                x/=pr;
+                factors.push(...data);
             }
             if(x == 1n) break;
             if(this.primalityTest(x)){
