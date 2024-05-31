@@ -270,6 +270,8 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
             return evaluator.polyFactor(tree.values[1])[0];
         } else if(tree.values[0] == 'Plot5D'){
             return evaluator.plot5D(tree,canvas,ctx,variables);
+        } else if(tree.values[0] == 'Derivative'){
+            return evaluator.derive(tree.values[1]);
         } else {
             canvas.style.display = 'none'
         }
