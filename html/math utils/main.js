@@ -10,7 +10,8 @@ document.body.onkeydown = function(e) {
         }
         let definitions = {
             e: 2.718,
-            pi: 3.14159265358979323846264
+            pi: 3.14159265358979323846264,
+            γ:0.5772156649
         }
         if (query.length > 1) {
             let j = query[1].replaceAll(' ', '').split("and");

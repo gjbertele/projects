@@ -162,11 +162,18 @@ function fade(current, min, max, array){
     return (1-n)*array[currentBetween] + n*array[currentBetween+1]
 }
 evaluator.equationToString = function(eq){
+    console.log(eq)
     if(eq.type == 'Number') return eq.values;
     if(eq.type == '*' && eq.values[1].type == 'Number' && eq.values[1].values == 1) return evaluator.equationToString(eq.values[0]);
     if(eq.type == '*' && eq.values[0].type == 'Number' && eq.values[0].values == 1) return evaluator.equationToString(eq.values[1]);
     if(eq.type == '*' && eq.values[1].type == 'Number' && eq.values[1].values == -1) return '-'+evaluator.equationToString(eq.values[0]);
     if(eq.type == '*' && eq.values[0].type == 'Number' && eq.values[0].values == -1) return '-'+evaluator.equationToString(eq.values[1]);
+    if(eq.type != 'Parenthesis' && eq.values[0] && (eq.values[0].type == '+' || eq.values[0].type == '-')){
+        eq.values[0] = {type:'Parenthesis',values:[eq.values[0]]};
+    }
+    if(eq.type != 'Parenthesis' && eq.values[1] && (eq.values[1].type == '+' || eq.values[1].type == '-')){
+        eq.values[1] = {type:'Parenthesis',values:[eq.values[1]]};
+    }
     if(eq.type == 'List') return eq.values.map(i => i = i.values).join(', ')
     if(isOperator(eq.type)) return (evaluator.equationToString(eq.values[0]) + ' ' + eq.type + ' ' + evaluator.equationToString(eq.values[1])).replaceAll('+ -','- ');
     if(eq.type == 'Variable') return eq.values[0];

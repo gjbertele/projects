@@ -218,7 +218,7 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
     } else if (tree.type == 'Function') {
         let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs', 'floor', 'ceil', 'round']
         let complexFunctions = [evaluator.complexTools.complexSin, evaluator.complexTools.complexCos, evaluator.complexTools.complexACos, evaluator.complexTools.complexASin, evaluator.complexTools.complexTan, evaluator.complexTools.complexATan, evaluator.complexTools.lnC, evaluator.complexTools.complexSqrt, evaluator.complexTools.complexAbs, evaluator.complexTools.complexFloor, evaluator.complexTools.complexCeil, evaluator.complexTools.complexRound]
-        for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables, functionPatch);
+        if(tree.values[0] != 'Derivative' && tree.values[0] != 'Simplify') for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables, functionPatch);
         if(functionPatch[tree.values[0]] != undefined){
             let args = tree.values.slice(1).map(i => i = i.values);
             let outputArgs = (new Array(varMap.length)).fill(0);
@@ -271,7 +271,18 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
         } else if(tree.values[0] == 'Plot5D'){
             return evaluator.plot5D(tree,canvas,ctx,variables);
         } else if(tree.values[0] == 'Derivative'){
-            return evaluator.derive(tree.values[1]);
+            if(tree.values[2]&&tree.values[2].type=='Number'&&tree.values[2].values>1){
+                let k = tree.values[1];
+                for(let i = 0; i<=tree.values[2].values; i++){
+                    let dk = evaluator.derive(k);
+                    k = evaluator.simplify(dk);
+                    console.log('DK',k)
+                }
+                return k;
+            }
+            return evaluator.simplify(evaluator.derive(tree.values[1]));
+        } else if(tree.values[0] == 'Harmonic'){
+            return evaluator.harmonic(tree);
         } else {
             canvas.style.display = 'none'
         }

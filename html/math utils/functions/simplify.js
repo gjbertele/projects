@@ -1,8 +1,35 @@
 evaluator.simplify = function(eqToSimplify, variables){
+    console.log(eqToSimplify)
     if(eqToSimplify.type == 'Number' || eqToSimplify.type == 'Complex') return eqToSimplify;
     if(eqToSimplify.type == 'Function'){
         for(let i = 0; i<eqToSimplify.values; i++) eqToSimplify.values[i] = evaluator.simplify(eqToSimplify.values[i]);
         return eqToSimplify;
+    }
+    if(eqToSimplify.type == '*'){
+        if((eqToSimplify.values[0].type == 'Number' && eqToSimplify.values[0].values == 0)||(eqToSimplify.values[1].type == 'Number' && eqToSimplify.values[1].values == 0)){
+            return {type:'Number',values:0};
+        }
+        if(eqToSimplify.values[0].type == 'Number' && eqToSimplify.values[0].values == 1){
+            return evaluator.simplify(eqToSimplify.values[1]);
+        }
+        return {type:'*',values:[evaluator.simplify(eqToSimplify.values[0]),evaluator.simplify(eqToSimplify.values[1])]}
+    }
+    if(eqToSimplify.type == '+'){
+        if(eqToSimplify.values[0].type == 'Number' && eqToSimplify.values[0].values == 0){
+            return evaluator.simplify(eqToSimplify.values[1]);
+        }
+        if(eqToSimplify.values[1].type == 'Number' && eqToSimplify.values[1].values == 0){
+            return evaluator.simplify(eqToSimplify.values[0]);
+        }
+        return {type:'+',values:[evaluator.simplify(eqToSimplify.values[0]),evaluator.simplify(eqToSimplify.values[1])]}
+    }
+    if(eqToSimplify.type == '^'){
+        if(eqToSimplify.values[1].type == 'Number' && eqToSimplify.values[1].values == 0){
+            return evaluator.simplify(eqToSimplify.values[0]);
+        }
+    }
+    if(eqToSimplify.type == 'Parenthesis'){
+        return evaluator.simplify(eqToSimplify.values[0]);
     }
     if(isOperator(eqToSimplify.type)){
         if(eqToSimplify.type == '^'){
