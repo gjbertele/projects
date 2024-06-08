@@ -218,7 +218,8 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
     } else if (tree.type == 'Function') {
         let defaultMathFunctions = ['sin', 'cos', 'acos', 'asin', 'tan', 'atan', 'log', 'sqrt', 'abs', 'floor', 'ceil', 'round']
         let complexFunctions = [evaluator.complexTools.complexSin, evaluator.complexTools.complexCos, evaluator.complexTools.complexACos, evaluator.complexTools.complexASin, evaluator.complexTools.complexTan, evaluator.complexTools.complexATan, evaluator.complexTools.lnC, evaluator.complexTools.complexSqrt, evaluator.complexTools.complexAbs, evaluator.complexTools.complexFloor, evaluator.complexTools.complexCeil, evaluator.complexTools.complexRound]
-        if(tree.values[0] != 'Derivative' && tree.values[0] != 'Simplify') for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables, functionPatch);
+        let notEvalChildren = ['Derivative','Simplify','ApplyLH']
+        if(!notEvalChildren.includes(tree.values[0])) for (let i = 1; i < tree.values.length; i++) tree.values[i] = evaluator.evaluateEquation(tree.values[i], variables, functionPatch);
         if(functionPatch[tree.values[0]] != undefined){
             let args = tree.values.slice(1).map(i => i = i.values);
             let outputArgs = (new Array(varMap.length)).fill(0);
@@ -261,7 +262,7 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
         } else if(tree.values[0] == 'Simplify'){
             return evaluator.simplify(ntree.values[1],variables);
         } else if(tree.values[0] == 'Zeta'){
-            return evaluator.zeta(tree.values[1],variables);
+            return evaluator.zeta(tree,variables);
         } else if(tree.values[0] == 'Re'){
             return evaluator.complexTools.re(tree,variables);
         } else if(tree.values[0] == 'Im'){
@@ -283,6 +284,10 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
             return evaluator.simplify(evaluator.derive(tree.values[1]));
         } else if(tree.values[0] == 'Harmonic'){
             return evaluator.harmonic(tree);
+        } else if(tree.values[0] == 'Factorial'){
+            return evaluator.fastFactorial(tree);
+        } else if(tree.values[0] == 'ApplyLH'){
+            return evaluator.applyLopitals(tree);
         } else {
             canvas.style.display = 'none'
         }

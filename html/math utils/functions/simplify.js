@@ -1,5 +1,4 @@
 evaluator.simplify = function(eqToSimplify, variables){
-    console.log(eqToSimplify)
     if(eqToSimplify.type == 'Number' || eqToSimplify.type == 'Complex') return eqToSimplify;
     if(eqToSimplify.type == 'Function'){
         for(let i = 0; i<eqToSimplify.values; i++) eqToSimplify.values[i] = evaluator.simplify(eqToSimplify.values[i]);
@@ -45,6 +44,11 @@ evaluator.simplify = function(eqToSimplify, variables){
                 }
             }
         }
+    }
+    for(let i = 0; i<eqToSimplify.values.length; i++){
+        if(typeof eqToSimplify.values[i] != typeof "") {
+            eqToSimplify.values[i] = evaluator.simplify(eqToSimplify.values[i]);
+        }    
     }
     return eqToSimplify;
 }

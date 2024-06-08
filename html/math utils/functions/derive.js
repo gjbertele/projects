@@ -1,5 +1,4 @@
 evaluator.derive = function(tree){
-    console.log(tree)
     if(tree.type == 'Parenthesis'){
         return evaluator.derive(tree.values[0])
     }
@@ -25,7 +24,6 @@ evaluator.derive = function(tree){
             return {type:'*',values:[{type:'Number',values:-1},{type:'*',values:[evaluator.derive(tree.values[1]),{type:'Function',values:['sin',tree.values[1]]}]}]};
         }
         if(tree.values[0] == 'ln'){
-            console.log('LNARG: ',tree.values[1])
             return {type:'/',values:[evaluator.derive(tree.values[1]),tree.values[1]]}
         }
         if(tree.values[0] == 'Factorial'){
