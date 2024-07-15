@@ -43,3 +43,12 @@ evaluator.polyHandler.solveRoot = function(terms, cauchyBound){
     return init;
 
 }
+
+evaluator.runWithNumber = function(value, func){
+    let transformedInput = {type:'',values:['',{type:'Number',values:value}]};
+    let output = func(transformedInput);
+    if(output.type == 'Number'){
+        return output.values;
+    }
+    return output;
+}

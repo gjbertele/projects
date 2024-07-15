@@ -1,4 +1,5 @@
-evaluator.zeta = function(tree){
+evaluator.zeta = function(ntree){
+    let tree = ntree.values[1];
     if(tree.type == 'Number'){
         if(tree.values <= 1) return {type:'Number',values:Infinity};
         let v = 0;
