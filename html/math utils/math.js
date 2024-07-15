@@ -265,9 +265,9 @@ class mathUtils {
     expMod = function (a, b, mod) {
         let p = 1n;
         let subp = a;
-        for (let i = 0n; i < this.#logBig(b, 2n) + 1n; i++) {
+        for (let i = 0n; (1n<<i) <= b; i++) {
             let j = (1n << i);
-            if ((b & j) != 0n) {
+            if ((b & j) > 0n) {
                 p = (p * subp) % mod;
             }
             subp = (subp * subp) % mod;
