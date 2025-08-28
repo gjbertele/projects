@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        
+
+        class Group {
+            operation;
+            identity;
+            alphabet;
+            constructor(_operation, generatorOrders){
+                this.operation = _operation;
+
+                let numGenerators = generatorOrders.length;
+                this.alphabet = new Array(numGenerators);
+                for(let i = 0; i<numGenerators; i++){
+                    this.alphabet[i] = new Element([[i, 1]], this);
+                    this.alphabet[i].cachedOrder = generatorOrders[i];
+                }
+
+                this.identity = new Element([], this);
+
+                return this;
+            }
+        }
+
+        class Element {
+            series = [];
+            group;
+            cachedInverse;
+            cachedOrder;
+            constructor(_series, _group){
+                this.series = _series;
+                this.group = _group;
+            }
+
+            mult = (otherElement) => {
+                return this.group.operation.mult(this, otherElement)
+            }
+
+            pow = (n) => {
+                if(n < 0) return this.inverse().pow(-n);
+                if(n == 0) return new Element([], this.group);
+                if(n == 1) return new Element(this.series, this.group);
+
+                let bitLength = getBitLength(n);
+                let arr = new Array(bitLength);
+                arr[0] = this;
+                for(let idx = 1; idx < bitLength; idx++){
+                    arr[idx] = arr[idx-1].mult(arr[idx-1]);
+                }
+
+                let result = this.group.identity;
+                for(let idx = 0; idx < bitLength; idx++){
+                    if(((n >> idx) & 1) == 0) continue;
+                    result = result.mult(arr[idx]);
+                }
+
+                return result;
+            }
+
+            order = () => {
+                if(this.cachedOrder) return this.cachedOrder;
+                if(this.cachedInverse && this.cachedInverse.cachedOrder) return this.cachedInverse.cachedOrder;   
+                //todo???
+            }
+
+            inverse = () => {
+                if(this.cachedInverse) return this.cachedInverse;
+                if(this.cachedOrder){
+                    let result = this.pow(this.cachedOrder - 1);
+                    this.cachedInverse = result;
+                    return result;
+                }
+                if(this.series.length == 0) return this.group.identity;
+
+                let resultSeries = [];
+                for(let i = this.series.length - 1; i>-1; i--){
+                    let order = this.group.alphabet[this.series[i][0]].order();
+                    resultSeries.push([this.series[i][0], ((order-1)*this.series[i][1])%order]);
+                }
+
+                let result = new Element(resultSeries, this.group);
+                this.cachedInverse = result;
+                return result;
+
+            }
+
+            equals = (other) => {
+                let testElement = new Element([[0,1]], this.group);
+                return arraysEqual(this.mult(testElement).series,other.mult(testElement).series);
+            }
+
+        }
+
+        class Operation {
+            tables = [];
+
+            constructor(_tables){
+                this.tables = _tables;
+                this.tables.sort((a,b) => {
+                    return b[0].length - a[0].length;
+                });
+            }
+
+            mult(a, b){
+                if(a.series.length == 0) return b;
+                if(b.series.length == 0) return a;
+
+                let combinedSeries = null;
+                if(a.series[a.series.length - 1][0] == b.series[0][0]){
+                    combinedSeries = a.series.concat(b.series.slice(1));
+                    combinedSeries[a.series.length - 1][1] += b.series[0][1];
+                } else {
+                    combinedSeries = a.series.concat(b.series);
+                }
+
+                for(let i = 0; i<combinedSeries.length; i++){
+                    let elem = combinedSeries[i];
+                    combinedSeries[i][1] %= a.group.alphabet[elem[0]].order();
+                    if(combinedSeries[i][1] == 0){
+                        combinedSeries.splice(i, 1);
+                        i--;
+                    }
+                }
+
+                for(let i = 0; i<a.series.length; i++){
+                    for(let j = 0; j<this.tables.length; j++){
+                        if(isArraySubstring(combinedSeries, i, this.tables[j][0])){
+                            if(this.tables[j][1].length > 0) combinedSeries.splice(i, this.tables[j][0].length, this.tables[j][1]);
+                            else combinedSeries.splice(i, this.tables[j][0].length);
+                        }
+                    }
+                }
+
+                return new Element(combinedSeries, a.group);
+            }
+        }
+
+        const isArraySubstring = (arr, arrIdx, substring, subIdx = 0) => {
+            if(subIdx == substring.length) return true;
+            return arraysEqual(arr[arrIdx],substring[subIdx]) && isArraySubstring(arr, arrIdx+1, substring, subIdx+1);
+        }
+
+        const arraysEqual = (a,b) => {
+            return JSON.stringify(a) == JSON.stringify(b);
+        }
+
+        const getBitLength = (n) => {
+            let copy = n;
+            let length = 0;
+            while(copy > 0){
+                length++;
+                copy>>=1;
+            }
+            return length;
+        }
+
+
+    </script>
+    
+</body>
+</html>
