@@ -54,7 +54,7 @@ class InputLayer {
         return this;
     }
 }
-class model {
+class Model {
     constructor() {
         return this;
     }
@@ -135,7 +135,7 @@ class model {
         if (!this.compiled) throw new SyntaxError('Must compile before evaluating');
         let cLayer = [applyFunctionToMatrix(add(asMatrix([inputs]), this.biases[0]), this.network[0].activation)];
         for (let i = 1; i < this.network.length; i++) {
-            let temp = matrixDotProduct(cLayer[i - 1], this.network[i - 1]);
+            let temp = matrixMultiply(cLayer[i - 1], this.network[i - 1]);
             if (this.optimizer.bias == true) temp = add(temp, this.biases[i]);
             cLayer[i] = applyFunctionToMatrix(temp, this.network[i].activation);
         }
@@ -153,11 +153,11 @@ class model {
         }
         for (let i = this.network.length - 2; i > -1; i--) {
             let activationsPrimeVector = transpose(evaluated[i]);
-            let prod1 = matrixDotProduct(this.network[i], deltas[i + 1]);
+            let prod1 = matrixMultiply(this.network[i], deltas[i + 1]);
             deltas[i] = hadamardProduct(prod1, activationsPrimeVector);
         }
         for (let i = 0; i < deltas.length - 1; i++) {
-            gradients[i] = transpose(matrixDotProduct(deltas[i + 1], evaluated[i]));
+            gradients[i] = transpose(matrixMultiply(deltas[i + 1], evaluated[i]));
             gradients[i] = clampMat(gradients[i], clip[0], clip[1]);
         }
         return {

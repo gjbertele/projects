@@ -23,26 +23,28 @@ function asMatrix(N){
     }
     return newmat;
 }
-function matrixDotProduct(mat1,mat2){
+function matrixMultiply(mat1,mat2){
     let x, i, j; 
     let m1 = mat1.rows.length;
     let m2 = mat1.rows[0].column.length;
     let n2 = mat2.rows[0].column.length;
     let res = new Array(m1); 
-    for (i = 0; i < m1; i++)  
-    { 
+
+    console.log(mat1, mat2);
+
+    for (i = 0; i < m1; i++) { 
         res[i] = []
-        for (j = 0; j < n2; j++)  
-        { 
+        for (j = 0; j < n2; j++) { 
             res[i][j] = 0; 
-            for (x = 0; x < m2; x++)  
-            { 
+            for (x = 0; x < m2; x++) { 
                 res[i][j] += mat1.rows[i].column[x] * mat2.rows[x].column[j]; 
             } 
         } 
     } 
     return asMatrix(res);
 }
+
+
 function transpose(A){
     let newmat = new Matrix(A.rows[0].column.length, A.rows.length)
     for(let i = 0; i<A.rows.length; i++){

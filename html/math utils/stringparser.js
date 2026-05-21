@@ -287,7 +287,7 @@ evaluator.evaluateEquation = function(ntree, variables = {}, functionPatch = [],
         } else if(tree.values[0] == 'Factorial'){
             return evaluator.fastFactorial(tree);
         } else if(tree.values[0] == 'ApplyLH'){
-            return evaluator.applyLopitals(tree);
+            return evaluator.applyLHopitals(tree);
         } else {
             canvas.style.display = 'none'
         }

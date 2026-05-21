@@ -22,7 +22,7 @@ var sqrtBigInt = function (value) {
 	do {
 		x0 = x1;
 		x1 = ((value / x0) + x0) >> 1n;
-	}while((x0 !== x1 && x0 !== (x1 - 1n)));
+	} while((x0 !== x1 && x0 !== (x1 - 1n)));
 	return x0;
 }
 
