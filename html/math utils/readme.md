@@ -1,5 +1,5 @@
 # Sample Usage Capabilities
-When an equation is typed into the bar, it's evaluated either as a PDE to solve, or as a normal equation to evaluate or show properties about. Any numerical output is rounded to the nearest integer and factorized, and potential closed forms for it are suggested.
+Sample UI is given in sample.html. When an equation is typed into the bar, it's evaluated either as a PDE to solve, or as a normal equation to evaluate or show properties about. Any numerical output is rounded to the nearest integer and factorized, and potential closed forms for it are suggested.
 
 # Default Samples
 You can use trig functions (**sin**, **cos**, **tan**, **atan**, **acos**, and **asin**), as well as **log**, **sqrt**, **abs**, **floor**, **ceil**, and **round**. For example, try inputting **tan(3)** or **log(5)**.
