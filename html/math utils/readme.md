@@ -19,3 +19,5 @@ To input a derivative, e.g. **f'(x)**, format it as **df(x)/dx**. For example, *
 
 When such a PDE is entered, the solution is approximated, and a secondary evaluation bar appears where **f** can be used as a real function. For example, try **f'(x) = x**, then evaluate **f(0)**, **f(0.1)**, etc...
 
+The math.js file contains plenty of utilities not included in the UI, especially some matrix operations, various factorization algorithms, and more bigint operations.
+For advanced matrix operations including some matrix calculus, check out [this project](https://github.com/gjbertele/gjbertele.github.io/tree/main/matrixSolver)
