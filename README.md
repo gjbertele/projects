@@ -1,2 +1,2 @@
-most of my personal projects organized, some school stuff in there like the beowulf text analysis but 99% of it is on my own time
-trying to make my own version of wolframalpha w my own algorithms from scratch
+# Projects
+This contains some of my programming projects between 8th grade and my sophomore year of high school. Most are self-explanatory, but unfortunately I don't have the time to do a writeup for the rest. 
