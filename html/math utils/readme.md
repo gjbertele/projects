@@ -1,5 +1,5 @@
 # Sample Usage Capabilities
-When an equation is typed into the bar, it's evaluated either as a PDE to solve, or as a normal equation to evaluate or show properties about. Any numerical output is rounded to the nearest integer and factorized, and potential closed forms for it are suggested.
+Sample UI is given in sample.html. When an equation is typed into the bar, it's evaluated either as a PDE to solve, or as a normal equation to evaluate or show properties about. Any numerical output is rounded to the nearest integer and factorized, and potential closed forms for it are suggested.
 
 # Default Samples
 You can use trig functions (**sin**, **cos**, **tan**, **atan**, **acos**, and **asin**), as well as **log**, **sqrt**, **abs**, **floor**, **ceil**, and **round**. For example, try inputting **tan(3)** or **log(5)**.
@@ -19,7 +19,8 @@ To input a derivative, e.g. **f'(x)**, format it as **df(x)/dx**. For example, *
 
 When such a PDE is entered, the solution is approximated, and a secondary evaluation bar appears where **f** can be used as a real function. For example, try **f'(x) = x**, then evaluate **f(0)**, **f(0.1)**, etc...
 
-
+The math.js file contains plenty of utilities not included in the UI, especially some matrix operations, various factorization algorithms, and more bigint operations.
+For advanced matrix operations including some matrix calculus, check out [this project](https://github.com/gjbertele/gjbertele.github.io/tree/main/matrixSolver)
 
 The math.js file contains plenty of utilities not included in the UI, especially some matrix operations, various factorization algorithms, and more bigint operations.
-For advanced matrix operations, see https://math.gb.net.
+For advanced matrix operations including some matrix calculus, check out [this project](https://github.com/gjbertele/gjbertele.github.io/tree/main/matrixSolver)
