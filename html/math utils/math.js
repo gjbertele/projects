@@ -736,22 +736,10 @@ class mathUtils {
     }
 
     modularInverse = function(a, n){
-        let exp = a;
-        let res = 1;
-        let t = this.eulerTotient(n) - 1;
-        let b = 1;
-        while(t > 0){
-            if(t & 1){
-                res = (res * exp) % n;
-            }
-            exp = (exp ** 2) % n;
-            t >>= 1;
-            b++;
-        }
-        return res;
+        return parseInt(this.expMod(BigInt(a), BigInt(this.eulerTotient(n) - 1), BigInt(n)));
     }
 
-    chineseRemainderTheorem = function(residues) { //R = [(n,m),(n',m'),...] ^ m>m'>.... ^ len(R) = N -> O((sqrt(m)log(m)^N)
+    chineseRemainderTheorem = function(residues) {
         if(residues.length == 0) return 0;
         if(residues.length == 1) return residues[0][0];
 
@@ -765,6 +753,52 @@ class mathUtils {
         residues.shift();
         residues.unshift([newRes, A[1]*B[1]]);
         return this.chineseRemainderTheorem(residues);
+
+    }
+
+    #modularInversePrimePower = function (a, pk, p) {
+        return parseInt(this.expMod(BigInt(a), BigInt(pk - pk/p - 1), BigInt(pk))); 
+    }
+
+    #primePowerChineseRemainderTheorem = function(residues) {
+        if(residues.length == 0) return 0;
+        if(residues.length == 1) return residues[0][0];
+
+        const A = residues[0];
+        const B = residues[1];
+        const k = (B[0] - A[0]) * this.#modularInversePrimePower(A[1], B[1], B[2]);  
+        let newRes = (k * A[1] + A[0]) % (A[1] * B[1]);
+        newRes = (newRes + A[1]*B[1]) % (A[1] * B[1]);
+        residues.shift();
+        residues.shift();
+        residues.unshift([newRes, A[1]*B[1]]);
+        return this.#primePowerChineseRemainderTheorem(residues);
+    }
+
+    fastModularInverse = function(a, n) {
+        const factors = Math.factor(n);
+        let residues = [];
+        for(let p in factors){
+            if(p == 1) continue;
+            let res = parseInt(this.expMod(BigInt(a), BigInt(p-2), BigInt(p)));
+
+            let sum = 1;
+            let pow = 1 - a * res;
+            let primePower = p**parseInt(factors[p]);
+            for(let i = 1; i < factors[p]; i++){
+                sum = (sum + pow) % primePower;
+                pow = (pow * (1 - a * res)) % primePower;
+            }
+
+            sum = (sum * res) % primePower;
+            sum = (sum + primePower) % primePower;
+
+            residues.push([sum, primePower, parseInt(p)])
+        }
+
+        console.log(structuredClone(residues));
+
+        return this.#primePowerChineseRemainderTheorem(residues);
 
     }
 
