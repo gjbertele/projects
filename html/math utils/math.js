@@ -724,6 +724,50 @@ class mathUtils {
         }
         return primes;
     }
+
+    eulerTotient = function(n) {
+        let result = n;
+        let primes = Math.factor(n);
+        for(let p in primes){
+            if(parseInt(p) == 1) continue;
+            result -= result/parseInt(p);
+        }
+        return result;
+    }
+
+    modularInverse = function(a, n){
+        let exp = a;
+        let res = 1;
+        let t = this.eulerTotient(n) - 1;
+        let b = 1;
+        while(t > 0){
+            if(t & 1){
+                res = (res * exp) % n;
+            }
+            exp = (exp ** 2) % n;
+            t >>= 1;
+            b++;
+        }
+        return res;
+    }
+
+    chineseRemainderTheorem = function(residues) { //R = [(n,m),(n',m'),...] ^ m>m'>.... ^ len(R) = N -> O((sqrt(m)log(m)^N)
+        if(residues.length == 0) return 0;
+        if(residues.length == 1) return residues[0][0];
+
+        const A = residues[0];
+        const B = residues[1];
+        if([A[1],B[1]].gcd() != 1) return 0;
+        const k = (B[0] - A[0]) * this.modularInverse(A[1], B[1]);    
+        let newRes = (k * A[1] + A[0]) % (A[1] * B[1]);
+        newRes = (newRes + A[1]*B[1]) % (A[1] * B[1]);
+        residues.shift();
+        residues.shift();
+        residues.unshift([newRes, A[1]*B[1]]);
+        return this.chineseRemainderTheorem(residues);
+
+    }
+
     #allDivisorsBigInt = function (x) {
         let divisors = [];
         for (let i = 1n; i * i < x + 1n; i++) {
@@ -773,6 +817,7 @@ class mathUtils {
         if (a > b) return b;
         return a;
     }
+
     #preTool = [2, 3, 5, 7, 11, 13];
     #universalPreProd = 0;
     #universalPre = [2n, 3n, 5n, 7n, 11n, 13n];
